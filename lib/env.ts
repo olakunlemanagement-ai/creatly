@@ -1,14 +1,17 @@
 import { z } from "zod";
 
-// Validated at import time. The app fails to boot if a required var is missing.
-// Add vars here as each step introduces them — never leave unvalidated env access elsewhere.
+// Validated at import time — server side only. App fails to boot if any required var is missing.
+// NEXT_PUBLIC_ vars are also statically inlined by Next.js into the browser bundle at build time.
+// Non-NEXT_PUBLIC_ vars must NEVER be imported into client-facing code; they will be undefined in the browser.
 
 const envSchema = z.object({
   // ── Supabase ────────────────────────────────────────────────────────────────
-  // Required from step 1.2 (DB + auth setup)
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  // Publishable key (sb_publishable_…) — safe for browser; used by browser and server clients.
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
+  // Secret key (sb_secret_…) — SERVER ONLY. Bypasses RLS. Never expose to the browser.
+  // Only the Paystack webhook handler (lib/supabase/admin.ts) may use this.
+  SUPABASE_SECRET_KEY: z.string().min(1),
 
   // ── Paystack ────────────────────────────────────────────────────────────────
   // TODO(step-2.1): uncomment when adding payment integration
