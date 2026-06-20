@@ -56,3 +56,29 @@ If anything in a prompt conflicts with these documents, stop and flag it.
 - **Payments:** Paystack (NGN, recurring subscriptions)
 - **Email:** Resend + React Email
 - **Package manager:** pnpm
+
+Build workflow (how work is assigned)
+
+The ordered task list for this project lives in BUILD-PLAN.md in the repo root. It defines every build step with its scope and acceptance criteria.
+
+When the founder gives a short instruction like:
+
+
+"Do step 1.2b from the build plan."
+
+
+
+…interpret it as:
+
+
+Read BUILD-PLAN.md and find that step.
+Read the always-on rules at the top of BUILD-PLAN.md — they apply to every step.
+Read CONVENTIONS.md and the relevant section of creatly-v1-prd.md.
+Enter plan mode behaviour: propose what you'll do for THAT step only, then wait for "proceed".
+Execute strictly within the step's scope.
+Confirm each acceptance criterion explicitly, summarise changes, make ONE clean commit (Conventional Commits), and STOP.
+
+
+Never run ahead into the next step. Never weaken download attribution or server-side entitlement. If anything is ambiguous or conflicts with the PRD/CONVENTIONS, stop and ask rather than guessing.
+
+After completing a step, update BUILD-PLAN.md to mark it done (✅).
