@@ -367,7 +367,71 @@ Wire the search bar and category pills (stubbed in 1.4b) to real query logic, an
 - Preserve other params when updating one (changing sort shouldn't wipe the active search).
 
 ### 1.6 — Resource detail page ⬜
-`app/(app)/resources/[slug]/`: metadata, preview gallery, creator attribution, compatible-software + file-type badges, file size, related resources, download CTA. *(To be expanded.)*
+
+The page each catalogue card links to (`/resources/[slug]`) — where a user decides to download. Gallery-led layout with a details sidebar. This builds the page, the preview gallery, the metadata, related resources, and the download CTA *states* — but NOT the actual download mechanic (entitlement check, attribution logging, signed URL). That is the guarded step 1.8. Here the download button is present and shows the correct state per user, but the click action is stubbed for 1.8.
+
+**Decisions (locked):**
+- Layout: **big preview gallery + details sidebar** (classic, conversion-focused — preview dominates, sidebar holds the decision).
+- Subscribe CTA for non-subscribers: **subtle, not aggressive.** We sell a membership, not this item. A calm "Download" with a quiet subscribe prompt when needed — no loud price-pushing per resource.
+
+**Use the frontend-design skill.** Stay within the established green/terracotta/cream tokens; match the quality of the browse page.
+
+**Scope:**
+
+1. **Route & data fetch (`app/(app)/resources/[slug]/page.tsx`):**
+   - Server Component. Read `slug` from params, fetch the single published resource by slug, joining `creators(name, slug, avatar_path, is_public)` and `categories(name, slug)`.
+   - If not found OR not `status='published'` (and viewer isn't admin), render `notFound()` (Next.js 404). Don't leak draft/archived resources.
+   - Public route — guests and free users can view detail pages (same as browse).
+   - Set page `<title>`/metadata from the resource title + APP_NAME (generateMetadata).
+
+2. **Preview gallery (main column):**
+   - Primary preview image large at top (via `getPreviewImageUrl`), using `next/image`.
+   - If `preview_images[]` has additional images, render them as a thumbnail strip / gallery the user can click to swap the main image (client component for the interaction). If only the primary exists, just show it.
+   - Tasteful, on-brand, mobile-first (gallery stacks on mobile).
+
+3. **Details sidebar (side column on desktop, below gallery on mobile):**
+   - Title (serif heading), creator attribution (name + link to creator — creator profile page doesn't exist yet, wire href to `/creators/[slug]` which may 404 until Phase 2; or render name without link if cleaner — your judgment, keep it simple).
+   - Category pill, file-type badge, file size (format `file_size_bytes` human-readable, e.g. "4.3 MB" — add a small `formatBytes` util to `lib/format.ts`).
+   - Compatible software shown as small tags/chips (from `compatible_software[]`).
+   - Tags shown as chips (from `tags[]`).
+   - Download count ("142 downloads").
+   - **The download CTA** (see state logic below).
+   - Favourite (heart) button — UI present; real favourites backend is 1.7, so stub the toggle with a clear TODO (same approach as the card).
+
+4. **Download CTA states (button present, ACTION stubbed for 1.8):**
+   - **Subscriber (active subscription):** primary "Download" button, confident, enabled. On click: stubbed — `/* TODO 1.8: real download via /api/downloads/[id] */` (e.g. a no-op or a toast "Download coming in 1.8"). Do NOT implement entitlement checks, logging, or signed URLs here.
+   - **Free user (logged in, no active subscription):** "Download" button that, instead of downloading, subtly prompts subscription — e.g. button reads "Download" but opens/links to `/pricing` (which may not exist until Phase 2 — wire the href), with a calm helper line like "Included with a Creatly subscription." Keep it understated, no aggressive upsell, no big price.
+   - **Guest (not logged in):** "Download" prompts sign-up — links to `/signup?next=<this resource path>`, with a quiet "Sign up to get started" helper.
+   - Determine the user/subscription state server-side using `getAuthenticatedUser()` and an entitlement check. NOTE: real entitlement comes from subscriptions (Phase 2). For 1.6, implement a single `getUserEntitlement()`-style check that currently returns false-for-everyone-except-none (since no subscriptions exist yet) — OR read subscription status if the helper already exists. Design the state branching so 1.8 / Phase 2 can plug real entitlement in without rebuilding the UI. Comment this clearly.
+
+5. **Related resources:**
+   - Below the gallery/sidebar, a "More like this" section: fetch up to ~4–8 other published resources in the SAME category (excluding the current one), render with the existing `ResourceCard` / a horizontal strip or small grid.
+   - If none, hide the section.
+
+6. **States & polish:**
+   - Loading skeleton (loading.tsx for the route) matching the gallery+sidebar shape.
+   - Fully responsive: two-column on desktop (gallery main + sidebar), single-column stacked on mobile with the download CTA easily reachable.
+   - Breadcrumb or back-to-browse affordance (small, optional but nice).
+
+**Acceptance criteria (done when):**
+1. `/resources/[slug]` renders a published resource with gallery + details sidebar; unknown/unpublished slug → 404 (drafts/archived not leaked to non-admins).
+2. Preview gallery shows the primary image; additional `preview_images` are browsable (thumbnail → swaps main); gracefully handles single-image resources.
+3. Sidebar shows title, creator, category, file-type, human-readable file size, compatible software, tags, and download count.
+4. Download CTA shows the correct state for subscriber / free user / guest, with a SUBTLE subscribe prompt for free users and a sign-up prompt for guests.
+5. The download action is stubbed/TODO for 1.8 — no entitlement logging, no signed URL, no real file delivery implemented here; state branching is structured so real entitlement plugs in later without UI rework.
+6. Favourite heart present but UI-only (backend deferred to 1.7), clearly TODO'd.
+7. Related resources ("More like this") show same-category published resources; section hidden if none.
+8. Loading skeleton + mobile-first responsive layout; metadata set from resource title.
+9. `formatBytes` util added to lib/format.ts; file size displays human-readable.
+10. TypeScript strict, no `any`; typecheck + lint pass.
+11. One clean commit, e.g. `feat(resources): add resource detail page with gallery, details, related`.
+
+**Watch for (review before approving the plan):**
+- Do NOT implement the real download mechanic (entitlement check against subscription, attribution logging to `downloads`, signed URL generation) — that's the guarded step 1.8. Button + states only; action stubbed.
+- 404 must apply to non-published resources for non-admins (don't leak drafts).
+- Favourites stays UI-only (1.7). Pricing/creator/signup hrefs may point at not-yet-built routes — that's fine, wire them.
+- Keep the subscribe prompt understated — this is a membership product, not per-item checkout.
+- Reuse existing components/utils (ResourceCard, getPreviewImageUrl, badges) — don't duplicate.
 
 ### 1.7 — Favourites ⬜
 Toggle endpoint `POST /api/favourites/[resourceId]`; favourites list; heart toggle (optimistic). Guests redirected to signup. *(To be expanded.)*
