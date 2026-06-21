@@ -1,10 +1,13 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { APP_NAME } from "@/lib/config";
 import { createClient } from "@/lib/supabase/server";
+import { browseParamsSchema } from "@/lib/validations/browse";
 import { BrowseHero } from "@/components/resource/BrowseHero";
 import { CategoryQuickNav } from "@/components/resource/CategoryQuickNav";
 import { FeaturedStrip } from "@/components/resource/FeaturedStrip";
+import { SortControl } from "@/components/resource/SortControl";
 import { ResourceCard, type ResourceCardData } from "@/components/resource/ResourceCard";
 import { ResourceGrid } from "@/components/resource/ResourceGrid";
 import { CatalogueEmptyState } from "@/components/resource/CatalogueEmptyState";
@@ -18,70 +21,145 @@ export const metadata: Metadata = {
 const PAGE_SIZE = 24;
 
 interface BrowsePageProps {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function BrowsePage({ searchParams }: BrowsePageProps) {
-  const { page: pageParam } = await searchParams;
-  const page = Math.max(1, Number(pageParam) || 1);
+  const raw = await searchParams;
+
+  const params = browseParamsSchema.parse({
+    q: typeof raw.q === "string" ? raw.q : undefined,
+    category: typeof raw.category === "string" ? raw.category : undefined,
+    sort: typeof raw.sort === "string" ? raw.sort : undefined,
+    page: typeof raw.page === "string" ? raw.page : undefined,
+  });
+
+  const { q, category: categorySlug, sort, page } = params;
   const offset = (page - 1) * PAGE_SIZE;
+  const isFiltered = Boolean(q || categorySlug);
 
   const supabase = await createClient();
 
-  // Three parallel queries: categories nav, featured strip, paginated grid
-  const [
-    { data: categories },
-    { data: featuredResources },
-    { data: resources, count },
-  ] = await Promise.all([
-    supabase
+  // Resolve category slug → ID before building the main query
+  let categoryId: string | null = null;
+  if (categorySlug) {
+    const { data: cat } = await supabase
       .from("categories")
-      .select("id, name, slug")
+      .select("id")
+      .eq("slug", categorySlug)
       .eq("is_active", true)
-      .order("sort_order"),
-    supabase
-      .from("resources")
-      .select("*, creators(name), categories(name, slug)")
-      .eq("status", "published")
-      .eq("is_featured", true)
-      .order("created_at", { ascending: false })
-      .limit(6),
-    supabase
-      .from("resources")
-      .select("*, creators(name), categories(name, slug)", { count: "exact" })
-      .eq("status", "published")
-      .order("created_at", { ascending: false })
-      .range(offset, offset + PAGE_SIZE - 1),
-  ]);
+      .single();
+    categoryId = cat?.id ?? null;
+  }
+
+  // Build the paginated resource query with all active filters
+  let resourceQuery = supabase
+    .from("resources")
+    .select("*, creators(name), categories(name, slug)", { count: "exact" })
+    .eq("status", "published");
+
+  if (q) {
+    resourceQuery = resourceQuery.or(
+      `title.ilike.%${q}%,description.ilike.%${q}%`,
+    );
+  }
+
+  // Apply category filter only when the slug resolved to a known ID.
+  // If the slug is unknown, we fall through without filtering (show all, per spec).
+  if (categoryId) {
+    resourceQuery = resourceQuery.eq("category_id", categoryId);
+  }
+
+  if (sort === "popular") {
+    resourceQuery = resourceQuery
+      .order("download_count", { ascending: false })
+      .order("created_at", { ascending: false });
+  } else if (sort === "featured") {
+    resourceQuery = resourceQuery
+      .order("is_featured", { ascending: false })
+      .order("created_at", { ascending: false });
+  } else {
+    resourceQuery = resourceQuery.order("created_at", { ascending: false });
+  }
+
+  // Three parallel fetches: nav categories, featured strip (skipped when filtered), paginated grid
+  const [{ data: categories }, { data: featuredResources }, { data: resources, count }] =
+    await Promise.all([
+      supabase
+        .from("categories")
+        .select("id, name, slug")
+        .eq("is_active", true)
+        .order("sort_order"),
+      isFiltered
+        ? Promise.resolve({ data: [] as ResourceCardData[] })
+        : supabase
+            .from("resources")
+            .select("*, creators(name), categories(name, slug)")
+            .eq("status", "published")
+            .eq("is_featured", true)
+            .order("created_at", { ascending: false })
+            .limit(6),
+      resourceQuery.range(offset, offset + PAGE_SIZE - 1),
+    ]);
 
   const totalCount = count ?? 0;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
   const isEmpty = (resources?.length ?? 0) === 0;
 
+  // Find the active category name for the section heading
+  const activeCategoryName = categorySlug
+    ? (categories?.find((c) => c.slug === categorySlug)?.name ?? categorySlug)
+    : null;
+
   return (
     <>
-      <BrowseHero />
+      <Suspense>
+        <BrowseHero initialQuery={q ?? ""} />
+      </Suspense>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <CategoryQuickNav categories={categories ?? []} />
+        <Suspense>
+          <CategoryQuickNav
+            categories={categories ?? []}
+            activeCategory={categorySlug ?? null}
+          />
+        </Suspense>
 
-        <FeaturedStrip resources={(featuredResources ?? []) as ResourceCardData[]} />
+        {!isFiltered && (
+          <FeaturedStrip resources={featuredResources as ResourceCardData[]} />
+        )}
 
-        {/* All resources grid */}
-        <section aria-labelledby="all-resources-heading" className="border-t py-8">
-          <div className="mb-6 flex items-baseline justify-between">
-            <h2 id="all-resources-heading" className="text-lg font-semibold tracking-tight">
-              All resources
+        {/* Results */}
+        <section aria-labelledby="results-heading" className="border-t py-8">
+          <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
+            <h2 id="results-heading" className="text-lg font-semibold tracking-tight">
+              {q ? (
+                <>
+                  Results for{" "}
+                  <span className="text-terracotta-600">&#34;{q}&#34;</span>
+                </>
+              ) : activeCategoryName ? (
+                activeCategoryName
+              ) : (
+                "All resources"
+              )}
             </h2>
-            {totalCount > 0 && (
-              <p className="text-sm text-muted-foreground">
-                {totalCount.toLocaleString()} available
-              </p>
-            )}
+
+            <div className="flex items-center gap-3">
+              {totalCount > 0 && (
+                <p className="whitespace-nowrap text-sm text-muted-foreground">
+                  {totalCount.toLocaleString()}{" "}
+                  {totalCount === 1 ? "resource" : "resources"}
+                </p>
+              )}
+              <Suspense>
+                <SortControl activeSort={sort} />
+              </Suspense>
+            </div>
           </div>
 
-          {isEmpty && page === 1 ? (
-            <CatalogueEmptyState />
+          {isEmpty ? (
+            <CatalogueEmptyState variant={isFiltered ? "search-empty" : "cold-start"} />
           ) : (
             <>
               <ResourceGrid>
@@ -90,7 +168,6 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
                 ))}
               </ResourceGrid>
 
-              {/* Pagination */}
               {totalPages > 1 && (
                 <div className="mt-10 flex items-center justify-center gap-3">
                   <Button
@@ -102,7 +179,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
                     aria-label="Previous page"
                   >
                     {page > 1 ? (
-                      <Link href={`/browse?page=${page - 1}`}>
+                      <Link href={buildPageUrl(raw, page - 1)}>
                         <ChevronLeft className="size-4" />
                         Previous
                       </Link>
@@ -127,7 +204,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
                     aria-label="Next page"
                   >
                     {page < totalPages ? (
-                      <Link href={`/browse?page=${page + 1}`}>
+                      <Link href={buildPageUrl(raw, page + 1)}>
                         Next
                         <ChevronRight className="size-4" />
                       </Link>
@@ -146,4 +223,20 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
       </div>
     </>
   );
+}
+
+/** Build a pagination URL preserving active search/filter/sort params. */
+function buildPageUrl(
+  raw: { [key: string]: string | string[] | undefined },
+  newPage: number,
+): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(raw)) {
+    if (key !== "page" && typeof value === "string" && value.trim()) {
+      params.set(key, value);
+    }
+  }
+  if (newPage > 1) params.set("page", String(newPage));
+  const qs = params.toString();
+  return `/browse${qs ? `?${qs}` : ""}`;
 }
