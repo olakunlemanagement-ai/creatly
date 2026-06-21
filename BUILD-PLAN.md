@@ -67,7 +67,70 @@ Acceptance criteria:
 10. One clean commit, e.g. `feat(db): add schema, RLS policies, storage buckets, generated types`.
 
 ### 1.3 — Authentication ⬜
-Signup (email+password), login, logout, email verification, password reset, via Supabase Auth. Route protection in middleware (now we add gating). Auth UI in `app/(auth)/` using React Hook Form + Zod (shared schemas in `lib/validations/auth.ts`). `notification_preferences` row created on signup. *(Full scope + acceptance criteria to be expanded before we start this step.)*
+
+Email/password auth via Supabase Auth, with strict email verification. This is the step where real users begin to exist — the `profiles` row already auto-creates via the `handle_new_user()` trigger from 1.2b; this step adds the auth UI, the flows, route protection, and the `notification_preferences` row on signup.
+
+**Decisions (locked):**
+- Email verification is **required before login** — unverified users cannot sign in.
+- After signup-verification and after login, users land on **`/browse`**.
+- Password-reset emails use **Supabase's built-in email** in V1 (branded Resend templates come later — no rework needed to switch).
+
+**Scope:**
+
+1. **Validation schemas** — `lib/validations/auth.ts` with Zod schemas: `signupSchema` (email, password with min length + complexity, optional full_name), `loginSchema`, `requestPasswordResetSchema` (email), `resetPasswordSchema` (new password + confirm). These schemas are shared by client forms (React Hook Form) and any server validation. Single source of truth — no duplicate inline validation.
+
+2. **Signup flow** — `app/(auth)/signup/`:
+   - Form: full name, email, password (with visible requirements + show/hide toggle), confirm password.
+   - On submit: `supabase.auth.signUp` with `emailRedirectTo` pointing at the verification callback.
+   - Because verification is required, after submit show a "Check your email to verify" confirmation state — do NOT log the user in yet.
+   - On the `auth.users` insert, the existing trigger creates the `profiles` row. **Extend signup so a `notification_preferences` row is also created for the new user** (all defaults true, weekly digest). Do this via a DB trigger on `auth.users` (preferred — consistent with `handle_new_user`) OR in a post-verification server action. Recommend the trigger approach; if a trigger, add it as a NEW migration file (do not edit the 1.2b migration).
+
+3. **Email verification callback** — a route (e.g. `app/(auth)/callback/route.ts` or `app/auth/confirm/route.ts` per current Supabase SSR guidance) that exchanges the verification token for a session, then redirects to `/browse`. Handle the error case (expired/invalid link) with a clear message and a way to resend verification.
+
+4. **Login flow** — `app/(auth)/login/`:
+   - Form: email, password.
+   - On submit: `supabase.auth.signInWithPassword`.
+   - **Block unverified users**: if email is not confirmed, deny login with a clear message + offer to resend the verification email. (Supabase can enforce this; verify the project's "Confirm email" setting is on, and handle the unverified error explicitly in the UI.)
+   - On success: redirect to `/browse` (or the `next` param if present and safe).
+   - Link to "Forgot password?".
+
+5. **Password reset flow** — two parts:
+   - **Request** (`app/(auth)/reset-password/`): email field → `supabase.auth.resetPasswordForEmail` with redirect to the update page. Always show the same "if an account exists, we've sent a link" message regardless of whether the email exists (no account enumeration).
+   - **Update** (`app/(auth)/update-password/` or similar): reached from the email link with a recovery session; new password + confirm → `supabase.auth.updateUser`. On success, redirect to `/login` (or `/browse` if a session is active).
+
+6. **Logout** — a server action or route that calls `supabase.auth.signOut` and clears the session, redirecting to `/` (landing). Place a reusable logout control in shared nav (the dashboard nav comes in Phase 3, but the action/util should exist now).
+
+7. **Route protection (middleware)** — extend the existing `middleware.ts` (which currently only refreshes the session) to gate routes:
+   - **Protected** (require an authenticated, verified session): `/dashboard/*` and `/admin/*` (admin role check comes in Phase 4 — for now just require auth on these).
+   - **Public**: `/`, `/browse`, `/resources/*`, `/pricing`, and all `(auth)` routes.
+   - **Auth routes when already logged in**: if a logged-in user hits `/login` or `/signup`, redirect them to `/browse`.
+   - Unauthenticated access to a protected route redirects to `/login?next=<path>`. Keep the `next` handling safe (only allow same-origin relative paths — no open redirects).
+
+8. **Auth helpers** — a small `lib/auth.ts` (or similar) with `getAuthenticatedUser()` used by Server Components / route handlers (the same helper CONVENTIONS §5.2 references in the route-handler skeleton). Returns the user + profile, or null. This is reused everywhere downstream, so get its shape right.
+
+9. **UI/UX** — all auth pages mobile-first (375px), use shadcn form components + React Hook Form + Zod resolver, show field-level validation errors, loading states on submit, and clear success/error messaging. Use `APP_NAME` from config, never hardcoded. Accessible labels and focus states.
+
+**Acceptance criteria (done when):**
+1. A user can sign up; a `profiles` row AND a `notification_preferences` row are created for them.
+2. After signup, the user is NOT logged in and sees a "verify your email" state.
+3. Clicking the verification link confirms the account and lands the user on `/browse` with a session.
+4. An unverified user cannot log in and is shown a clear message with a resend option.
+5. A verified user can log in and lands on `/browse` (or a safe `next` path).
+6. Password reset request → email sent (Supabase built-in); reset link → set new password → can log in with it.
+7. Password reset request shows the same message whether or not the email exists (no enumeration).
+8. Logout clears the session and redirects to `/`.
+9. Middleware: `/dashboard` and `/admin` require auth (redirect to `/login?next=…` otherwise); logged-in users hitting `/login`/`/signup` are redirected to `/browse`; `next` only allows safe same-origin paths.
+10. `getAuthenticatedUser()` exists and returns user+profile or null; used by at least one protected route as proof.
+11. All auth schemas live in `lib/validations/auth.ts` and are shared client+server; no duplicate inline validation.
+12. Any new DB trigger is a NEW migration file (1.2b migration untouched); `pnpm typecheck` and `pnpm lint` pass.
+13. New `notification_preferences` trigger/flow does not break the existing `handle_new_user` trigger (test: signup creates exactly one profile + one preferences row).
+14. One clean commit, e.g. `feat(auth): add signup, login, verification, password reset, route protection`.
+
+**Watch for (review before approving the plan):**
+- The `notification_preferences` row must be created reliably for every new user (trigger preferred). Confirm it fires for users created via the verification flow, not just raw inserts.
+- Account-enumeration safety on both signup ("email already registered" should be handled carefully) and password reset.
+- `next` param must not allow open redirects (same-origin relative paths only).
+- Do NOT build the dashboard or admin pages themselves here — only the route protection that guards them. Those pages come in Phase 3/4.
 
 ### 1.4 — Catalogue browse ⬜
 Browse page, `ResourceCard`, `ResourceGrid`, pagination, default sort newest. Server-side data fetching. Mobile-first. Loading skeletons + empty states. *(To be expanded.)*
