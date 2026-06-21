@@ -132,7 +132,7 @@ Email/password auth via Supabase Auth, with strict email verification. This is t
 - `next` param must not allow open redirects (same-origin relative paths only).
 - Do NOT build the dashboard or admin pages themselves here — only the route protection that guards them. Those pages come in Phase 3/4.
 
-### 1.4 — Catalogue browse + design foundation ⬜
+### 1.4 — Catalogue browse + design foundation ✅
 
 The first real storefront UI. This step establishes Creatly's visual identity AND builds the browse grid. Search/filters are 1.5; the resource detail page is 1.6 — do NOT build those here. This is: design tokens, the browse page, the resource card, the grid, pagination, loading skeletons, and the empty state.
 
