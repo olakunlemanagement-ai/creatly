@@ -87,6 +87,7 @@ export function UpdatePasswordForm() {
                         type={showPassword ? "text" : "password"}
                         autoComplete="new-password"
                         className="pr-10"
+                        suppressHydrationWarning
                         {...field}
                       />
                       <button
@@ -125,6 +126,7 @@ export function UpdatePasswordForm() {
                         type={showConfirm ? "text" : "password"}
                         autoComplete="new-password"
                         className="pr-10"
+                        suppressHydrationWarning
                         {...field}
                       />
                       <button
