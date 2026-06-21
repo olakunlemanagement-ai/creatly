@@ -194,7 +194,7 @@ Establish Creatly's core design system as Tailwind 4 theme tokens / CSS variable
 - Heart/favourite must NOT pull the favourites backend forward from 1.7 — UI only, stubbed.
 - Card must remain usable and legible at 375px — image-forward must not crush the info row on mobile.
 
-1.4a — Fix: creator attribution on cards ⬜ (quick fix)
+1.4a — Fix: creator attribution on cards ✅ (quick fix)
 
 The browse cards show "Unknown creator" because the creators SELECT RLS policy only allows reading rows where is_public = true, but seed/internal creators are is_public = false. The creators(name) join therefore returns null for published resources by internal creators.
 
