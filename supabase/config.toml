@@ -76,7 +76,6 @@ otp_expiry = 3600
 
 [auth.sms]
 enable_signup = false
-enable_phone_autoconfirm = false
 max_frequency = "5s"
 
 [analytics]

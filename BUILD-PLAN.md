@@ -23,10 +23,10 @@
 ### 1.1 — Project scaffold ✅
 Next.js 15 + TS strict + Tailwind 4 + shadcn + pnpm; folder skeleton (PRD §19.1); foundational files (`lib/config.ts`, `lib/env.ts`, `types/api.ts`, `lib/api-response.ts`, `types/database.ts` enums, `lib/format.ts`); `CLAUDE.md`; `.claude/settings.json`. **Complete and committed.**
 
-### 1.2a — Supabase connection layer 🔄
+### 1.2a — Supabase connection layer ✅
 shadcn → Radix switch; `@supabase/supabase-js` + `@supabase/ssr` (pinned); three clients (`client.ts`, `server.ts`, `admin.ts` with webhook-only warning); env validation for Supabase vars (publishable + secret keys); session-refresh `middleware.ts`; Supabase CLI init + link; connection smoke test. No schema/RLS/storage/auth-gating. **In progress.**
 
-### 1.2b — Data layer (schema, RLS, storage) ⬜
+### 1.2b — Data layer (schema, RLS, storage) ✅
 **This is a guarded step — the download-attribution and immutability guarantees are built here. Go carefully.**
 
 Scope:
