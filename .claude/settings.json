@@ -11,7 +11,9 @@
       "Bash(pnpm --version)",
       "Bash(git status)",
       "Bash(git log*)",
-      "Bash(git diff*)"
+      "Bash(git diff*)",
+      "Bash(git add *)",
+      "Bash(pnpm dlx *)"
     ],
     "deny": [
       "Bash(git push*)",
