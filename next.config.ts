@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       // Dev seed placeholder images (picsum.photos)
       { protocol: "https", hostname: "picsum.photos" },
+      { protocol: "https", hostname: "placehold.co" },
       // Supabase Storage — public preview bucket
       ...(supabaseHostname
         ? [
