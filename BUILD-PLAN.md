@@ -433,7 +433,7 @@ The page each catalogue card links to (`/resources/[slug]`) — where a user dec
 - Keep the subscribe prompt understated — this is a membership product, not per-item checkout.
 - Reuse existing components/utils (ResourceCard, getPreviewImageUrl, badges) — don't duplicate.
 
-### 1.6a — Resource preview lightbox ⬜ (follow-up to 1.6)
+### 1.6a — Resource preview lightbox ✅ (follow-up to 1.6)
 
 Add a fullscreen lightbox/modal for resource previews on the detail page. Resources like brand kits, decks, and template sets have multiple preview images showing different segments — the inline gallery is too small to evaluate them properly. The lightbox lets users see previews at full size and browse between them, which is conversion-critical (people decide to download based on what they can actually see).
 
