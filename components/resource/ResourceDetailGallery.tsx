@@ -27,7 +27,7 @@ export function ResourceDetailGallery({
           src={activeUrl}
           alt={title}
           fill
-          sizes="(max-width: 768px) 100vw, 60vw"
+          sizes="(max-width: 640px) 100vw, 50vw"
           className="object-cover transition-opacity duration-200 motion-reduce:transition-none"
           loading="lazy"
         />
