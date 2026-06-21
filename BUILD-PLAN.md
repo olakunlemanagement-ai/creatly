@@ -5,6 +5,21 @@
 **How the founder drives this:**
 > "Read BUILD-PLAN.md and do step X.Y. Follow CONVENTIONS.md and the PRD. Work only within that step's scope. Stop at the acceptance criteria, summarise, and commit."
 
+## UI POLISH BACKLOG (parked — address in a dedicated pass, not now)
+
+Refinements noted during the build. These are polish, not blockers. Do NOT
+address them mid-step; batch them into one focused design pass (end of Phase 1
+or when the founder calls for it). Add new items here as they're spotted.
+
+- [ ] **Browse hero is too tall** — nearly fills the viewport, pushing category
+      pills and the resource grid below the fold. Trim vertical padding
+      (e.g. py-16/py-20 → ~py-10/py-12) so categories peek above the fold.
+- [ ] **Category pills clipped on the left edge** — the horizontal scroll
+      container starts flush against the viewport edge ("Social Media" shows as
+      "ocial Media"). Add left padding / scroll-padding so the first pill is
+      fully visible.
+- [ ] (add more as spotted…)
+
 **Rules that apply to EVERY step (do not repeat per step, they always hold):**
 - Read `CONVENTIONS.md` and the relevant PRD section before starting. Conventions are binding.
 - Stay strictly within the named step's scope. If you find yourself building the next step's work, STOP.
