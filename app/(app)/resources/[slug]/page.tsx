@@ -124,8 +124,8 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
           title={typedResource.title}
         />
 
-        {/* Sidebar — right col */}
-        <aside className="flex flex-col gap-5">
+        {/* Sidebar — right col; sticky on desktop so the download CTA stays visible while scrolling the gallery */}
+        <aside className="flex flex-col gap-5 lg:sticky lg:top-6 lg:self-start">
           {/* Badges */}
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center rounded-full bg-terracotta-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-terracotta-700">
