@@ -433,6 +433,65 @@ The page each catalogue card links to (`/resources/[slug]`) — where a user dec
 - Keep the subscribe prompt understated — this is a membership product, not per-item checkout.
 - Reuse existing components/utils (ResourceCard, getPreviewImageUrl, badges) — don't duplicate.
 
+### 1.6a — Resource preview lightbox ⬜ (follow-up to 1.6)
+
+Add a fullscreen lightbox/modal for resource previews on the detail page. Resources like brand kits, decks, and template sets have multiple preview images showing different segments — the inline gallery is too small to evaluate them properly. The lightbox lets users see previews at full size and browse between them, which is conversion-critical (people decide to download based on what they can actually see).
+
+**Decisions (locked):**
+- Opens via a **dedicated "Preview" / expand button** (not by clicking the image — clearer affordance, avoids accidental opens).
+- Navigation inside the lightbox: **combination UX** — swipe on mobile, arrow keys + on-screen prev/next arrows on desktop, AND a thumbnail strip along the bottom to jump directly to any image. (This is how Envato/Behance handle multi-image previews; the thumbnail strip is what makes a 6-image set genuinely browsable rather than a click-through slideshow.)
+
+**Use the existing Radix Dialog primitive** (shadcn `Dialog` in `components/ui/`) as the lightbox base — gives focus trap, Escape-to-close, scroll lock, and ARIA for free, and stays consistent with conventions. Add the shadcn `dialog` component if not already present.
+
+**Scope:**
+
+1. **Preview/expand button** on the detail gallery:
+   - A clear "Preview" button (with an expand/maximize icon, e.g. lucide `Maximize2` or `Expand`) overlaid on or beneath the main gallery image. On-brand styling.
+   - Clicking opens the lightbox at the currently-active gallery image.
+
+2. **Lightbox component** (`components/resource/ResourcePreviewLightbox.tsx`, client component):
+   - Built on Radix Dialog. Fullscreen / near-fullscreen overlay with a dimmed backdrop.
+   - Shows the active preview image large and centered (`next/image`, contained — never cropped; the user must see the whole image).
+   - Close: an X button (top corner) and Escape key (Radix handles Escape).
+   - Props: the full ordered list of image URLs (already resolved via `getPreviewImageUrl`) + the initial index.
+
+3. **Navigation inside the lightbox:**
+   - **Desktop:** on-screen prev/next arrow buttons (left/right edges) + left/right arrow keys. Disable/wrap at ends (recommend wrap-around; your call — wrap is friendlier).
+   - **Mobile:** horizontal swipe between images (touch). Keep it lightweight — a simple swipe handler or CSS scroll-snap carousel; no heavy carousel dependency.
+   - **Thumbnail strip:** a row of thumbnails along the bottom; the active one is highlighted (green ring); clicking jumps to that image. Horizontally scrollable if many.
+   - An image counter (e.g. "3 / 6") for orientation.
+
+4. **Single-image resources:** if there's only one preview image, the lightbox still works (opens it fullscreen) but hides the navigation arrows, thumbnail strip, and counter — no dead controls.
+
+5. **Accessibility & polish:**
+   - Focus trap + return focus to the trigger on close (Radix default — keep it).
+   - `prefers-reduced-motion` respected (no slide animation if set; just swap).
+   - Lazy-load lightbox images; the active image gets priority.
+   - Mobile-first: works cleanly at 375px; swipe feels natural; close button reachable.
+
+**Scope fences:**
+- Detail-page-only. Don't touch browse cards, search, or the download mechanic.
+- No new heavy carousel/lightbox library — use Radix Dialog + Tailwind + minimal JS. (If a tiny well-justified helper is needed for swipe, fine, but prefer native.)
+- Don't change the inline gallery's existing behaviour beyond adding the Preview button; the inline thumbnail-swap from 1.6 stays.
+
+**Acceptance criteria (done when):**
+1. A clear "Preview" button on the detail gallery opens a fullscreen lightbox at the active image.
+2. Lightbox shows images fully (contained, never cropped) on a dimmed backdrop; closes via X and Escape.
+3. Desktop: prev/next arrows + arrow-key navigation work; an image counter shows position.
+4. Mobile: horizontal swipe between images works at 375px.
+5. A thumbnail strip lets users jump directly to any image; active thumbnail is highlighted.
+6. Single-image resources open in the lightbox with navigation controls hidden (no dead UI).
+7. Built on Radix Dialog (focus trap, Escape, scroll lock, ARIA); focus returns to trigger on close; `prefers-reduced-motion` respected.
+8. Images resolved via `getPreviewImageUrl`; lazy-loaded; mobile-first.
+9. TypeScript strict, no `any`; typecheck + lint pass.
+10. One clean commit, e.g. `feat(resources): add fullscreen preview lightbox with navigation`.
+
+**Watch for (review before approving the plan):**
+- Use the existing Radix Dialog, not a new lightbox dependency.
+- Images must be CONTAINED in the lightbox (whole image visible), not cover-cropped — the point is letting users evaluate the full preview.
+- Hide navigation/thumbnail/counter for single-image resources (no dead controls).
+- Don't pull in or alter the download mechanic (1.8) or favourites (1.7).
+
 ### 1.7 — Favourites ⬜
 Toggle endpoint `POST /api/favourites/[resourceId]`; favourites list; heart toggle (optimistic). Guests redirected to signup. *(To be expanded.)*
 
