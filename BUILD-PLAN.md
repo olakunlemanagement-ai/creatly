@@ -194,6 +194,98 @@ Establish Creatly's core design system as Tailwind 4 theme tokens / CSS variable
 - Heart/favourite must NOT pull the favourites backend forward from 1.7 — UI only, stubbed.
 - Card must remain usable and legible at 375px — image-forward must not crush the info row on mobile.
 
+1.4a — Fix: creator attribution on cards ⬜ (quick fix)
+
+The browse cards show "Unknown creator" because the creators SELECT RLS policy only allows reading rows where is_public = true, but seed/internal creators are is_public = false. The creators(name) join therefore returns null for published resources by internal creators.
+
+Decision (locked): A creator's name is public once they have a published resource (their work is already shown publicly). Internal creators with no published work stay private.
+
+Scope:
+
+
+New migration file (do NOT edit earlier migrations) that replaces the creators SELECT policy with: allow reading a creator row if is_public = true OR that creator has at least one resource with status = 'published'. Use an EXISTS subquery on resources. Keep insert/update/delete policies unchanged (admin only).
+Verify the browse card now shows the real creator name ("Creatly Studio") instead of "Unknown creator".
+Apply migration to remote; pnpm typecheck + pnpm lint pass.
+
+
+Acceptance criteria:
+
+
+New migration only; earlier migrations untouched.
+Browse cards show the actual creator name for published resources.
+Internal creators with no published resources remain unreadable by anon/public.
+One clean commit, e.g. fix(rls): allow reading creators with published resources.
+
+
+1.4b — Design elevation: make the catalogue come alive ⬜ (design-led)
+
+The catalogue works and is on-brand, but it's static and bland. This step injects energy and discovery, drawing on the patterns that make Envato Elements / ThemeForest feel alive — WITHOUT abandoning the established green/terracotta/cream identity or breaking scope into 1.5 (real search/filter logic is still 1.5; this builds the presentation and entry points).
+
+Apply the frontend-design skill. Read /mnt/skills/public/frontend-design/SKILL.md and design with intent. The goal is "alive and premium," not "busy."
+
+Scope — add these to the browse experience:
+
+
+Hero section at the top of /browse (replaces the plain "Browse resources / 10 resources available" header):
+
+A confident headline using the serif display (e.g. "Unlimited downloads for African creatives" — final copy your call) + a short supporting line.
+A prominent search bar front and center (visual only in this step — wire the actual query in 1.5; for now it can route to /browse?q= or be a styled non-functional input clearly stubbed). This is the single biggest "alive" signal — Envato leads with it.
+Set on a richer background: a deep forest-green band, or a warm cream-to-terracotta gradient, with generous vertical padding. This breaks the flat-white monotony.
+A small trust/stat line under the search (e.g. "Thousands of templates, fonts, mockups & more") — social-proof texture.
+
+
+
+Category quick-nav — a horizontal row of category "pills" or small tiles below the hero (Social Media, Presentations, Fonts, Mockups, Brand Kits, Icons — read from the categories table, don't hardcode). Clicking is visual-only or routes to /browse?category= (real filtering is 1.5). These give the page entry points and immediate sense of breadth.
+A "Featured" strip — a distinct horizontal section surfacing is_featured = true resources (you already have some in seed data) above the main grid, with a section heading. Visual differentiation (slightly larger cards or a different treatment) creates rhythm instead of one flat grid.
+Card life — elevate ResourceCard:
+
+Smoother hover: image subtle zoom (scale) within the frame, card lift (shadow + slight translate), the favourite heart fading in. Respect prefers-reduced-motion.
+A category pill on the card (you have category data) in addition to the file-type badge, for color/texture.
+Tighten proportions slightly so cards feel less heavy.
+
+
+
+Overall rhythm & polish:
+
+Section spacing that creates a top-to-bottom narrative: Hero → Categories → Featured → All resources grid → pagination.
+Tasteful use of the terracotta accent for energy (section accents, hover states) against the green/cream base — currently the accent barely appears.
+Keep it fast and mobile-first: hero and search must look great and remain usable at 375px; lazy-load images; no layout shift.
+
+
+
+
+
+Constraints / scope fences:
+
+
+Do NOT build real search or filter logic — that's 1.5. Search bar and category pills are presentation + routing stubs only, clearly marked TODO for 1.5.
+Do NOT change the core data fetch or pagination from 1.4 beyond what's needed to add the Featured strip.
+Stay within the established design tokens — enrich their use, don't introduce a new palette.
+No new heavy dependencies for animation; CSS transitions / Tailwind are enough.
+
+
+Acceptance criteria:
+
+
+/browse opens with a distinctive hero (headline + prominent search bar + richer green/gradient background), not a plain text header.
+A category quick-nav row renders from the categories table.
+A Featured strip surfaces is_featured resources above the main grid, visually distinct.
+Cards have polished hover motion (image zoom + lift + heart fade), a category pill, and tightened proportions; prefers-reduced-motion respected.
+The terracotta accent is used purposefully for energy; the page reads as "alive and premium," cohesive with the brand.
+Fully responsive and fast at 375px; images lazy-load; no CLS.
+Search bar and category pills are presentation/routing stubs only — no real query logic (deferred to 1.5), clearly TODO'd.
+TypeScript strict, no any; typecheck + lint pass.
+One clean commit, e.g. feat(browse): elevate catalogue with hero, categories, featured strip, card motion.
+
+
+Watch for (review before approving the plan):
+
+
+The search bar must be visually prominent — it's the #1 "alive" signal. Don't bury it.
+Hero background must not hurt text contrast/accessibility (check against tokens).
+Don't let the Featured strip + hero push the actual grid below the fold on mobile to the point browsing feels buried — balance the narrative.
+No scope creep into real search/filtering (1.5).
+
 ### 1.5 — Search & filters ⬜
 Keyword search (title/description/tags via FTS), category filter, tag filter, sort (newest / most downloaded / featured). *(To be expanded.)*
 
