@@ -66,7 +66,7 @@ Acceptance criteria:
 9. No application/feature code (no auth UI, no catalogue) — schema layer only.
 10. One clean commit, e.g. `feat(db): add schema, RLS policies, storage buckets, generated types`.
 
-### 1.3 — Authentication ⬜
+### 1.3 — Authentication ✅
 
 Email/password auth via Supabase Auth, with strict email verification. This is the step where real users begin to exist — the `profiles` row already auto-creates via the `handle_new_user()` trigger from 1.2b; this step adds the auth UI, the flows, route protection, and the `notification_preferences` row on signup.
 
