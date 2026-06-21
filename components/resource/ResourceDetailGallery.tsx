@@ -29,7 +29,7 @@ export function ResourceDetailGallery({
           fill
           sizes="(max-width: 768px) 100vw, 60vw"
           className="object-cover transition-opacity duration-200 motion-reduce:transition-none"
-          priority
+          loading="lazy"
         />
       </div>
 
