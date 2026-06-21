@@ -82,3 +82,33 @@ Confirm each acceptance criterion explicitly, summarise changes, make ONE clean 
 Never run ahead into the next step. Never weaken download attribution or server-side entitlement. If anything is ambiguous or conflicts with the PRD/CONVENTIONS, stop and ask rather than guessing.
 
 After completing a step, update BUILD-PLAN.md to mark it done (✅).
+
+Model routing & cost discipline
+
+Use the cheapest model that can do the job well. Do not default to the most
+capable model for everything.
+
+
+haiku — file reads, lookups, summaries, formatting, renaming, simple
+mechanical edits, running a command and reporting output.
+sonnet — standard implementation: building components and pages,
+writing route handlers, debugging, code review, most BUILD-PLAN steps.
+opus — reserve for genuine architecture decisions, schema design, or
+complex multi-file reasoning. Rare now that the architecture is settled.
+
+
+When spawning a subagent:
+
+
+Give it a TIGHT brief naming the exact files or directories to read. Never
+"explore the repo" or "find anything related to X" — that burns tokens on
+open-ended search.
+Route it to the cheapest capable model (default haiku for read/search/
+summarize tasks, sonnet for implementation). Do not spawn an Opus subagent
+for mechanical work.
+Only spawn a subagent when isolating heavy/verbose output (large file
+reads, log dumps, test output) is worth the startup overhead. For a quick
+one- or two-file change, just do it in the main thread.
+
+
+Keep this file lean — it loads on every request.
