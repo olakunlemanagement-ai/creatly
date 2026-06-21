@@ -7,6 +7,9 @@ const supabaseHostname = supabaseUrl ? new URL(supabaseUrl).hostname : null;
 
 const nextConfig: NextConfig = {
   images: {
+    // Bypass the /_next/image optimizer in dev — picsum.photos isn't reliably
+    // reachable through the proxy, causing placeholder images to fail.
+    unoptimized: true,
     remotePatterns: [
       // Dev seed placeholder images (picsum.photos)
       { protocol: "https", hostname: "picsum.photos" },
