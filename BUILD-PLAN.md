@@ -132,8 +132,67 @@ Email/password auth via Supabase Auth, with strict email verification. This is t
 - `next` param must not allow open redirects (same-origin relative paths only).
 - Do NOT build the dashboard or admin pages themselves here — only the route protection that guards them. Those pages come in Phase 3/4.
 
-### 1.4 — Catalogue browse ⬜
-Browse page, `ResourceCard`, `ResourceGrid`, pagination, default sort newest. Server-side data fetching. Mobile-first. Loading skeletons + empty states. *(To be expanded.)*
+### 1.4 — Catalogue browse + design foundation ⬜
+
+The first real storefront UI. This step establishes Creatly's visual identity AND builds the browse grid. Search/filters are 1.5; the resource detail page is 1.6 — do NOT build those here. This is: design tokens, the browse page, the resource card, the grid, pagination, loading skeletons, and the empty state.
+
+**Decisions (locked):**
+- Card style: a distinctive hybrid — **image-forward** (the preview dominates, Pinterest-like) **with a clean info row** (title, category pill, file-type badge) and a favourite affordance. Not a generic Envato clone, not bare tiles — something that feels crafted and is genuinely usable on mobile.
+- Visual identity: **invest now.** Distinctive, branded, not a neutral placeholder.
+- Default sort: newest first.
+
+**Use the frontend-design skill.** This step is design-led. Read and apply `/mnt/skills/public/frontend-design/SKILL.md` for the design-token system, typography, and styling constraints in this environment. Distinctive and intentional, never templated-default.
+
+**Task 0 — Design foundation (do this first):**
+Establish Creatly's core design system as Tailwind 4 theme tokens / CSS variables in the global stylesheet, so every component from here on inherits it. Direction:
+- **Palette:** deep forest green as primary (e.g. a rich `#1a3d2f`-ish green), warm terracotta/orange as the accent (e.g. `#c8732e`-ish), a warm off-white / cream as the page background (not stark white), near-black for text, plus a neutral grey scale. Define proper semantic tokens (background, foreground, primary, accent, muted, border, etc.) — don't hardcode hex in components.
+- **Typography:** a characterful but readable pairing — a distinctive display face for headings (something with personality, suited to a creative brand) and a clean, highly-legible sans for body/UI. Load via `next/font`. Define type scale tokens.
+- **Feel:** warm, premium-but-accessible, creative, African-rooted without cliché or literal motifs. Generous spacing, soft but not gimmicky radii, restrained shadows.
+- Support **dark mode tokens** in the system even if no toggle is built yet (so we don't retrofit later).
+- This must look cohesive with the brand used elsewhere — green/orange/cream is the established direction.
+
+**Task 1 — Image URL resolution helper:**
+- `lib/storage.ts` (or similar): a small, well-tested `getPreviewImageUrl(path: string)` that returns `path` directly if it's an absolute URL (starts with `http`), otherwise resolves it to a Supabase Storage public URL from the `resource-previews` bucket.
+- This is not cleverness — it's a standard absolute-vs-relative image source pattern, and it lets dev seed data (which uses external placeholder image URLs) render correctly while real uploads (Storage paths, Phase 4) also work. Comment it as such.
+
+**Task 2 — Data fetching:**
+- Server-side fetch of published resources (`status = 'published'`) via the server Supabase client, ordered by `created_at desc`, paginated.
+- Page size ~24. Pagination via URL search param (`?page=2`) so it's shareable and back-button-friendly. Server Component reads the param and fetches the right page.
+- Return the data typed against the generated `types/database.ts` row types — no `any`.
+
+**Task 3 — Components (in `components/resource/`):**
+- **`ResourceCard.tsx`** — the hybrid card. Preview image (via `getPreviewImageUrl`, using `next/image` with proper sizing + lazy loading), title, a category pill, a file-type badge (derived from `file_type`/extension), and a favourite heart button (UI + optimistic toggle wiring may be stubbed if favourites isn't until 1.7 — if so, render the heart but no-op it with a clear TODO; do NOT build the favourites backend here). Whole card links to the (future) resource detail route `/resources/[slug]` — the route may 404 until 1.6; that's fine, just wire the href.
+- **`ResourceGrid.tsx`** — responsive grid: 1 column at 375px, scaling up (2 / 3 / 4 columns at breakpoints). Mobile-first. Handle the image-forward layout cleanly across sizes.
+- **`ResourceCardSkeleton.tsx`** — loading skeleton matching the card shape.
+- **`CatalogueEmptyState.tsx`** — a friendly empty state for when there are zero published resources (helpful message, on-brand, not a blank void).
+
+**Task 4 — Browse page (`app/(app)/browse/page.tsx`):**
+- Replace the 1.3 placeholder with the real catalogue.
+- Header/hero area (tasteful, on-brand — this is the storefront), then the grid, then pagination controls.
+- Loading UI via skeletons (Suspense or loading.tsx).
+- Empty state when no resources.
+- Fully responsive, mobile-first, bandwidth-conscious (lazy-load images, appropriate `next/image` sizes).
+- Public route — guests and free users can browse (no auth gate).
+
+**Acceptance criteria (done when):**
+1. Design tokens (palette, typography, spacing, radii, dark-mode vars) are defined as a coherent system in the Tailwind theme / global CSS; components reference tokens, not hardcoded hex.
+2. The frontend-design skill was applied; the result looks distinctive and on-brand (green/orange/cream), not a default template.
+3. `getPreviewImageUrl` resolves both absolute URLs and Storage paths; covered by a small unit test.
+4. `/browse` renders published resources in a responsive, image-forward hybrid card grid (1 col at 375px scaling to multi-column).
+5. Cards show preview image, title, category pill, and file-type badge; favourite heart is present (real wiring deferred to 1.7 if needed, clearly TODO'd).
+6. Pagination works via `?page=` URL param; default sort is newest first; page size ~24.
+7. Loading skeletons show during fetch; a friendly empty state shows when there are no resources.
+8. Card links to `/resources/[slug]` (route may not exist until 1.6 — href wired regardless).
+9. Public access confirmed (works logged-out); images lazy-load via `next/image`.
+10. No search/filter UI (that's 1.5); no resource detail page (1.6); no favourites backend (1.7).
+11. TypeScript strict, no `any`; `pnpm typecheck` and `pnpm lint` pass.
+12. One clean commit, e.g. `feat(catalogue): add design system and browse grid`.
+
+**Watch for (review before approving the plan):**
+- Design tokens established as a real system, not one-off styles per component (this prevents the drift that sank the first build).
+- `next/image` configured for the placeholder image domain (e.g. picsum.photos) in `next.config` so dev images load — but keep production Storage URLs working too.
+- Heart/favourite must NOT pull the favourites backend forward from 1.7 — UI only, stubbed.
+- Card must remain usable and legible at 375px — image-forward must not crush the info row on mobile.
 
 ### 1.5 — Search & filters ⬜
 Keyword search (title/description/tags via FTS), category filter, tag filter, sort (newest / most downloaded / featured). *(To be expanded.)*
