@@ -217,7 +217,7 @@ Internal creators with no published resources remain unreadable by anon/public.
 One clean commit, e.g. fix(rls): allow reading creators with published resources.
 
 
-1.4b — Design elevation: make the catalogue come alive ⬜ (design-led)
+1.4b — Design elevation: make the catalogue come alive ✅ (design-led)
 
 The catalogue works and is on-brand, but it's static and bland. This step injects energy and discovery, drawing on the patterns that make Envato Elements / ThemeForest feel alive — WITHOUT abandoning the established green/terracotta/cream identity or breaking scope into 1.5 (real search/filter logic is still 1.5; this builds the presentation and entry points).
 
