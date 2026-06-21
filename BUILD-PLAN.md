@@ -302,7 +302,68 @@ Don't let the Featured strip + hero push the actual grid below the fold on mobil
 No scope creep into real search/filtering (1.5).
 
 ### 1.5 — Search & filters ⬜
-Keyword search (title/description/tags via FTS), category filter, tag filter, sort (newest / most downloaded / featured). *(To be expanded.)*
+
+Wire the search bar and category pills (stubbed in 1.4b) to real query logic, and add sorting. This makes the catalogue actually navigable. Builds on the existing browse data fetch — does NOT rebuild the page layout (that's done) and does NOT touch the resource detail page (1.6) or favourites (1.7).
+
+**Decisions (locked):**
+- Search updates **as-you-type, debounced ~300ms** (not on every keystroke). Feels instant, avoids hammering the DB on low-bandwidth mobile.
+- URL is the source of truth for search/filter/sort state (`?q=`, `?category=`, `?sort=`, `?page=`) — shareable, back-button-friendly, and the server reads it to fetch.
+- Sort options: **Newest** (default), **Most downloaded**, **Featured first**.
+
+**Scope:**
+
+1. **Query parsing & validation:**
+   - The browse page (Server Component) reads `q`, `category`, `sort`, `page` from `searchParams`.
+   - Validate/normalize with a small Zod schema (`lib/validations/browse.ts` or inline): `q` is a trimmed string (cap length, e.g. 100 chars); `category` is a slug string; `sort` is one of an allowed set (`newest` | `popular` | `featured`), defaulting to `newest`; `page` is a positive int. Never trust raw params.
+
+2. **Search (keyword):**
+   - Full-text search across title + description using the FTS index already created in the 1.2b migration (`idx_resources_fts`), plus tag matching.
+   - Use Postgres FTS via Supabase (`textSearch` on the tsvector, or `ilike` fallback for partial matches — prefer FTS for the indexed columns; consider also matching `tags` via array contains/overlap for tag hits).
+   - If `q` is empty, no keyword constraint is applied.
+
+3. **Category filter:**
+   - When `?category=<slug>` is present, resolve the category by slug and filter resources to that `category_id`.
+   - Invalid/unknown slug → treat as no filter (or empty result with a clear message — prefer: ignore unknown slug, show all, don't error).
+
+4. **Sort:**
+   - `newest` → `created_at desc` (default)
+   - `popular` → `download_count desc` (then `created_at desc` tiebreak)
+   - `featured` → `is_featured desc, created_at desc`
+
+5. **Combine cleanly:** search + category + sort + pagination all compose in one query. All filters are ANDed. Pagination still works with filters applied (recompute total count for the filtered set so page numbers are correct).
+
+6. **Client wiring (the as-you-type part):**
+   - The search input becomes a client component that debounces input (~300ms) and updates the URL query param (`router.replace` with the new `?q=`, preserving other params), which re-runs the server fetch. Use `useTransition` so the input stays responsive and you can show a subtle pending state.
+   - Category pills update `?category=` (toggle: clicking the active category clears it). Preserve other params.
+   - A sort control (dropdown or segmented control) updates `?sort=`. Preserve other params.
+   - Changing q/category/sort resets `page` to 1.
+
+7. **States:**
+   - Reuse the existing loading skeletons and `CatalogueEmptyState`.
+   - Empty state copy should adapt: if a search/filter is active and returns nothing, show "No resources match your search" with a clear way to clear filters — distinct from the "no resources yet" cold-start empty state.
+   - Show the active query/filter context (e.g. "Results for 'mockups'" or the active category) so the user knows what they're looking at.
+
+8. **Featured strip + hero behaviour with active search:** when a search or category filter is active, hide the Featured strip and the hero can collapse to a slimmer state (search still present) so results are the focus. Keep it simple — at minimum, the Featured strip should not show alongside filtered results (it's a discovery element, not a results element).
+
+**Acceptance criteria (done when):**
+1. Typing in the search bar updates results as-you-type, debounced (~300ms), without a full page reload feel; input stays responsive (useTransition).
+2. Search matches against title, description (FTS), and tags; empty query returns all.
+3. Clicking a category pill filters to that category; clicking the active one clears it.
+4. Sort control offers Newest / Most downloaded / Featured first; default is Newest.
+5. Search, category, and sort all reflect in the URL (`?q=&category=&sort=&page=`) and are restored on reload/share/back.
+6. Filters compose (search + category + sort together); pagination works on the filtered set with correct counts; changing a filter resets to page 1.
+7. Active-search empty state ("no matches" + clear filters) is distinct from the cold-start empty state.
+8. Featured strip is hidden when a search/filter is active.
+9. Mobile-first; fast on slow connections (debounce confirmed; no query-per-keystroke).
+10. TypeScript strict, no `any`; inputs validated with Zod; typecheck + lint pass.
+11. One clean commit, e.g. `feat(browse): add debounced search, category filter, and sort`.
+
+**Watch for (review before approving the plan):**
+- Debounce must actually be present — confirm no query fires on every keystroke.
+- URL-driven state: the server fetch reads from searchParams; the client only updates the URL. Don't introduce a parallel client-side results state that can desync from the URL.
+- Use the existing FTS index (`idx_resources_fts`) rather than unindexed `ilike` on large columns where possible.
+- Don't pull in detail-page (1.6) or favourites (1.7) work.
+- Preserve other params when updating one (changing sort shouldn't wipe the active search).
 
 ### 1.6 — Resource detail page ⬜
 `app/(app)/resources/[slug]/`: metadata, preview gallery, creator attribution, compatible-software + file-type badges, file size, related resources, download CTA. *(To be expanded.)*
