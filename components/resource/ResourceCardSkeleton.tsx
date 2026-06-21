@@ -1,13 +1,16 @@
 export function ResourceCardSkeleton() {
   return (
-    <li className="overflow-hidden rounded-lg border border-border bg-card">
-      {/* Preview image area */}
-      <div className="aspect-video w-full animate-pulse bg-muted" />
+    <li className="overflow-hidden rounded-xl border border-border bg-card">
+      {/* Preview image area — matches aspect-[4/3] of the real card */}
+      <div className="aspect-[4/3] w-full animate-pulse bg-muted" />
 
       {/* Card body */}
       <div className="flex flex-col gap-2 p-3">
-        {/* Badge placeholder */}
-        <div className="h-5 w-12 animate-pulse rounded-full bg-muted" />
+        {/* Badge row — two badge placeholders (file type + category) */}
+        <div className="flex gap-1.5">
+          <div className="h-4 w-10 animate-pulse rounded-full bg-muted" />
+          <div className="h-4 w-16 animate-pulse rounded-full bg-muted" />
+        </div>
         {/* Title placeholder — two lines */}
         <div className="flex flex-col gap-1.5">
           <div className="h-4 w-full animate-pulse rounded bg-muted" />
