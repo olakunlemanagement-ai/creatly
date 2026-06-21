@@ -366,7 +366,7 @@ Wire the search bar and category pills (stubbed in 1.4b) to real query logic, an
 - Don't pull in detail-page (1.6) or favourites (1.7) work.
 - Preserve other params when updating one (changing sort shouldn't wipe the active search).
 
-### 1.6 — Resource detail page ⬜
+### 1.6 — Resource detail page ✅
 
 The page each catalogue card links to (`/resources/[slug]`) — where a user decides to download. Gallery-led layout with a details sidebar. This builds the page, the preview gallery, the metadata, related resources, and the download CTA *states* — but NOT the actual download mechanic (entitlement check, attribution logging, signed URL). That is the guarded step 1.8. Here the download button is present and shows the correct state per user, but the click action is stubbed for 1.8.
 
