@@ -59,9 +59,14 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     .eq("status", "published");
 
   if (q) {
-    resourceQuery = resourceQuery.or(
-      `title.ilike.%${q}%,description.ilike.%${q}%`,
-    );
+    // Strip {}, commas — those are structural characters in the PostgREST filter syntax.
+    // websearch_to_tsquery handles the rest (spaces, quotes, punctuation) correctly.
+    const filterQ = q.replace(/[{},]/g, " ").replace(/\s+/g, " ").trim();
+    if (filterQ) {
+      resourceQuery = resourceQuery.or(
+        `fts.wfts(english).${filterQ},tags.ov.{${filterQ}}`,
+      );
+    }
   }
 
   // Apply category filter only when the slug resolved to a known ID.

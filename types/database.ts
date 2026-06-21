@@ -404,6 +404,7 @@ export type Database = {
           file_path: string;
           file_size_bytes: number;
           file_type: string;
+          fts: string;
           id: string;
           is_featured: boolean;
           preview_image_path: string;

@@ -302,6 +302,7 @@ Don't let the Featured strip + hero push the actual grid below the fold on mobil
 No scope creep into real search/filtering (1.5).
 
 ### 1.5 — Search & filters ✅
+### 1.5a — FTS index + tag matching for search ✅
 
 Wire the search bar and category pills (stubbed in 1.4b) to real query logic, and add sorting. This makes the catalogue actually navigable. Builds on the existing browse data fetch — does NOT rebuild the page layout (that's done) and does NOT touch the resource detail page (1.6) or favourites (1.7).
 
