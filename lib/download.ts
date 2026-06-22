@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Resource, Download, PlanType } from "@/types/database";
 
 type LogDownloadInput = {
@@ -36,8 +37,10 @@ export async function logDownload(input: LogDownloadInput): Promise<Download> {
 
 // Creates a 60-second signed URL for a private resource file.
 // Called ONLY after logDownload succeeds.
+// Uses the admin (service-role) client because the resource-files bucket has no storage
+// RLS SELECT policy for authenticated users — by design. See lib/supabase/admin.ts.
 export async function createSignedUrl(filePath: string): Promise<string> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase.storage
     .from("resource-files")
