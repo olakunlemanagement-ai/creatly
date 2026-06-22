@@ -3,10 +3,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { getUserEntitlement } from "@/lib/entitlement";
 import { APP_NAME } from "@/lib/config";
 import { formatBytes } from "@/lib/format";
 import { ResourceDetailGallery } from "@/components/resource/ResourceDetailGallery";
-import { DownloadButton, type EntitlementState } from "@/components/resource/DownloadButton";
+import { DownloadButton } from "@/components/resource/DownloadButton";
+import type { EntitlementState } from "@/components/resource/DownloadButton";
 import { FavouriteButton } from "@/components/resource/FavouriteButton";
 import { ResourceCard, type ResourceCardData } from "@/components/resource/ResourceCard";
 import { ResourceGrid } from "@/components/resource/ResourceGrid";
@@ -18,29 +20,6 @@ type ResourceDetail = Resource & {
   creators: Pick<Creator, "name" | "slug" | "avatar_path" | "is_public"> | null;
   categories: Pick<Category, "name" | "slug"> | null;
 };
-
-// ─── Entitlement stub ──────────────────────────────────────────────────────────
-// Reads an active subscription owned by this user.
-// Pre-Phase 2, no subscriptions exist so all authenticated users return 'free'.
-// When Phase 2 wires Paystack webhooks, active subscriptions populate here naturally.
-// NOTE for 1.8: the real getUserEntitlement() in lib/entitlement.ts must ALSO check
-// team membership via team_members.profile_id = userId joined to an active subscription,
-// since team members are entitled but are not the subscription owner_id.
-// Step 1.8 replaces the download action with the real guarded mechanic.
-async function getDetailPageEntitlement(
-  userId: string | null,
-  supabase: Awaited<ReturnType<typeof createClient>>,
-): Promise<EntitlementState> {
-  if (!userId) return "guest";
-  const { data } = await supabase
-    .from("subscriptions")
-    .select("status")
-    .eq("owner_id", userId)
-    .eq("status", "active")
-    .limit(1)
-    .maybeSingle();
-  return data ? "subscriber" : "free";
-}
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
@@ -92,7 +71,12 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
   // Fetch related resources, entitlement, and all favourite IDs in parallel.
   // Fetching all favourite IDs (not just one) lets both the sidebar heart and the
   // related-resource cards show the correct filled/hollow state without N queries.
-  const [{ data: relatedData }, entitlement, { data: favouriteRows }] = await Promise.all([
+  const noEntitlement = Promise.resolve({
+    entitled: false as const,
+    subscription: null,
+    reason: "no_subscription" as const,
+  });
+  const [{ data: relatedData }, entitlementResult, { data: favouriteRows }] = await Promise.all([
     supabase
       .from("resources")
       .select("*, creators(name), categories(name, slug)")
@@ -101,7 +85,7 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
       .neq("slug", slug)
       .order("created_at", { ascending: false })
       .limit(6),
-    getDetailPageEntitlement(userId, supabase),
+    userId ? getUserEntitlement(userId) : noEntitlement,
     userId
       ? supabase
           .from("favourites")
@@ -110,7 +94,16 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
       : Promise.resolve({ data: [] as { resource_id: string }[] }),
   ]);
 
-  const favouriteIds = new Set((favouriteRows ?? []).map((f) => f.resource_id));
+  // Map server entitlement result to the UI state the DownloadButton consumes
+  const entitlement: EntitlementState = !userId
+    ? "guest"
+    : entitlementResult.entitled
+      ? "subscriber"
+      : "free";
+
+  const favouriteIds = new Set(
+    (favouriteRows ?? []).map((f: { resource_id: string }) => f.resource_id),
+  );
   const isFavourited = favouriteIds.has(typedResource.id);
 
   const related = (relatedData ?? []) as ResourceCardData[];
@@ -231,7 +224,11 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
 
           {/* Download CTA */}
           <div className="border-t border-border pt-4">
-            <DownloadButton entitlement={entitlement} resourceSlug={slug} />
+            <DownloadButton
+              entitlement={entitlement}
+              resourceId={typedResource.id}
+              resourceSlug={slug}
+            />
           </div>
 
           {/* Favourite */}
