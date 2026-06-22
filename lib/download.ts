@@ -44,7 +44,7 @@ export async function createSignedUrl(filePath: string): Promise<string> {
 
   const { data, error } = await supabase.storage
     .from("resource-files")
-    .createSignedUrl(filePath, 60);
+    .createSignedUrl(filePath, 60, { download: true });
 
   if (error || !data?.signedUrl) {
     throw new Error(`createSignedUrl failed: ${error?.message ?? "no URL returned"}`);
