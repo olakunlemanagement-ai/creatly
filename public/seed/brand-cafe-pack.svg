@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#faf7f2"/>
+      <stop offset="100%" stop-color="#f0ebe0"/>
+    </linearGradient>
+    <linearGradient id="cup-body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a3d2f"/>
+      <stop offset="100%" stop-color="#0f2219"/>
+    </linearGradient>
+    <linearGradient id="cup-shine" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="shadow-grad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#bg)"/>
+
+  <!-- Subtle dot texture -->
+  <pattern id="dot-pat" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+    <circle cx="10" cy="10" r="1" fill="#c8732e" opacity="0.06"/>
+  </pattern>
+  <rect width="800" height="600" fill="url(#dot-pat)"/>
+
+  <!-- ── Brand header ── -->
+  <text x="400" y="54" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="300" font-size="11" fill="#888" letter-spacing="6">BRANDING STARTER PACK</text>
+  <text x="400" y="92" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="42" fill="#1a3d2f" letter-spacing="3">Café Studio</text>
+  <text x="400" y="114" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="300" font-size="12" fill="#c8732e" letter-spacing="4">ARTISAN COFFEE BRAND IDENTITY</text>
+
+  <!-- Decorative rule pair -->
+  <line x1="160" y1="126" x2="310" y2="126" stroke="#1a3d2f" stroke-width="1" opacity="0.2"/>
+  <line x1="490" y1="126" x2="640" y2="126" stroke="#1a3d2f" stroke-width="1" opacity="0.2"/>
+  <circle cx="400" cy="126" r="4" fill="#c8732e"/>
+
+  <!-- ── Coffee cup illustration ── -->
+  <!-- Shadow ellipse on ground -->
+  <ellipse cx="400" cy="430" rx="92" ry="14" fill="url(#shadow-grad)"/>
+
+  <!-- Saucer -->
+  <ellipse cx="400" cy="420" rx="88" ry="14" fill="#d4c9b0"/>
+  <ellipse cx="400" cy="418" rx="80" ry="11" fill="#e0d5c0"/>
+
+  <!-- Cup body (trapezoid with rounded bottom) -->
+  <path d="M 332,220 L 344,416 Q 344,422 350,422 L 450,422 Q 456,422 456,416 L 468,220 Z" fill="url(#cup-body)"/>
+
+  <!-- Cup shine -->
+  <path d="M 340,230 L 350,380 L 370,380 L 360,230 Z" fill="url(#cup-shine)" opacity="0.6"/>
+
+  <!-- Cup top ellipse -->
+  <ellipse cx="400" cy="220" rx="68" ry="12" fill="#2d5a44"/>
+  <ellipse cx="400" cy="218" rx="60" ry="9" fill="#1a4a36"/>
+
+  <!-- Coffee surface in cup -->
+  <ellipse cx="400" cy="218" rx="52" ry="7.5" fill="#3d2010"/>
+  <!-- Latte art (simplified leaf) -->
+  <ellipse cx="400" cy="216" rx="22" ry="4" fill="#5a3018" opacity="0.5"/>
+  <ellipse cx="400" cy="216" rx="12" ry="2" fill="#7a4a28" opacity="0.4"/>
+
+  <!-- Handle -->
+  <path d="M 468,280 Q 532,280 532,330 Q 532,380 468,380" fill="none" stroke="#1a3d2f" stroke-width="18" stroke-linecap="round"/>
+  <path d="M 468,280 Q 518,280 518,330 Q 518,380 468,380" fill="none" stroke="#2d5a44" stroke-width="8" stroke-linecap="round"/>
+
+  <!-- Sleeve band -->
+  <path d="M 340,300 L 342,340 L 458,340 L 460,300 Z" fill="#c8732e" opacity="0.3"/>
+  <path d="M 340,300 L 342,322 L 458,322 L 460,300 Z" fill="#c8732e" opacity="0.2"/>
+  <!-- Sleeve detail text -->
+  <text x="400" y="316" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="9" fill="#fff" opacity="0.7" letter-spacing="3">CAFÉ STUDIO</text>
+
+  <!-- Steam wisps -->
+  <path d="M 370,198 Q 362,180 370,162 Q 378,144 370,126" fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/>
+  <path d="M 400,194 Q 392,172 400,150 Q 408,128 400,106" fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round" opacity="0.25"/>
+  <path d="M 430,198 Q 438,180 430,162 Q 422,144 430,126" fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/>
+
+  <!-- ── Colour palette strip ── -->
+  <text x="400" y="472" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#888" letter-spacing="3">BRAND COLOURS</text>
+
+  <g transform="translate(188,484)">
+    <rect width="72" height="40" rx="6" fill="#1a3d2f"/>
+    <text x="36" y="56" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#888">Espresso</text>
+
+    <rect x="82" width="72" height="40" rx="6" fill="#c8732e"/>
+    <text x="118" y="56" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#888">Terracotta</text>
+
+    <rect x="164" width="72" height="40" rx="6" fill="#e8dcc8" stroke="#ddd" stroke-width="1"/>
+    <text x="200" y="56" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#888">Cream</text>
+
+    <rect x="246" width="72" height="40" rx="6" fill="#d4a574"/>
+    <text x="282" y="56" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#888">Caramel</text>
+
+    <rect x="328" width="72" height="40" rx="6" fill="#3d2010"/>
+    <text x="364" y="56" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#888">Dark Roast</text>
+  </g>
+
+  <!-- Footer label -->
+  <text x="400" y="578" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#aaa" letter-spacing="3">LOGO · MENUS · PACKAGING · SOCIAL · STATIONERY · 40+ FILES</text>
+</svg>

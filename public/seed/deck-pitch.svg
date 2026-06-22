@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#eae8e2"/>
+      <stop offset="100%" stop-color="#d8d4cc"/>
+    </linearGradient>
+    <filter id="sh">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#000" flood-opacity="0.2"/>
+    </filter>
+    <filter id="sh2">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#000" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#bg)"/>
+
+  <!-- ── Slide 3 (back-most, offset bottom-right) ── -->
+  <g transform="translate(90,58)" filter="url(#sh2)">
+    <rect width="640" height="400" rx="8" fill="#f5f3ef"/>
+    <rect width="8" height="400" rx="4" fill="#1a3d2f" opacity="0.2"/>
+  </g>
+
+  <!-- ── Slide 2 (middle, offset slightly) ── -->
+  <g transform="translate(74,40)" filter="url(#sh2)">
+    <rect width="640" height="400" rx="8" fill="#f8f6f2"/>
+    <rect width="8" height="400" rx="4" fill="#c8732e" opacity="0.3"/>
+  </g>
+
+  <!-- ── Slide 1 (front, featured) ── -->
+  <g transform="translate(56,22)" filter="url(#sh)">
+    <rect width="640" height="400" rx="8" fill="#fff"/>
+
+    <!-- Left accent strip -->
+    <rect width="8" height="400" rx="4" fill="#1a3d2f"/>
+
+    <!-- Top bar (header zone) -->
+    <rect x="8" y="0" width="632" height="72" rx="0" fill="#1a3d2f" opacity="0.04"/>
+
+    <!-- Slide label: top left -->
+    <text x="28" y="28" font-family="system-ui,sans-serif" font-weight="400" font-size="9" fill="#888" letter-spacing="3">SLIDE 01 / 12</text>
+    <text x="28" y="50" font-family="system-ui,sans-serif" font-weight="700" font-size="11" fill="#1a3d2f" letter-spacing="2">COMPANY OVERVIEW</text>
+
+    <!-- Logo mark top right -->
+    <circle cx="596" cy="36" r="20" fill="#1a3d2f" opacity="0.08"/>
+    <circle cx="596" cy="36" r="13" fill="#1a3d2f" opacity="0.15"/>
+    <text x="596" y="41" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="12" fill="#1a3d2f">AB</text>
+
+    <!-- Main headline -->
+    <text x="28" y="120" font-family="system-ui,sans-serif" font-weight="300" font-size="11" fill="#888" letter-spacing="3">BUILDING THE FUTURE OF</text>
+    <text x="28" y="158" font-family="Georgia,serif" font-weight="700" font-size="44" fill="#1a3d2f" letter-spacing="-1">Creative</text>
+    <text x="28" y="204" font-family="Georgia,serif" font-weight="700" font-size="44" fill="#c8732e" letter-spacing="-1">Commerce</text>
+
+    <!-- Tagline -->
+    <text x="28" y="234" font-family="system-ui,sans-serif" font-size="13" fill="#666">Empowering African creatives with the tools and</text>
+    <text x="28" y="252" font-family="system-ui,sans-serif" font-size="13" fill="#666">marketplace they deserve to thrive globally.</text>
+
+    <!-- Three KPI boxes -->
+    <rect x="28" y="278" width="130" height="68" rx="6" fill="#1a3d2f" opacity="0.05"/>
+    <text x="93" y="304" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="900" font-size="24" fill="#1a3d2f">10K+</text>
+    <text x="93" y="320" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#888" letter-spacing="1">CREATORS</text>
+
+    <rect x="170" y="278" width="130" height="68" rx="6" fill="#c8732e" opacity="0.08"/>
+    <text x="235" y="304" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="900" font-size="24" fill="#c8732e">₦48M</text>
+    <text x="235" y="320" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#888" letter-spacing="1">ARR</text>
+
+    <rect x="312" y="278" width="130" height="68" rx="6" fill="#1a3d2f" opacity="0.05"/>
+    <text x="377" y="304" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="900" font-size="24" fill="#1a3d2f">94%</text>
+    <text x="377" y="320" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#888" letter-spacing="1">RETENTION</text>
+
+    <!-- Right: Abstract bar chart -->
+    <g transform="translate(478, 90)">
+      <!-- Chart title -->
+      <text x="0" y="0" font-family="system-ui,sans-serif" font-size="9" fill="#888" letter-spacing="2">GROWTH YoY (%)</text>
+      <!-- Bars -->
+      <rect x="0" y="30" width="22" height="116" rx="4" fill="#1a3d2f" opacity="0.15"/>
+      <rect x="28" y="60" width="22" height="86" rx="4" fill="#1a3d2f" opacity="0.25"/>
+      <rect x="56" y="20" width="22" height="126" rx="4" fill="#1a3d2f" opacity="0.5"/>
+      <rect x="84" y="4" width="22" height="142" rx="4" fill="#1a3d2f" opacity="0.75"/>
+      <rect x="112" y="0" width="22" height="146" rx="4" fill="#1a3d2f"/>
+      <!-- Terracotta cap on last bar -->
+      <rect x="112" y="0" width="22" height="24" rx="4" fill="#c8732e"/>
+      <!-- Value labels -->
+      <text x="11" y="26" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#888">42%</text>
+      <text x="39" y="56" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#888">58%</text>
+      <text x="67" y="16" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#888">95%</text>
+      <text x="95" y="0" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#888">140%</text>
+      <text x="123" y="-6" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="700" font-size="8" fill="#c8732e">180%</text>
+      <!-- X-axis -->
+      <line x1="0" y1="148" x2="136" y2="148" stroke="#ccc" stroke-width="1"/>
+      <text x="11" y="160" text-anchor="middle" font-family="system-ui,sans-serif" font-size="7" fill="#bbb">2020</text>
+      <text x="39" y="160" text-anchor="middle" font-family="system-ui,sans-serif" font-size="7" fill="#bbb">2021</text>
+      <text x="67" y="160" text-anchor="middle" font-family="system-ui,sans-serif" font-size="7" fill="#bbb">2022</text>
+      <text x="95" y="160" text-anchor="middle" font-family="system-ui,sans-serif" font-size="7" fill="#bbb">2023</text>
+      <text x="123" y="160" text-anchor="middle" font-family="system-ui,sans-serif" font-size="7" fill="#1a3d2f" font-weight="700">2024</text>
+    </g>
+
+    <!-- Footer bar in slide -->
+    <rect x="8" y="368" width="632" height="32" fill="#1a3d2f" opacity="0.04"/>
+    <line x1="8" y1="368" x2="640" y2="368" stroke="#eee" stroke-width="1"/>
+    <text x="28" y="387" font-family="system-ui,sans-serif" font-size="9" fill="#aaa">Confidential · Series A · 2024</text>
+    <text x="620" y="387" text-anchor="end" font-family="system-ui,sans-serif" font-size="9" fill="#aaa">joincreatly.com</text>
+  </g>
+
+  <!-- Slide count label -->
+  <text x="400" y="458" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#888" letter-spacing="2">12 SLIDES  ·  KEYNOTE  ·  POWERPOINT  ·  GOOGLE SLIDES  ·  CANVA</text>
+
+  <!-- Slide thumbnail strip -->
+  <g transform="translate(96,478)">
+    <rect width="608" height="82" rx="8" fill="#fff" opacity="0.6"/>
+    <!-- Mini slide previews -->
+    <g>
+      <!-- Slide 1 mini (active) -->
+      <rect x="8" y="8" width="88" height="66" rx="4" fill="#fff" stroke="#1a3d2f" stroke-width="2"/>
+      <rect x="8" y="8" width="4" height="66" rx="2" fill="#1a3d2f"/>
+      <rect x="14" y="18" width="36" height="4" rx="2" fill="#1a3d2f" opacity="0.5"/>
+      <rect x="14" y="26" width="56" height="3" rx="1.5" fill="#1a3d2f" opacity="0.2"/>
+      <rect x="14" y="32" width="48" height="3" rx="1.5" fill="#1a3d2f" opacity="0.2"/>
+
+      <!-- Slide 2 mini -->
+      <rect x="104" y="8" width="88" height="66" rx="4" fill="#fff" stroke="#ddd" stroke-width="1"/>
+      <rect x="104" y="8" width="88" height="20" rx="4" fill="#c8732e" opacity="0.15"/>
+      <rect x="110" y="34" width="40" height="3" rx="1.5" fill="#888" opacity="0.3"/>
+      <rect x="110" y="42" width="64" height="3" rx="1.5" fill="#888" opacity="0.2"/>
+
+      <!-- Slide 3 mini -->
+      <rect x="200" y="8" width="88" height="66" rx="4" fill="#1a3d2f"/>
+      <rect x="206" y="18" width="50" height="4" rx="2" fill="#e8dcc8" opacity="0.6"/>
+      <circle cx="256" cy="48" r="16" fill="#e8dcc8" opacity="0.1"/>
+
+      <!-- Slide 4 mini -->
+      <rect x="296" y="8" width="88" height="66" rx="4" fill="#fff" stroke="#ddd" stroke-width="1"/>
+      <rect x="302" y="14" width="36" height="36" rx="4" fill="#c8732e" opacity="0.15"/>
+      <rect x="346" y="14" width="30" height="36" rx="4" fill="#1a3d2f" opacity="0.1"/>
+      <rect x="302" y="54" width="74" height="3" rx="1.5" fill="#888" opacity="0.2"/>
+
+      <!-- Slide 5 mini -->
+      <rect x="392" y="8" width="88" height="66" rx="4" fill="#f8f6f2" stroke="#ddd" stroke-width="1"/>
+      <rect x="398" y="18" width="60" height="5" rx="2" fill="#1a3d2f" opacity="0.5"/>
+      <rect x="398" y="28" width="44" height="3" rx="1.5" fill="#888" opacity="0.2"/>
+      <rect x="398" y="36" width="52" height="3" rx="1.5" fill="#888" opacity="0.2"/>
+      <rect x="398" y="50" width="30" height="12" rx="6" fill="#c8732e" opacity="0.6"/>
+
+      <!-- Slide 6 mini -->
+      <rect x="488" y="8" width="88" height="66" rx="4" fill="#fff" stroke="#ddd" stroke-width="1"/>
+      <!-- Simple donut chart in mini slide -->
+      <circle cx="532" cy="41" r="22" fill="none" stroke="#1a3d2f" stroke-width="8"/>
+      <circle cx="532" cy="41" r="22" fill="none" stroke="#c8732e" stroke-width="8" stroke-dasharray="40 100" stroke-dashoffset="0"/>
+    </g>
+  </g>
+
+  <text x="400" y="580" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#aaa" letter-spacing="2">MINIMAL PITCH DECK  ·  CLEAN · MODERN · FULLY EDITABLE</text>
+</svg>

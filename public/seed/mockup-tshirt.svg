@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <radialGradient id="studio-bg" cx="50%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e8e4dc"/>
+    </radialGradient>
+    <radialGradient id="floor-shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="shirt-base" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#f8f6f2"/>
+      <stop offset="100%" stop-color="#ede9e0"/>
+    </linearGradient>
+    <linearGradient id="shirt-fold-l" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="shirt-fold-r" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.07"/>
+    </linearGradient>
+    <filter id="shirt-sh">
+      <feDropShadow dx="0" dy="12" stdDeviation="24" flood-color="#000" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <!-- Studio background -->
+  <rect width="800" height="600" fill="url(#studio-bg)"/>
+
+  <!-- Floor shadow -->
+  <ellipse cx="400" cy="520" rx="200" ry="30" fill="url(#floor-shadow)"/>
+
+  <!-- ── T-shirt silhouette ── -->
+  <g filter="url(#shirt-sh)">
+    <!-- Main shirt body -->
+    <path d="
+      M 400,128
+      C 388,118 374,114 358,116
+      L 256,152
+      C 238,158 222,172 220,192
+      L 228,254
+      C 240,250 272,244 286,248
+      L 290,168
+      C 310,166 330,162 340,158
+      L 340,480
+      L 460,480
+      L 460,158
+      C 470,162 490,166 510,168
+      L 514,248
+      C 528,244 560,250 572,254
+      L 580,192
+      C 578,172 562,158 544,152
+      L 442,116
+      C 426,114 412,118 400,128
+      Z
+    " fill="url(#shirt-base)"/>
+
+    <!-- Left sleeve shading -->
+    <path d="M 256,152 L 228,254 L 286,248 L 290,168 L 358,116 L 320,128 Z" fill="url(#shirt-fold-l)"/>
+    <!-- Right sleeve shading -->
+    <path d="M 544,152 L 572,254 L 514,248 L 510,168 L 442,116 L 480,128 Z" fill="url(#shirt-fold-r)"/>
+
+    <!-- Side body fold lines (very subtle) -->
+    <path d="M 340,168 L 332,480" stroke="#000" stroke-width="0.8" opacity="0.05"/>
+    <path d="M 460,168 L 468,480" stroke="#000" stroke-width="0.8" opacity="0.05"/>
+  </g>
+
+  <!-- ── Chest graphic: circular badge design ── -->
+  <g transform="translate(400, 290)">
+    <!-- Outer ring -->
+    <circle cx="0" cy="0" r="68" fill="none" stroke="#1a3d2f" stroke-width="2.5"/>
+    <!-- Inner fill -->
+    <circle cx="0" cy="0" r="62" fill="#1a3d2f" opacity="0.06"/>
+    <circle cx="0" cy="0" r="56" fill="#1a3d2f" opacity="0.06"/>
+    <!-- Middle ring terracotta dashes -->
+    <circle cx="0" cy="0" r="64" fill="none" stroke="#c8732e" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.5"/>
+    <!-- Triangle mark (upward) -->
+    <polygon points="0,-28 22,14 -22,14" fill="none" stroke="#1a3d2f" stroke-width="3" stroke-linejoin="round"/>
+    <polygon points="0,-28 22,14 -22,14" fill="#1a3d2f" opacity="0.08"/>
+    <!-- Center circle -->
+    <circle cx="0" cy="0" r="10" fill="#c8732e"/>
+    <circle cx="0" cy="0" r="5" fill="#1a3d2f" opacity="0.6"/>
+    <!-- Arc text (top) -->
+    <path id="top-arc" d="M -50,0 A 50,50 0 0 1 50,0" fill="none"/>
+    <text font-family="system-ui,sans-serif" font-weight="700" font-size="10" fill="#1a3d2f" letter-spacing="3" opacity="0.7">
+      <textPath href="#top-arc" startOffset="10%">CREATLY  STUDIO  2024</textPath>
+    </text>
+    <!-- Arc text (bottom) -->
+    <path id="bot-arc" d="M -48,8 A 50,50 0 0 0 48,8" fill="none"/>
+    <text font-family="system-ui,sans-serif" font-size="8" fill="#1a3d2f" letter-spacing="2" opacity="0.5">
+      <textPath href="#bot-arc" startOffset="10%">LAGOS  ·  NIGERIA</textPath>
+    </text>
+  </g>
+
+  <!-- Neckline detail -->
+  <path d="M 370,130 Q 400,148 430,130" fill="none" stroke="#000" stroke-width="1" opacity="0.08" stroke-linecap="round"/>
+
+  <!-- ── Color variant chips (bottom) ── -->
+  <text x="400" y="510" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#888" letter-spacing="3">AVAILABLE IN 4 COLOURS</text>
+  <g transform="translate(298,524)">
+    <!-- White (current) active -->
+    <circle cx="16" cy="12" r="14" fill="#f8f6f2" stroke="#1a3d2f" stroke-width="2"/>
+    <circle cx="16" cy="12" r="5" fill="#1a3d2f"/>
+
+    <!-- Forest green -->
+    <circle cx="58" cy="12" r="14" fill="#1a3d2f"/>
+
+    <!-- Terracotta -->
+    <circle cx="100" cy="12" r="14" fill="#c8732e"/>
+
+    <!-- Slate/charcoal -->
+    <circle cx="142" cy="12" r="14" fill="#3a3a3a"/>
+
+    <!-- Cream -->
+    <circle cx="184" cy="12" r="14" fill="#e8dcc8" stroke="#ddd" stroke-width="1"/>
+  </g>
+
+  <!-- Label -->
+  <text x="400" y="576" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#aaa" letter-spacing="3">T-SHIRT MOCKUP BUNDLE  ·  8 STYLES  ·  FRONT + BACK + FLAT LAY</text>
+</svg>

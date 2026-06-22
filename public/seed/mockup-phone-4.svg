@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="65%">
+      <stop offset="0%" stop-color="#f8f5f0"/>
+      <stop offset="100%" stop-color="#e8e0d0"/>
+    </radialGradient>
+    <radialGradient id="floor" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="chassis-l" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#252525"/>
+      <stop offset="100%" stop-color="#0f0f0f"/>
+    </linearGradient>
+    <linearGradient id="chassis-r" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#e0d8c8"/>
+      <stop offset="100%" stop-color="#c8bfa8"/>
+    </linearGradient>
+    <filter id="sh-l">
+      <feDropShadow dx="-10" dy="18" stdDeviation="22" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+    <filter id="sh-r">
+      <feDropShadow dx="10" dy="18" stdDeviation="22" flood-color="#000" flood-opacity="0.18"/>
+    </filter>
+    <clipPath id="sc-l">
+      <rect x="155" y="74" width="172" height="350" rx="5"/>
+    </clipPath>
+    <clipPath id="sc-r">
+      <rect x="473" y="74" width="172" height="350" rx="5"/>
+    </clipPath>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <ellipse cx="400" cy="526" rx="280" ry="22" fill="url(#floor)"/>
+
+  <!-- ── LEFT PHONE: Front face, black ── -->
+  <g filter="url(#sh-l)">
+    <rect x="138" y="56" width="206" height="416" rx="32" fill="url(#chassis-l)"/>
+    <rect x="146" y="64" width="190" height="400" rx="24" fill="#080808"/>
+    <rect x="155" y="72" width="172" height="354" rx="16" fill="#0d1a12"/>
+  </g>
+  <!-- Left phone buttons -->
+  <rect x="342" y="166" width="5" height="26" rx="2.5" fill="#2a2a2a"/>
+  <rect x="342" y="198" width="5" height="42" rx="2.5" fill="#2a2a2a"/>
+  <rect x="135" y="158" width="5" height="22" rx="2.5" fill="#2a2a2a"/>
+  <rect x="135" y="186" width="5" height="22" rx="2.5" fill="#2a2a2a"/>
+
+  <!-- Left phone screen -->
+  <g clip-path="url(#sc-l)">
+    <rect x="155" y="72" width="172" height="354" fill="#0a1e14"/>
+    <!-- Status -->
+    <rect x="155" y="72" width="172" height="26" fill="#0a1e14"/>
+    <text x="168" y="89" font-family="system-ui,sans-serif" font-weight="600" font-size="9" fill="#e8dcc8" opacity="0.7">9:41</text>
+    <rect x="294" y="80" width="18" height="7" rx="1.5" fill="#e8dcc8" opacity="0.35"/>
+    <!-- Dynamic island -->
+    <rect x="214" y="79" width="44" height="13" rx="6.5" fill="#080808"/>
+    <!-- App content -->
+    <rect x="155" y="98" width="172" height="44" fill="#0f2219"/>
+    <text x="241" y="120" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="14" fill="#e8dcc8">Creatly</text>
+    <text x="241" y="134" text-anchor="middle" font-family="system-ui,sans-serif" font-size="7" fill="#e8dcc8" opacity="0.4" letter-spacing="2">BROWSE</text>
+    <!-- Featured resource card -->
+    <rect x="164" y="152" width="154" height="106" rx="8" fill="#1a3d2f"/>
+    <rect x="164" y="152" width="154" height="5" rx="2.5" fill="#c8732e"/>
+    <circle cx="280" cy="196" r="30" fill="#c8732e" opacity="0.08"/>
+    <text x="176" y="178" font-family="system-ui,sans-serif" font-size="7" fill="#e8dcc8" opacity="0.5" letter-spacing="2">NEW RELEASE</text>
+    <text x="176" y="196" font-family="Georgia,serif" font-weight="700" font-size="13" fill="#e8dcc8">Afrobeat Brand</text>
+    <text x="176" y="212" font-family="Georgia,serif" font-weight="700" font-size="13" fill="#e8dcc8">Identity Kit</text>
+    <rect x="176" y="224" width="52" height="16" rx="8" fill="#c8732e"/>
+    <text x="202" y="236" text-anchor="middle" font-family="system-ui,sans-serif" font-size="7" fill="#fff" font-weight="600">Download</text>
+    <!-- Grid of 4 smaller cards -->
+    <rect x="164" y="268" width="70" height="60" rx="6" fill="#142b20"/>
+    <rect x="164" y="268" width="70" height="36" rx="6" fill="#1a3d2f"/>
+    <text x="199" y="290" text-anchor="middle" font-family="Georgia,serif" font-size="14" fill="#e8dcc8" opacity="0.6">Aa</text>
+    <text x="168" y="322" font-family="system-ui,sans-serif" font-size="6" fill="#e8dcc8" opacity="0.5">Font</text>
+
+    <rect x="242" y="268" width="70" height="60" rx="6" fill="#142b20"/>
+    <rect x="242" y="268" width="70" height="36" rx="6" fill="#c8732e" opacity="0.2"/>
+    <circle cx="264" cy="283" r="6" fill="#c8732e" opacity="0.5"/>
+    <circle cx="282" cy="283" r="6" fill="#1a3d2f"/>
+    <circle cx="300" cy="283" r="6" fill="#c8732e" opacity="0.4"/>
+    <text x="246" y="322" font-family="system-ui,sans-serif" font-size="6" fill="#e8dcc8" opacity="0.5">Icons</text>
+
+    <!-- Bottom nav -->
+    <rect x="155" y="388" width="172" height="40" fill="#0a1e14"/>
+    <line x1="155" y1="388" x2="327" y2="388" stroke="#1a3d2f" stroke-width="1"/>
+    <text x="186" y="412" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#c8732e">⊞</text>
+    <text x="220" y="412" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#e8dcc8" opacity="0.3">⌕</text>
+    <text x="258" y="412" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#e8dcc8" opacity="0.3">♡</text>
+    <text x="296" y="412" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#e8dcc8" opacity="0.3">☰</text>
+    <rect x="209" y="424" width="72" height="3" rx="1.5" fill="#e8dcc8" opacity="0.12"/>
+  </g>
+
+  <!-- ── RIGHT PHONE: Front face, cream ── -->
+  <g filter="url(#sh-r)">
+    <rect x="456" y="56" width="206" height="416" rx="32" fill="url(#chassis-r)"/>
+    <rect x="464" y="64" width="190" height="400" rx="24" fill="#c0b8a8"/>
+    <rect x="473" y="72" width="172" height="354" rx="16" fill="#faf8f4"/>
+  </g>
+  <!-- Right phone buttons -->
+  <rect x="660" y="166" width="5" height="26" rx="2.5" fill="#bbb"/>
+  <rect x="660" y="198" width="5" height="42" rx="2.5" fill="#bbb"/>
+  <rect x="453" y="158" width="5" height="22" rx="2.5" fill="#bbb"/>
+  <rect x="453" y="186" width="5" height="22" rx="2.5" fill="#bbb"/>
+
+  <!-- Right phone screen: light mode -->
+  <g clip-path="url(#sc-r)">
+    <rect x="473" y="72" width="172" height="354" fill="#faf8f4"/>
+    <!-- Status bar -->
+    <rect x="473" y="72" width="172" height="26" fill="#faf8f4"/>
+    <text x="486" y="89" font-family="system-ui,sans-serif" font-weight="600" font-size="9" fill="#1a1a1a">9:41</text>
+    <rect x="612" y="80" width="18" height="7" rx="1.5" fill="#1a1a1a" opacity="0.4"/>
+    <!-- Dynamic island -->
+    <rect x="532" y="79" width="44" height="13" rx="6.5" fill="#1a1a1a"/>
+    <!-- App header -->
+    <rect x="473" y="98" width="172" height="44" fill="#1a3d2f"/>
+    <text x="559" y="120" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="14" fill="#e8dcc8">Creatly</text>
+    <text x="559" y="134" text-anchor="middle" font-family="system-ui,sans-serif" font-size="7" fill="#e8dcc8" opacity="0.4" letter-spacing="2">MY DOWNLOADS</text>
+    <!-- Download history list -->
+    <rect x="480" y="152" width="158" height="44" rx="6" fill="#fff"/>
+    <rect x="480" y="152" width="36" height="44" rx="6" fill="#1a3d2f"/>
+    <text x="498" y="178" text-anchor="middle" font-family="Georgia,serif" font-size="14" fill="#e8dcc8" font-weight="700">Aa</text>
+    <text x="524" y="168" font-family="system-ui,sans-serif" font-size="8" fill="#1a3d2f" font-weight="600">Lagos Display</text>
+    <text x="524" y="180" font-family="system-ui,sans-serif" font-size="6" fill="#888">Font · Today</text>
+    <text x="630" y="174" text-anchor="end" font-family="system-ui,sans-serif" font-size="7" fill="#c8732e">↓</text>
+
+    <rect x="480" y="204" width="158" height="44" rx="6" fill="#fff"/>
+    <rect x="480" y="204" width="36" height="44" rx="6" fill="#c8732e" opacity="0.15"/>
+    <text x="498" y="230" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" fill="#c8732e">★</text>
+    <text x="524" y="220" font-family="system-ui,sans-serif" font-size="8" fill="#1a3d2f" font-weight="600">Afrobeat Kit</text>
+    <text x="524" y="232" font-family="system-ui,sans-serif" font-size="6" fill="#888">Brand · Yesterday</text>
+    <text x="630" y="226" text-anchor="end" font-family="system-ui,sans-serif" font-size="7" fill="#c8732e">↓</text>
+
+    <rect x="480" y="256" width="158" height="44" rx="6" fill="#fff"/>
+    <rect x="480" y="256" width="36" height="44" rx="6" fill="#1a3d2f" opacity="0.08"/>
+    <text x="498" y="282" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#1a3d2f">⊞</text>
+    <text x="524" y="272" font-family="system-ui,sans-serif" font-size="8" fill="#1a3d2f" font-weight="600">Icon Pack</text>
+    <text x="524" y="284" font-family="system-ui,sans-serif" font-size="6" fill="#888">Icons · 3 days ago</text>
+    <text x="630" y="278" text-anchor="end" font-family="system-ui,sans-serif" font-size="7" fill="#c8732e">↓</text>
+
+    <!-- CTA card -->
+    <rect x="480" y="310" width="158" height="56" rx="8" fill="#1a3d2f"/>
+    <text x="559" y="332" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#e8dcc8" opacity="0.6">Unlock unlimited downloads</text>
+    <rect x="510" y="340" width="98" height="18" rx="9" fill="#c8732e"/>
+    <text x="559" y="353" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#fff" font-weight="700">Upgrade Plan</text>
+
+    <!-- Bottom nav -->
+    <rect x="473" y="388" width="172" height="40" fill="#fff"/>
+    <line x1="473" y1="388" x2="645" y2="388" stroke="#eee" stroke-width="1"/>
+    <text x="504" y="412" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#888">⊞</text>
+    <text x="538" y="412" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#888">⌕</text>
+    <text x="576" y="412" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#1a3d2f">↓</text>
+    <text x="614" y="412" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#888">☰</text>
+    <rect x="527" y="424" width="72" height="3" rx="1.5" fill="#1a1a1a" opacity="0.12"/>
+  </g>
+
+  <!-- Label -->
+  <text x="400" y="504" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#888" letter-spacing="3">TWO PHONES  ·  BROWSE + DOWNLOADS VIEWS  ·  DARK + LIGHT</text>
+  <text x="400" y="524" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#aaa" letter-spacing="2">PHONE MOCKUP SET — STUDIO LIGHT  ·  ANGLE 4</text>
+</svg>

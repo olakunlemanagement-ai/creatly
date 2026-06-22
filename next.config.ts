@@ -9,7 +9,11 @@ const nextConfig: NextConfig = {
   images: {
     // Bypass the /_next/image optimizer in dev — picsum.photos isn't reliably
     // reachable through the proxy, causing placeholder images to fail.
+    // unoptimized: true makes dangerouslyAllowSVG redundant (the optimizer is
+    // never invoked), but it's declared explicitly so intent is clear.
     unoptimized: true,
+    dangerouslyAllowSVG: true,
+    contentDispositionType: "inline",
     remotePatterns: [
       // Dev seed placeholder images (picsum.photos)
       { protocol: "https", hostname: "picsum.photos" },

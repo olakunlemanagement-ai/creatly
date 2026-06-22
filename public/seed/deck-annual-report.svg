@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0%" stop-color="#1a3d2f"/>
+      <stop offset="100%" stop-color="#0d2219"/>
+    </linearGradient>
+    <linearGradient id="tc-fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c8732e" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#c8732e" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#bg)"/>
+
+  <!-- Subtle concentric arc texture (background) -->
+  <g opacity="0.04" fill="none" stroke="#e8dcc8">
+    <circle cx="760" cy="-40" r="200"/>
+    <circle cx="760" cy="-40" r="280"/>
+    <circle cx="760" cy="-40" r="360"/>
+    <circle cx="760" cy="-40" r="440"/>
+    <circle cx="760" cy="-40" r="520"/>
+  </g>
+
+  <!-- Top terracotta fade band -->
+  <rect x="0" y="0" width="800" height="220" fill="url(#tc-fade)"/>
+
+  <!-- Left editorial stripe (thin, cream) -->
+  <rect x="56" y="0" width="2" height="600" fill="#e8dcc8" opacity="0.12"/>
+
+  <!-- ── Main editorial layout ── -->
+
+  <!-- Issue label -->
+  <text x="72" y="64" font-family="system-ui,sans-serif" font-weight="400" font-size="10" fill="#e8dcc8" opacity="0.4" letter-spacing="4">ANNUAL PUBLICATION  ·  VOLUME XII</text>
+
+  <!-- Big "ANNUAL" -->
+  <text x="72" y="160" font-family="Georgia,serif" font-weight="700" font-size="96" fill="#e8dcc8" letter-spacing="-3" opacity="0.95">ANNUAL</text>
+
+  <!-- "REPORT" indented right with terracotta accent -->
+  <text x="140" y="246" font-family="Georgia,serif" font-weight="700" font-size="96" fill="#e8dcc8" letter-spacing="-3" opacity="0.9">REPORT</text>
+
+  <!-- "2024" overlaid large (behind the report line, slightly transparent) -->
+  <text x="590" y="260" font-family="system-ui,sans-serif" font-weight="900" font-size="112" fill="#e8dcc8" opacity="0.06" letter-spacing="-4">2024</text>
+
+  <!-- Terracotta horizontal rule -->
+  <rect x="72" y="266" width="480" height="3" fill="#c8732e"/>
+  <rect x="72" y="272" width="200" height="1" fill="#c8732e" opacity="0.3"/>
+
+  <!-- Section label -->
+  <text x="72" y="300" font-family="system-ui,sans-serif" font-weight="400" font-size="10" fill="#c8732e" letter-spacing="4">EXECUTIVE SUMMARY</text>
+
+  <!-- Body text simulation -->
+  <rect x="72" y="316" width="320" height="8" rx="3" fill="#e8dcc8" opacity="0.2"/>
+  <rect x="72" y="330" width="360" height="8" rx="3" fill="#e8dcc8" opacity="0.15"/>
+  <rect x="72" y="344" width="290" height="8" rx="3" fill="#e8dcc8" opacity="0.15"/>
+  <rect x="72" y="358" width="340" height="8" rx="3" fill="#e8dcc8" opacity="0.1"/>
+  <rect x="72" y="372" width="260" height="8" rx="3" fill="#e8dcc8" opacity="0.1"/>
+
+  <!-- ── Right panel: data visualization ── -->
+  <!-- Donut chart -->
+  <g transform="translate(624, 330)">
+    <!-- Donut rings -->
+    <circle cx="0" cy="0" r="88" fill="none" stroke="#e8dcc8" stroke-width="1" opacity="0.08"/>
+    <!-- Segment: 65% green (main) -->
+    <circle cx="0" cy="0" r="64" fill="none" stroke="#2d5a44" stroke-width="28"
+      stroke-dasharray="260 140" stroke-dashoffset="0" transform="rotate(-90)"/>
+    <!-- Segment: 22% terracotta -->
+    <circle cx="0" cy="0" r="64" fill="none" stroke="#c8732e" stroke-width="28"
+      stroke-dasharray="88 312" stroke-dashoffset="-260" transform="rotate(-90)"/>
+    <!-- Segment: 13% cream -->
+    <circle cx="0" cy="0" r="64" fill="none" stroke="#e8dcc8" stroke-width="28"
+      stroke-dasharray="52 348" stroke-dashoffset="-348" transform="rotate(-90)" opacity="0.3"/>
+    <!-- Center -->
+    <circle cx="0" cy="0" r="44" fill="#0d2219"/>
+    <text x="0" y="-8" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="900" font-size="22" fill="#e8dcc8">65%</text>
+    <text x="0" y="10" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#e8dcc8" opacity="0.5">GROWTH</text>
+  </g>
+
+  <!-- Legend -->
+  <g transform="translate(520, 432)">
+    <rect width="10" height="10" rx="2" fill="#2d5a44"/>
+    <text x="16" y="10" font-family="system-ui,sans-serif" font-size="10" fill="#e8dcc8" opacity="0.6">Revenue · 65%</text>
+    <rect y="18" width="10" height="10" rx="2" fill="#c8732e"/>
+    <text x="16" y="28" font-family="system-ui,sans-serif" font-size="10" fill="#e8dcc8" opacity="0.6">Creators · 22%</text>
+    <rect y="36" width="10" height="10" rx="2" fill="#e8dcc8" opacity="0.3"/>
+    <text x="16" y="46" font-family="system-ui,sans-serif" font-size="10" fill="#e8dcc8" opacity="0.6">Downloads · 13%</text>
+  </g>
+
+  <!-- KPI strip -->
+  <line x1="72" y1="414" x2="480" y2="414" stroke="#e8dcc8" stroke-width="1" opacity="0.1"/>
+  <g transform="translate(72, 430)">
+    <text x="0" y="0" font-family="system-ui,sans-serif" font-weight="900" font-size="28" fill="#e8dcc8">₦2.4B</text>
+    <text x="0" y="18" font-family="system-ui,sans-serif" font-size="9" fill="#e8dcc8" opacity="0.4" letter-spacing="2">TOTAL REVENUE</text>
+  </g>
+  <g transform="translate(200, 430)">
+    <text x="0" y="0" font-family="system-ui,sans-serif" font-weight="900" font-size="28" fill="#c8732e">240K</text>
+    <text x="0" y="18" font-family="system-ui,sans-serif" font-size="9" fill="#e8dcc8" opacity="0.4" letter-spacing="2">DOWNLOADS</text>
+  </g>
+  <g transform="translate(340, 430)">
+    <text x="0" y="0" font-family="system-ui,sans-serif" font-weight="900" font-size="28" fill="#e8dcc8">1,840</text>
+    <text x="0" y="18" font-family="system-ui,sans-serif" font-size="9" fill="#e8dcc8" opacity="0.4" letter-spacing="2">CREATORS</text>
+  </g>
+
+  <!-- Footer -->
+  <line x1="72" y1="530" x2="728" y2="530" stroke="#e8dcc8" stroke-width="1" opacity="0.1"/>
+  <text x="72" y="558" font-family="system-ui,sans-serif" font-size="10" fill="#e8dcc8" opacity="0.3" letter-spacing="2">CREATLY STUDIO  ·  LAGOS, NIGERIA</text>
+  <text x="728" y="558" text-anchor="end" font-family="Georgia,serif" font-size="10" fill="#e8dcc8" opacity="0.3">01</text>
+
+  <!-- Page count in bottom center -->
+  <text x="400" y="586" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#e8dcc8" opacity="0.2" letter-spacing="4">EDITORIAL DECK  ·  18 SLIDES  ·  KEYNOTE · POWERPOINT · PDF</text>
+</svg>

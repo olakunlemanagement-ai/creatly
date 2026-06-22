@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#fff"/>
+      <stop offset="100%" stop-color="#f0ebe0"/>
+    </radialGradient>
+    <radialGradient id="floor" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="chassis" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#f0ebe0"/>
+      <stop offset="50%" stop-color="#e8e0d0"/>
+      <stop offset="100%" stop-color="#d8d0c0"/>
+    </linearGradient>
+    <linearGradient id="screen-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8f4ec"/>
+      <stop offset="100%" stop-color="#f0ebe0"/>
+    </linearGradient>
+    <filter id="sh">
+      <feDropShadow dx="-6" dy="18" stdDeviation="22" flood-color="#000" flood-opacity="0.2"/>
+    </filter>
+    <clipPath id="sc">
+      <rect x="296" y="94" width="208" height="424" rx="6"/>
+    </clipPath>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <ellipse cx="400" cy="548" rx="150" ry="18" fill="url(#floor)"/>
+
+  <!-- Phone: light (cream) colorway -->
+  <g filter="url(#sh)">
+    <rect x="280" y="72" width="240" height="476" rx="36" fill="url(#chassis)"/>
+    <rect x="288" y="80" width="224" height="460" rx="28" fill="#d8d0c0"/>
+    <rect x="296" y="88" width="208" height="436" rx="20" fill="url(#screen-bg)"/>
+  </g>
+
+  <!-- Side buttons -->
+  <rect x="518" y="196" width="5" height="32" rx="2.5" fill="#ccc"/>
+  <rect x="518" y="234" width="5" height="32" rx="2.5" fill="#ccc"/>
+  <rect x="277" y="190" width="5" height="26" rx="2.5" fill="#ccc"/>
+  <rect x="277" y="222" width="5" height="26" rx="2.5" fill="#ccc"/>
+
+  <!-- Screen content: light mode app -->
+  <g clip-path="url(#sc)">
+    <rect x="296" y="88" width="208" height="436" fill="#faf8f4"/>
+
+    <!-- Status bar light -->
+    <rect x="296" y="88" width="208" height="30" fill="#faf8f4"/>
+    <text x="312" y="107" font-family="system-ui,sans-serif" font-weight="600" font-size="10" fill="#1a1a1a">9:41</text>
+    <rect x="456" y="97" width="20" height="8" rx="2" fill="#1a1a1a" opacity="0.5"/>
+
+    <!-- Dynamic island -->
+    <rect x="372" y="96" width="56" height="16" rx="8" fill="#1a1a1a"/>
+
+    <!-- Hero section -->
+    <rect x="296" y="118" width="208" height="130" fill="#e8dcc8"/>
+    <!-- Decorative circles on hero -->
+    <circle cx="430" cy="168" r="48" fill="#c8732e" opacity="0.12"/>
+    <circle cx="430" cy="168" r="30" fill="#c8732e" opacity="0.1"/>
+    <text x="360" y="152" font-family="system-ui,sans-serif" font-weight="300" font-size="8" fill="#888" letter-spacing="2">FEATURED</text>
+    <text x="360" y="170" font-family="Georgia,serif" font-weight="700" font-size="14" fill="#1a3d2f">Brand Identity</text>
+    <text x="360" y="186" font-family="Georgia,serif" font-weight="700" font-size="14" fill="#1a3d2f">Starter Kit</text>
+    <rect x="360" y="200" width="60" height="18" rx="9" fill="#1a3d2f"/>
+    <text x="390" y="213" text-anchor="middle" font-family="system-ui,sans-serif" font-size="7" fill="#e8dcc8" font-weight="600">Download</text>
+
+    <!-- Grid cards below -->
+    <rect x="308" y="260" width="88" height="80" rx="8" fill="#fff"/>
+    <rect x="308" y="260" width="88" height="50" rx="8" fill="#1a3d2f" opacity="0.08"/>
+    <text x="352" y="290" text-anchor="middle" font-family="Georgia,serif" font-size="18" fill="#1a3d2f" font-weight="700">Aa</text>
+    <text x="312" y="330" font-family="system-ui,sans-serif" font-size="7" fill="#1a3d2f" font-weight="600">Font Specimen</text>
+    <text x="312" y="340" font-family="system-ui,sans-serif" font-size="6" fill="#888">Typography</text>
+
+    <rect x="404" y="260" width="88" height="80" rx="8" fill="#fff"/>
+    <rect x="404" y="260" width="88" height="50" rx="8" fill="#c8732e" opacity="0.15"/>
+    <!-- Icon grid mini -->
+    <circle cx="428" cy="280" r="6" fill="#1a3d2f" opacity="0.3"/>
+    <circle cx="448" cy="280" r="6" fill="#c8732e" opacity="0.4"/>
+    <circle cx="468" cy="280" r="6" fill="#1a3d2f" opacity="0.3"/>
+    <circle cx="428" cy="298" r="6" fill="#c8732e" opacity="0.3"/>
+    <circle cx="448" cy="298" r="6" fill="#1a3d2f" opacity="0.4"/>
+    <circle cx="468" cy="298" r="6" fill="#c8732e" opacity="0.3"/>
+    <text x="408" y="330" font-family="system-ui,sans-serif" font-size="7" fill="#1a3d2f" font-weight="600">Icon Pack</text>
+    <text x="408" y="340" font-family="system-ui,sans-serif" font-size="6" fill="#888">Icons</text>
+
+    <!-- Section label -->
+    <text x="312" y="358" font-family="system-ui,sans-serif" font-size="9" fill="#1a3d2f" font-weight="700">Trending Now</text>
+
+    <rect x="308" y="366" width="184" height="64" rx="8" fill="#fff"/>
+    <rect x="308" y="366" width="72" height="64" rx="8" fill="#1a3d2f"/>
+    <text x="344" y="402" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="900" font-size="14" fill="#e8dcc8">2024</text>
+    <text x="392" y="386" font-family="system-ui,sans-serif" font-weight="600" font-size="9" fill="#1a3d2f">Annual Report Deck</text>
+    <text x="392" y="398" font-family="system-ui,sans-serif" font-size="7" fill="#888">18 slides · Editable</text>
+    <rect x="392" y="408" width="52" height="14" rx="7" fill="#c8732e" opacity="0.85"/>
+    <text x="418" y="419" text-anchor="middle" font-family="system-ui,sans-serif" font-size="7" fill="#fff" font-weight="600">Download</text>
+
+    <!-- Bottom nav -->
+    <rect x="296" y="458" width="208" height="52" fill="#fff"/>
+    <line x1="296" y1="458" x2="504" y2="458" stroke="#eee" stroke-width="1"/>
+    <text x="328" y="480" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" fill="#1a3d2f">⊞</text>
+    <text x="374" y="480" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" fill="#888">⌕</text>
+    <text x="428" y="480" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" fill="#888">♡</text>
+    <text x="474" y="480" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" fill="#888">☰</text>
+    <rect x="354" y="502" width="92" height="4" rx="2" fill="#1a1a1a" opacity="0.15"/>
+  </g>
+
+  <!-- Label -->
+  <text x="400" y="574" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#aaa" letter-spacing="3">CREAM COLORWAY  ·  LIGHT MODE UI  ·  STUDIO ANGLE 2</text>
+</svg>

@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <radialGradient id="bg" cx="45%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e8e4dc"/>
+    </radialGradient>
+    <radialGradient id="floor" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="chassis" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#2a2a2a"/>
+      <stop offset="40%" stop-color="#1a1a1a"/>
+      <stop offset="100%" stop-color="#111"/>
+    </linearGradient>
+    <linearGradient id="screen-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a3d2f"/>
+      <stop offset="100%" stop-color="#0d2219"/>
+    </linearGradient>
+    <linearGradient id="header-grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1a3d2f"/>
+      <stop offset="100%" stop-color="#2d5a44"/>
+    </linearGradient>
+    <filter id="phone-sh">
+      <feDropShadow dx="-8" dy="20" stdDeviation="28" flood-color="#000" flood-opacity="0.28"/>
+      <feDropShadow dx="4" dy="8" stdDeviation="8" flood-color="#000" flood-opacity="0.12"/>
+    </filter>
+    <clipPath id="screen-clip">
+      <rect x="296" y="94" width="208" height="424" rx="6"/>
+    </clipPath>
+  </defs>
+
+  <!-- Studio background -->
+  <rect width="800" height="600" fill="url(#bg)"/>
+
+  <!-- Subtle grid -->
+  <pattern id="grid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#000" stroke-width="0.3" opacity="0.05"/>
+  </pattern>
+  <rect width="800" height="600" fill="url(#grid)"/>
+
+  <!-- Floor shadow -->
+  <ellipse cx="400" cy="548" rx="160" ry="20" fill="url(#floor)"/>
+
+  <!-- ── Phone chassis ── -->
+  <g filter="url(#phone-sh)">
+    <rect x="280" y="72" width="240" height="476" rx="36" fill="url(#chassis)"/>
+
+    <!-- Screen bezel inset -->
+    <rect x="288" y="80" width="224" height="460" rx="28" fill="#0a0a0a"/>
+
+    <!-- Screen surface -->
+    <rect x="296" y="88" width="208" height="436" rx="20" fill="url(#screen-bg)"/>
+  </g>
+
+  <!-- Side buttons (right) -->
+  <rect x="518" y="164" width="6" height="14" rx="3" fill="#333"/>
+  <rect x="518" y="196" width="6" height="32" rx="3" fill="#333"/>
+  <rect x="518" y="234" width="6" height="32" rx="3" fill="#333"/>
+  <!-- Volume buttons (left) -->
+  <rect x="276" y="190" width="6" height="26" rx="3" fill="#333"/>
+  <rect x="276" y="222" width="6" height="26" rx="3" fill="#333"/>
+
+  <!-- ── App UI inside screen ── -->
+  <g clip-path="url(#screen-clip)">
+    <!-- Full screen content background -->
+    <rect x="296" y="88" width="208" height="436" fill="#f5f0e8"/>
+
+    <!-- Status bar -->
+    <rect x="296" y="88" width="208" height="30" fill="url(#header-grad)"/>
+    <text x="312" y="107" font-family="system-ui,sans-serif" font-weight="600" font-size="10" fill="#fff">9:41</text>
+    <!-- Status icons -->
+    <rect x="456" y="97" width="20" height="8" rx="2" fill="#fff" opacity="0.7"/>
+    <rect x="446" y="99" width="8" height="5" rx="1" fill="#fff" opacity="0.5"/>
+    <circle cx="440" cy="101" r="3" fill="#fff" opacity="0.5"/>
+
+    <!-- App header -->
+    <rect x="296" y="118" width="208" height="52" fill="#1a3d2f"/>
+    <!-- Dynamic island -->
+    <rect x="372" y="96" width="56" height="16" rx="8" fill="#0a0a0a"/>
+    <text x="400" y="138" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="16" fill="#e8dcc8">Creatly</text>
+    <text x="400" y="154" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#e8dcc8" opacity="0.6" letter-spacing="1">BROWSE TEMPLATES</text>
+
+    <!-- Search bar -->
+    <rect x="308" y="178" width="184" height="26" rx="13" fill="#fff" opacity="0.9"/>
+    <text x="326" y="195" font-family="system-ui,sans-serif" font-size="9" fill="#888">🔍 Search templates…</text>
+
+    <!-- Category pills row -->
+    <rect x="308" y="214" width="52" height="18" rx="9" fill="#1a3d2f"/>
+    <text x="334" y="226" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#fff">All</text>
+    <rect x="366" y="214" width="52" height="18" rx="9" fill="#e8dcc8"/>
+    <text x="392" y="226" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#1a3d2f">Social</text>
+    <rect x="424" y="214" width="52" height="18" rx="9" fill="#e8dcc8"/>
+    <text x="450" y="226" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#1a3d2f">Fonts</text>
+
+    <!-- Resource card 1 -->
+    <rect x="308" y="242" width="88" height="96" rx="8" fill="#1a3d2f"/>
+    <rect x="308" y="242" width="88" height="64" rx="8" fill="#2d5a44"/>
+    <circle cx="352" cy="272" r="20" fill="#c8732e" opacity="0.4"/>
+    <text x="314" y="330" font-family="system-ui,sans-serif" font-weight="600" font-size="7" fill="#1a3d2f">Story Pack</text>
+    <text x="314" y="341" font-family="system-ui,sans-serif" font-size="6" fill="#888">Social Media</text>
+
+    <!-- Resource card 2 -->
+    <rect x="404" y="242" width="88" height="96" rx="8" fill="#e8dcc8"/>
+    <rect x="404" y="242" width="88" height="64" rx="8" fill="#f0ebe0"/>
+    <text x="448" y="278" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="22" fill="#1a3d2f" opacity="0.6">Aa</text>
+    <text x="410" y="330" font-family="system-ui,sans-serif" font-weight="600" font-size="7" fill="#1a3d2f">Lagos Font</text>
+    <text x="410" y="341" font-family="system-ui,sans-serif" font-size="6" fill="#888">Typography</text>
+
+    <!-- Resource card 3 -->
+    <rect x="308" y="346" width="88" height="96" rx="8" fill="#c8732e"/>
+    <rect x="308" y="346" width="88" height="64" rx="8" fill="#d4824a"/>
+    <polygon points="352,358 368,382 336,382" fill="#fff" opacity="0.3"/>
+    <text x="314" y="434" font-family="system-ui,sans-serif" font-weight="600" font-size="7" fill="#1a3d2f">Brand Kit</text>
+    <text x="314" y="445" font-family="system-ui,sans-serif" font-size="6" fill="#888">Branding</text>
+
+    <!-- Resource card 4 -->
+    <rect x="404" y="346" width="88" height="96" rx="8" fill="#1a1a1a"/>
+    <rect x="404" y="346" width="88" height="64" rx="8" fill="#2a2a2a"/>
+    <!-- Mini phone in card -->
+    <rect x="432" y="354" width="32" height="54" rx="6" fill="#444"/>
+    <rect x="434" y="358" width="28" height="44" rx="4" fill="#1a3d2f"/>
+    <text x="410" y="434" font-family="system-ui,sans-serif" font-weight="600" font-size="7" fill="#e8dcc8">Mockups</text>
+    <text x="410" y="445" font-family="system-ui,sans-serif" font-size="6" fill="#666">Presentation</text>
+
+    <!-- Bottom navigation -->
+    <rect x="296" y="458" width="208" height="52" fill="#fff"/>
+    <line x1="296" y1="458" x2="504" y2="458" stroke="#eee" stroke-width="1"/>
+    <!-- Nav icons (simplified) -->
+    <rect x="322" y="470" width="12" height="10" rx="2" fill="#1a3d2f"/>
+    <rect x="317" y="476" width="22" height="6" rx="2" fill="#1a3d2f" opacity="0.3"/>
+    <text x="328" y="494" text-anchor="middle" font-family="system-ui,sans-serif" font-size="7" fill="#1a3d2f" font-weight="600">Browse</text>
+
+    <circle cx="374" cy="475" r="7" fill="#888" opacity="0.2"/>
+    <text x="374" y="494" text-anchor="middle" font-family="system-ui,sans-serif" font-size="7" fill="#888">Search</text>
+
+    <circle cx="400" cy="466" r="14" fill="#1a3d2f"/>
+    <text x="400" y="470" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#fff">↓</text>
+    <text x="400" y="494" text-anchor="middle" font-family="system-ui,sans-serif" font-size="7" fill="#888">Downloads</text>
+
+    <circle cx="428" cy="475" r="7" fill="#888" opacity="0.15"/>
+    <text x="428" y="494" text-anchor="middle" font-family="system-ui,sans-serif" font-size="7" fill="#888">Saved</text>
+
+    <circle cx="474" cy="475" r="7" fill="#888" opacity="0.15"/>
+    <text x="474" y="494" text-anchor="middle" font-family="system-ui,sans-serif" font-size="7" fill="#888">Profile</text>
+
+    <!-- Home bar -->
+    <rect x="354" y="506" width="92" height="4" rx="2" fill="#1a1a1a" opacity="0.2"/>
+  </g>
+
+  <!-- Screen glare -->
+  <path d="M 300,92 Q 370,92 370,150 Q 370,170 340,170 Q 298,160 298,120 Z" fill="#fff" opacity="0.04"/>
+
+  <!-- Label -->
+  <text x="400" y="572" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#aaa" letter-spacing="3">PHONE MOCKUP SET  ·  STUDIO LIGHT  ·  8 ANGLES  ·  PSD + FIGMA + SKETCH</text>
+</svg>

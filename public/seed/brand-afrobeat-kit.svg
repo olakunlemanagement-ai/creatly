@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <linearGradient id="left-panel" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0%" stop-color="#1a3d2f"/>
+      <stop offset="100%" stop-color="#0f2219"/>
+    </linearGradient>
+    <linearGradient id="right-panel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f5f0e8"/>
+      <stop offset="100%" stop-color="#ece6d8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Left panel: dark green -->
+  <rect width="360" height="600" fill="url(#left-panel)"/>
+  <!-- Right panel: cream -->
+  <rect x="360" y="0" width="440" height="600" fill="url(#right-panel)"/>
+
+  <!-- Subtle texture on left panel: concentric arcs -->
+  <g opacity="0.07" fill="none" stroke="#e8dcc8">
+    <circle cx="180" cy="600" r="160" stroke-width="1"/>
+    <circle cx="180" cy="600" r="220" stroke-width="1"/>
+    <circle cx="180" cy="600" r="280" stroke-width="1"/>
+    <circle cx="0" cy="0" r="120" stroke-width="1"/>
+    <circle cx="0" cy="0" r="200" stroke-width="1"/>
+  </g>
+
+  <!-- ── Left panel: Logo mark ── -->
+  <!-- Outer ring -->
+  <circle cx="180" cy="210" r="100" fill="none" stroke="#e8dcc8" stroke-width="2" opacity="0.3"/>
+  <!-- Mid ring with terracotta -->
+  <circle cx="180" cy="210" r="78" fill="none" stroke="#c8732e" stroke-width="2.5" opacity="0.6"/>
+  <!-- Inner fill -->
+  <circle cx="180" cy="210" r="56" fill="#c8732e" opacity="0.15"/>
+  <circle cx="180" cy="210" r="40" fill="#c8732e" opacity="0.2"/>
+
+  <!-- Geometric mark inside the circle: stylized A -->
+  <g transform="translate(180,210)">
+    <!-- Triangle form (simplified A-shape) -->
+    <polygon points="0,-32 26,20 -26,20" fill="none" stroke="#e8dcc8" stroke-width="3" stroke-linejoin="round"/>
+    <line x1="-14" y1="6" x2="14" y2="6" stroke="#e8dcc8" stroke-width="3"/>
+    <!-- Top dot -->
+    <circle cx="0" cy="-38" r="5" fill="#c8732e"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="180" y="342" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="22" fill="#e8dcc8" letter-spacing="8">AFROBEAT</text>
+  <rect x="80" y="352" width="200" height="1.5" fill="#c8732e" opacity="0.5"/>
+  <text x="180" y="370" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="300" font-size="9" fill="#e8dcc8" opacity="0.6" letter-spacing="4">BRAND IDENTITY KIT</text>
+
+  <!-- Secondary logo (text only variant) -->
+  <rect x="30" y="450" width="300" height="80" rx="4" fill="#fff" opacity="0.04"/>
+  <text x="180" y="480" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="300" font-size="9" fill="#e8dcc8" opacity="0.4" letter-spacing="3">LOGO VARIANT B</text>
+  <text x="180" y="506" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="900" font-size="20" fill="#e8dcc8" letter-spacing="6">AB</text>
+  <text x="180" y="522" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="300" font-size="10" fill="#c8732e" letter-spacing="3">STUDIO</text>
+
+  <!-- ── Right panel: Brand specs ── -->
+  <text x="390" y="50" font-family="system-ui,sans-serif" font-weight="400" font-size="10" fill="#888" letter-spacing="3">COLOUR PALETTE</text>
+  <line x1="390" y1="58" x2="740" y2="58" stroke="#ccc" stroke-width="1"/>
+
+  <!-- Color swatches row 1 -->
+  <g transform="translate(390, 72)">
+    <!-- Swatch 1: primary green -->
+    <rect width="58" height="70" rx="6" fill="#1a3d2f"/>
+    <text x="29" y="84" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#1a3d2f" opacity="0.7">#1a3d2f</text>
+    <text x="29" y="96" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#999">Forest</text>
+
+    <!-- Swatch 2: mid green -->
+    <rect x="68" width="58" height="70" rx="6" fill="#2d5a44"/>
+    <text x="97" y="84" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#2d5a44" opacity="0.7">#2d5a44</text>
+    <text x="97" y="96" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#999">Sage</text>
+
+    <!-- Swatch 3: terracotta -->
+    <rect x="136" width="58" height="70" rx="6" fill="#c8732e"/>
+    <text x="165" y="84" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#c8732e" opacity="0.8">#c8732e</text>
+    <text x="165" y="96" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#999">Terracotta</text>
+
+    <!-- Swatch 4: cream -->
+    <rect x="204" width="58" height="70" rx="6" fill="#e8dcc8" stroke="#ddd" stroke-width="1"/>
+    <text x="233" y="84" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#888">#e8dcc8</text>
+    <text x="233" y="96" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#999">Cream</text>
+
+    <!-- Swatch 5: near black -->
+    <rect x="272" width="58" height="70" rx="6" fill="#1a1a1a"/>
+    <text x="301" y="84" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#555">#1a1a1a</text>
+    <text x="301" y="96" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#999">Ink</text>
+  </g>
+
+  <!-- Typography section -->
+  <text x="390" y="192" font-family="system-ui,sans-serif" font-weight="400" font-size="10" fill="#888" letter-spacing="3">TYPOGRAPHY</text>
+  <line x1="390" y1="200" x2="740" y2="200" stroke="#ccc" stroke-width="1"/>
+
+  <text x="390" y="234" font-family="Georgia,serif" font-weight="700" font-size="32" fill="#1a3d2f" letter-spacing="-1">Primary Display</text>
+  <text x="390" y="256" font-family="system-ui,sans-serif" font-size="11" fill="#888">Georgia Serif  ·  Headlines &amp; Display</text>
+
+  <text x="390" y="292" font-family="system-ui,sans-serif" font-weight="400" font-size="20" fill="#1a3d2f">Secondary Body Typeface</text>
+  <text x="390" y="312" font-family="system-ui,sans-serif" font-size="11" fill="#888">System Sans  ·  Body Copy &amp; UI</text>
+
+  <text x="390" y="348" font-family="system-ui,sans-serif" font-weight="900" font-size="20" fill="#c8732e" letter-spacing="4">ACCENT DISPLAY</text>
+  <text x="390" y="368" font-family="system-ui,sans-serif" font-size="11" fill="#888">Uppercase Bold  ·  Labels &amp; Callouts</text>
+
+  <!-- Pattern section -->
+  <text x="390" y="406" font-family="system-ui,sans-serif" font-weight="400" font-size="10" fill="#888" letter-spacing="3">BRAND PATTERN</text>
+  <line x1="390" y1="414" x2="740" y2="414" stroke="#ccc" stroke-width="1"/>
+
+  <!-- Geometric pattern tile -->
+  <g transform="translate(390,424)">
+    <rect width="350" height="130" rx="6" fill="#1a3d2f" opacity="0.05"/>
+    <!-- Pattern: repeating diamonds -->
+    <g fill="none" stroke="#1a3d2f" stroke-width="1" opacity="0.2">
+      <polygon points="30,20 60,50 30,80 0,50"/>
+      <polygon points="90,20 120,50 90,80 60,50"/>
+      <polygon points="150,20 180,50 150,80 120,50"/>
+      <polygon points="210,20 240,50 210,80 180,50"/>
+      <polygon points="270,20 300,50 270,80 240,50"/>
+      <polygon points="330,20 350,45 330,70 310,45"/>
+      <polygon points="60,0 90,30 60,60 30,30"/>
+      <polygon points="120,0 150,30 120,60 90,30"/>
+      <polygon points="180,0 210,30 180,60 150,30"/>
+      <polygon points="240,0 270,30 240,60 210,30"/>
+      <polygon points="300,0 330,30 300,60 270,30"/>
+    </g>
+    <g fill="#c8732e" opacity="0.35">
+      <polygon points="30,20 60,50 30,80 0,50"/>
+      <polygon points="150,20 180,50 150,80 120,50"/>
+      <polygon points="270,20 300,50 270,80 240,50"/>
+    </g>
+    <text x="175" y="112" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#888" letter-spacing="2">BRAND PATTERN A  ·  SEAMLESS TILE</text>
+  </g>
+
+  <!-- Footer -->
+  <line x1="360" y1="572" x2="800" y2="572" stroke="#ddd" stroke-width="1"/>
+  <text x="570" y="590" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#aaa" letter-spacing="2">LOGO · COLORS · TYPE · PATTERNS · STATIONERY</text>
+</svg>

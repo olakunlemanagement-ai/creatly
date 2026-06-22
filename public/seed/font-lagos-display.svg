@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <linearGradient id="cream-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8f4ec"/>
+      <stop offset="100%" stop-color="#f0ebe0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#cream-bg)"/>
+
+  <!-- Green accent bar left -->
+  <rect x="0" y="0" width="6" height="600" fill="#1a3d2f"/>
+
+  <!-- Top section: specimen header -->
+  <rect x="6" y="0" width="794" height="80" fill="#1a3d2f"/>
+  <text x="32" y="30" font-family="system-ui,sans-serif" font-weight="400" font-size="10" fill="#e8dcc8" opacity="0.6" letter-spacing="4">TYPEFACE SPECIMEN</text>
+  <text x="32" y="58" font-family="Georgia,serif" font-weight="700" font-size="30" fill="#e8dcc8" letter-spacing="1">Lagos Display</text>
+  <text x="660" y="38" font-family="system-ui,sans-serif" font-size="10" fill="#e8dcc8" opacity="0.5" letter-spacing="2">GEOMETRIC SANS</text>
+  <text x="660" y="56" font-family="system-ui,sans-serif" font-size="10" fill="#e8dcc8" opacity="0.5" letter-spacing="2">CREATLY STUDIO</text>
+
+  <!-- Giant display letters -->
+  <text x="30" y="220" font-family="system-ui,sans-serif" font-weight="900" font-size="162" fill="#1a3d2f" letter-spacing="-8" opacity="0.9">Aa</text>
+
+  <!-- Weight column right -->
+  <g transform="translate(530, 110)">
+    <text x="0" y="0" font-family="system-ui,sans-serif" font-size="10" fill="#888" letter-spacing="3">WEIGHTS</text>
+    <line x1="0" y1="10" x2="230" y2="10" stroke="#ccc" stroke-width="1"/>
+    <text x="0" y="44" font-family="system-ui,sans-serif" font-weight="100" font-size="24" fill="#1a3d2f">Lagos Thin</text>
+    <text x="180" y="44" font-family="system-ui,sans-serif" font-size="10" fill="#aaa">100</text>
+    <text x="0" y="80" font-family="system-ui,sans-serif" font-weight="300" font-size="24" fill="#1a3d2f">Lagos Light</text>
+    <text x="180" y="80" font-family="system-ui,sans-serif" font-size="10" fill="#aaa">300</text>
+    <text x="0" y="116" font-family="system-ui,sans-serif" font-weight="400" font-size="24" fill="#1a3d2f">Lagos Regular</text>
+    <text x="180" y="116" font-family="system-ui,sans-serif" font-size="10" fill="#aaa">400</text>
+    <text x="0" y="152" font-family="system-ui,sans-serif" font-weight="600" font-size="24" fill="#1a3d2f">Lagos SemiBold</text>
+    <text x="180" y="152" font-family="system-ui,sans-serif" font-size="10" fill="#aaa">600</text>
+    <text x="0" y="188" font-family="system-ui,sans-serif" font-weight="800" font-size="24" fill="#1a3d2f">Lagos Bold</text>
+    <text x="180" y="188" font-family="system-ui,sans-serif" font-size="10" fill="#aaa">800</text>
+    <text x="0" y="224" font-family="system-ui,sans-serif" font-weight="900" font-size="24" fill="#1a3d2f">Lagos Black</text>
+    <text x="180" y="224" font-family="system-ui,sans-serif" font-size="10" fill="#aaa">900</text>
+  </g>
+
+  <!-- Terracotta accent line under the big Aa -->
+  <rect x="30" y="232" width="488" height="3" fill="#c8732e"/>
+
+  <!-- Alphabet specimen -->
+  <text x="30" y="268" font-family="system-ui,sans-serif" font-weight="400" font-size="10" fill="#888" letter-spacing="3">UPPERCASE ALPHABET</text>
+  <text x="30" y="296" font-family="system-ui,sans-serif" font-weight="600" font-size="22" fill="#1a3d2f" letter-spacing="4">A B C D E F G H I J K L M</text>
+  <text x="30" y="324" font-family="system-ui,sans-serif" font-weight="600" font-size="22" fill="#1a3d2f" letter-spacing="4">N O P Q R S T U V W X Y Z</text>
+
+  <!-- Lowercase -->
+  <text x="30" y="358" font-family="system-ui,sans-serif" font-weight="400" font-size="10" fill="#888" letter-spacing="3">LOWERCASE</text>
+  <text x="30" y="384" font-family="system-ui,sans-serif" font-weight="400" font-size="22" fill="#1a3d2f" letter-spacing="3">a b c d e f g h i j k l m n o p q r s t</text>
+
+  <!-- Numerals -->
+  <text x="30" y="418" font-family="system-ui,sans-serif" font-weight="400" font-size="10" fill="#888" letter-spacing="3">NUMERALS &amp; SYMBOLS</text>
+  <text x="30" y="444" font-family="system-ui,sans-serif" font-weight="700" font-size="26" fill="#c8732e" letter-spacing="6">0 1 2 3 4 5 6 7 8 9</text>
+
+  <!-- Pangram specimen -->
+  <line x1="30" y1="462" x2="760" y2="462" stroke="#ddd" stroke-width="1"/>
+  <text x="30" y="486" font-family="Georgia,serif" font-size="14" fill="#666" font-style="italic">"The quick brown fox jumps over the lazy dog" — Lagos Display Regular</text>
+  <text x="30" y="508" font-family="system-ui,sans-serif" font-weight="800" font-size="14" fill="#1a3d2f" letter-spacing="-0.5">"THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG" — Lagos Black</text>
+
+  <!-- Footer -->
+  <rect x="6" y="540" width="794" height="60" fill="#1a3d2f" opacity="0.06"/>
+  <text x="30" y="572" font-family="system-ui,sans-serif" font-size="11" fill="#888" letter-spacing="2">6 WEIGHTS  ·  OTF + TTF + WOFF2  ·  MULTILINGUAL SUPPORT  ·  GEOMETRIC SANS TYPEFACE</text>
+</svg>
