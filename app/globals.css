@@ -203,3 +203,38 @@
     font-family: var(--font-heading);
   }
 }
+
+/* ============================================================
+   MOTION — keyframes + micro-interaction globals
+   All motion is disabled via prefers-reduced-motion below.
+   ============================================================ */
+
+@keyframes hero-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Smooth easing + subtle press scale for all shadcn buttons */
+[data-slot="button"] {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  transition-duration: 160ms;
+}
+[data-slot="button"]:not(:disabled):active {
+  transform: scale(0.97) translateY(1px);
+}
+
+/* Focus-visible: designed ring, not browser default */
+:focus-visible {
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="button"] {
+    transition: none;
+  }
+  .hero-animate {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

@@ -12,6 +12,7 @@ import { SortControl } from "@/components/resource/SortControl";
 import { ResourceCard, type ResourceCardData } from "@/components/resource/ResourceCard";
 import { ResourceGrid } from "@/components/resource/ResourceGrid";
 import { CatalogueEmptyState } from "@/components/resource/CatalogueEmptyState";
+import { Reveal } from "@/components/shared/Reveal";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -139,12 +140,14 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
       </Suspense>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <Suspense>
-          <CategoryQuickNav
-            categories={categories ?? []}
-            activeCategory={categorySlug ?? null}
-          />
-        </Suspense>
+        <Reveal>
+          <Suspense>
+            <CategoryQuickNav
+              categories={categories ?? []}
+              activeCategory={categorySlug ?? null}
+            />
+          </Suspense>
+        </Reveal>
 
         {!isFiltered && (
           <FeaturedStrip
@@ -156,7 +159,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
 
         {/* Results */}
         <section aria-labelledby="results-heading" className="border-t py-8">
-          <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
+          <Reveal className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
             <h2 id="results-heading" className="text-lg font-semibold tracking-tight">
               {q ? (
                 <>
@@ -181,7 +184,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
                 <SortControl activeSort={sort} />
               </Suspense>
             </div>
-          </div>
+          </Reveal>
 
           {isEmpty ? (
             <CatalogueEmptyState variant={isFiltered ? "search-empty" : "cold-start"} />
@@ -199,7 +202,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
               </ResourceGrid>
 
               {totalPages > 1 && (
-                <div className="mt-10 flex items-center justify-center gap-3">
+                <Reveal delay={100} className="mt-10 flex items-center justify-center gap-3">
                   <Button
                     variant="outline"
                     size="sm"
@@ -245,7 +248,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
                       </span>
                     )}
                   </Button>
-                </div>
+                </Reveal>
               )}
             </>
           )}
