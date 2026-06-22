@@ -493,7 +493,49 @@ Add a fullscreen lightbox/modal for resource previews on the detail page. Resour
 - Don't pull in or alter the download mechanic (1.8) or favourites (1.7).
 
 ### 1.7 — Favourites ⬜
-Toggle endpoint `POST /api/favourites/[resourceId]`; favourites list; heart toggle (optimistic). Guests redirected to signup. *(To be expanded.)*
+
+Wire the heart icon (UI-only since 1.4) to real save/unsave, and build the favourites list. Uses the `favourites` table from 1.2b (RLS already enforces own-rows-only).
+
+**Decision (locked):** Logged-in users only. Guests clicking the heart are prompted to sign up (links to `/signup?next=<current path>`).
+
+**Scope:**
+
+1. **Toggle endpoint** `app/api/favourites/[resourceId]/route.ts` (POST):
+   - Follow the CONVENTIONS §5.2 route shape: auth check (401 if guest) → validate resourceId (Zod, must be uuid) → toggle (if a favourite row exists for this user+resource, delete it; else insert) → return `{ favourited: boolean }`.
+   - Server-side via the server Supabase client; RLS already restricts to own rows.
+   - Idempotent in effect: result reflects the new state regardless of prior clicks.
+
+2. **`useFavourite` client hook / wiring** (or a small client component):
+   - The heart button becomes interactive with **optimistic update**: toggle the UI immediately, call the endpoint, roll back on error.
+   - Guest (not logged in): clicking the heart does NOT call the API — instead routes to `/signup?next=<current path>` (or opens a small prompt). Determine auth state passed down from the server component.
+   - Used by both `ResourceCard` (browse) and the detail page sidebar heart.
+
+3. **Reflect favourited state** on render:
+   - Browse cards and detail page need to know which resources the current user has already favourited, so the heart shows filled vs outline correctly on load.
+   - Fetch the user's favourited resource IDs server-side (one query) and pass down; cards check membership. Keep it efficient (one set of IDs, not a query per card).
+
+4. **Favourites page** `app/(app)/dashboard/favourites/page.tsx`:
+   - Server Component, auth-required (middleware already gates `/dashboard`).
+   - Fetch the user's favourited resources (join through `favourites` to `resources`, published only), newest-saved first.
+   - Render with the existing `ResourceGrid` + `ResourceCard`.
+   - Empty state: friendly message + link to `/browse` when no favourites yet.
+   - (This is a minimal dashboard page; the full dashboard shell/nav is Phase 3 — keep this page simple, reachable directly by URL for now. If there's no dashboard layout yet, a minimal standalone page is fine.)
+
+**Acceptance criteria (done when):**
+1. Logged-in user can favourite/unfavourite from a browse card AND the detail page; heart reflects state with optimistic update; rolls back on error.
+2. Guest clicking the heart is routed to `/signup?next=<path>` and NO favourite is written.
+3. On page load, hearts show filled for already-favourited resources (state fetched server-side, efficiently — not one query per card).
+4. `POST /api/favourites/[resourceId]` follows the conventions route shape (auth → Zod validate → toggle → typed response); writes server-side; RLS enforces own-rows.
+5. `/dashboard/favourites` lists the user's favourited published resources, newest first, with a friendly empty state.
+6. TypeScript strict, no `any`; Zod validates the resourceId; typecheck + lint pass.
+7. One clean commit, e.g. `feat(favourites): add favourite toggle, state, and favourites page`.
+
+**Watch for (review before approving the plan):**
+- Don't fetch favourite state per-card (N queries) — fetch the user's favourited IDs once and pass down.
+- Guest path must not hit the API — route to signup instead.
+- Use the existing `favourites` table + RLS; no schema change needed.
+- Optimistic update must roll back on failure (don't leave a false "saved" state).
+- Don't build the full Phase 3 dashboard shell — just the minimal favourites page.
 
 ### 1.8 — Download mechanic ⬜ (GUARDED)
 `POST /api/downloads/[resourceId]`: auth → entitlement → resource check → **log download (immutable, with creator_id) BEFORE issuing URL** → 60s signed URL → client trigger. `lib/entitlement.ts` and `lib/download.ts`. In Phase 1 (pre-payments), entitlement returns false for everyone except a test path — design it so Phase 2 wires real subscription state in without rework. Download history endpoint. *(Full scope + acceptance criteria to be expanded — this is the most guarded step in Phase 1.)*
