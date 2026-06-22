@@ -647,7 +647,7 @@ Establish reusable motion + interaction primitives and apply a refinement pass t
 
 ---
 
-### UI-2 — Real preview thumbnails ⬜
+### UI-2 — Real preview thumbnails ✅
 
 Replace the flat colored placeholders with designed, mockup-style thumbnails so the catalogue looks like real creative work, not AI placeholders. (Dev/seed imagery — real creator uploads come in Phase 4/5.)
 
