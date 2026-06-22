@@ -537,7 +537,7 @@ Wire the heart icon (UI-only since 1.4) to real save/unsave, and build the favou
 - Optimistic update must roll back on failure (don't leave a false "saved" state).
 - Don't build the full Phase 3 dashboard shell — just the minimal favourites page.
 
-### 1.8 — Download mechanic ⬜ (GUARDED — most critical step in Phase 1)
+### 1.8 — Download mechanic ✅ (GUARDED — most critical step in Phase 1)
 
 The real download flow: server-side entitlement check → immutable attribution log → short-lived signed URL → client-triggered download. This is the foundation of creator revenue share. Build it exactly right; it is expensive to fix later. NO test-only code paths or bypasses — testing is done by inserting a real subscription row in the DB (see "Testing" below).
 
