@@ -667,7 +667,7 @@ Replace the flat colored placeholders with designed, mockup-style thumbnails so 
 
 ---
 
-### UI-3 — Landing page ⬜ (design-led)
+### UI-3 — Landing page ✅ (design-led)
 
 Build a real home page at `/` (currently the Next.js default — the biggest "unfinished" tell). The marketing front door.
 
