@@ -1,13 +1,13 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Heart } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { APP_NAME } from "@/lib/config";
 import { formatBytes } from "@/lib/format";
 import { ResourceDetailGallery } from "@/components/resource/ResourceDetailGallery";
 import { DownloadButton, type EntitlementState } from "@/components/resource/DownloadButton";
+import { FavouriteButton } from "@/components/resource/FavouriteButton";
 import { ResourceCard, type ResourceCardData } from "@/components/resource/ResourceCard";
 import { ResourceGrid } from "@/components/resource/ResourceGrid";
 import type { Resource, Creator, Category } from "@/types/database";
@@ -87,8 +87,12 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
 
   const typedResource = resource as ResourceDetail;
 
-  // Fetch related resources + entitlement — both depend on the resource/user above
-  const [{ data: relatedData }, entitlement] = await Promise.all([
+  const userId = auth?.user.id ?? null;
+
+  // Fetch related resources, entitlement, and all favourite IDs in parallel.
+  // Fetching all favourite IDs (not just one) lets both the sidebar heart and the
+  // related-resource cards show the correct filled/hollow state without N queries.
+  const [{ data: relatedData }, entitlement, { data: favouriteRows }] = await Promise.all([
     supabase
       .from("resources")
       .select("*, creators(name), categories(name, slug)")
@@ -97,8 +101,17 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
       .neq("slug", slug)
       .order("created_at", { ascending: false })
       .limit(6),
-    getDetailPageEntitlement(auth?.user.id ?? null, supabase),
+    getDetailPageEntitlement(userId, supabase),
+    userId
+      ? supabase
+          .from("favourites")
+          .select("resource_id")
+          .eq("user_id", userId)
+      : Promise.resolve({ data: [] as { resource_id: string }[] }),
   ]);
+
+  const favouriteIds = new Set((favouriteRows ?? []).map((f) => f.resource_id));
+  const isFavourited = favouriteIds.has(typedResource.id);
 
   const related = (relatedData ?? []) as ResourceCardData[];
   const mimeLabel = getMimeLabel(typedResource.file_type);
@@ -221,17 +234,14 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
             <DownloadButton entitlement={entitlement} resourceSlug={slug} />
           </div>
 
-          {/* Favourite — UI only; backend wired in step 1.7 */}
-          <button
-            type="button"
-            className="flex items-center gap-2 self-start text-sm text-muted-foreground hover:text-foreground"
-            disabled
-            title="Favourites coming in step 1.7"
-          >
-            <Heart className="size-4" strokeWidth={1.5} />
-            Save to favourites
-            {/* TODO 1.7: wire to /api/favourites/[resourceId] */}
-          </button>
+          {/* Favourite */}
+          <FavouriteButton
+            resourceId={typedResource.id}
+            resourceSlug={typedResource.slug}
+            isFavourited={isFavourited}
+            userId={userId}
+            variant="sidebar"
+          />
         </aside>
       </div>
 
@@ -246,7 +256,12 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
           </h2>
           <ResourceGrid>
             {related.map((r) => (
-              <ResourceCard key={r.id} resource={r} />
+              <ResourceCard
+                key={r.id}
+                resource={r}
+                isFavourited={favouriteIds.has(r.id)}
+                userId={userId}
+              />
             ))}
           </ResourceGrid>
         </section>

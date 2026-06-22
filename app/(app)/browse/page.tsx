@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { APP_NAME } from "@/lib/config";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { browseParamsSchema } from "@/lib/validations/browse";
 import { BrowseHero } from "@/components/resource/BrowseHero";
 import { CategoryQuickNav } from "@/components/resource/CategoryQuickNav";
@@ -38,7 +39,8 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   const offset = (page - 1) * PAGE_SIZE;
   const isFiltered = Boolean(q || categorySlug);
 
-  const supabase = await createClient();
+  const [supabase, auth] = await Promise.all([createClient(), getAuthenticatedUser()]);
+  const userId = auth?.user.id ?? null;
 
   // Resolve category slug → ID before building the main query
   let categoryId: string | null = null;
@@ -87,25 +89,39 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     resourceQuery = resourceQuery.order("created_at", { ascending: false });
   }
 
-  // Three parallel fetches: nav categories, featured strip (skipped when filtered), paginated grid
-  const [{ data: categories }, { data: featuredResources }, { data: resources, count }] =
-    await Promise.all([
-      supabase
-        .from("categories")
-        .select("id, name, slug")
-        .eq("is_active", true)
-        .order("sort_order"),
-      isFiltered
-        ? Promise.resolve({ data: [] as ResourceCardData[] })
-        : supabase
-            .from("resources")
-            .select("*, creators(name), categories(name, slug)")
-            .eq("status", "published")
-            .eq("is_featured", true)
-            .order("created_at", { ascending: false })
-            .limit(6),
-      resourceQuery.range(offset, offset + PAGE_SIZE - 1),
-    ]);
+  // Four parallel fetches: nav categories, featured strip (skipped when filtered),
+  // paginated grid, and the current user's favourited resource IDs (empty for guests).
+  const [
+    { data: categories },
+    { data: featuredResources },
+    { data: resources, count },
+    { data: favouriteRows },
+  ] = await Promise.all([
+    supabase
+      .from("categories")
+      .select("id, name, slug")
+      .eq("is_active", true)
+      .order("sort_order"),
+    isFiltered
+      ? Promise.resolve({ data: [] as ResourceCardData[] })
+      : supabase
+          .from("resources")
+          .select("*, creators(name), categories(name, slug)")
+          .eq("status", "published")
+          .eq("is_featured", true)
+          .order("created_at", { ascending: false })
+          .limit(6),
+    resourceQuery.range(offset, offset + PAGE_SIZE - 1),
+    // Fetch all favourited IDs for this user in one query; guests get an empty array.
+    userId
+      ? supabase
+          .from("favourites")
+          .select("resource_id")
+          .eq("user_id", userId)
+      : Promise.resolve({ data: [] as { resource_id: string }[] }),
+  ]);
+
+  const favouriteIds = new Set((favouriteRows ?? []).map((f) => f.resource_id));
 
   const totalCount = count ?? 0;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
@@ -131,7 +147,11 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
         </Suspense>
 
         {!isFiltered && (
-          <FeaturedStrip resources={featuredResources as ResourceCardData[]} />
+          <FeaturedStrip
+            resources={featuredResources as ResourceCardData[]}
+            favouriteIds={favouriteIds}
+            userId={userId}
+          />
         )}
 
         {/* Results */}
@@ -169,7 +189,12 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
             <>
               <ResourceGrid>
                 {(resources as ResourceCardData[]).map((resource) => (
-                  <ResourceCard key={resource.id} resource={resource} />
+                  <ResourceCard
+                    key={resource.id}
+                    resource={resource}
+                    isFavourited={favouriteIds.has(resource.id)}
+                    userId={userId}
+                  />
                 ))}
               </ResourceGrid>
 

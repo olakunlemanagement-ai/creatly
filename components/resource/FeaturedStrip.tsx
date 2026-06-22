@@ -2,9 +2,15 @@ import { ResourceCard, type ResourceCardData } from "./ResourceCard";
 
 interface FeaturedStripProps {
   resources: ResourceCardData[];
+  favouriteIds?: Set<string>;
+  userId?: string | null;
 }
 
-export function FeaturedStrip({ resources }: FeaturedStripProps) {
+export function FeaturedStrip({
+  resources,
+  favouriteIds,
+  userId = null,
+}: FeaturedStripProps) {
   if (resources.length === 0) return null;
 
   return (
@@ -25,7 +31,11 @@ export function FeaturedStrip({ resources }: FeaturedStripProps) {
             className="w-64 flex-none sm:w-72"
             style={{ scrollSnapAlign: "start" }}
           >
-            <ResourceCard resource={resource} />
+            <ResourceCard
+              resource={resource}
+              isFavourited={favouriteIds?.has(resource.id) ?? false}
+              userId={userId}
+            />
           </div>
         ))}
       </div>

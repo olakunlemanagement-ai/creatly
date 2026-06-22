@@ -492,7 +492,7 @@ Add a fullscreen lightbox/modal for resource previews on the detail page. Resour
 - Hide navigation/thumbnail/counter for single-image resources (no dead controls).
 - Don't pull in or alter the download mechanic (1.8) or favourites (1.7).
 
-### 1.7 — Favourites ⬜
+### 1.7 — Favourites ✅
 
 Wire the heart icon (UI-only since 1.4) to real save/unsave, and build the favourites list. Uses the `favourites` table from 1.2b (RLS already enforces own-rows-only).
 

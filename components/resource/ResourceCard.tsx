@@ -1,8 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Heart } from "lucide-react";
 import type { Resource } from "@/types/database";
 import { getPreviewImageUrl } from "@/lib/storage";
+import { FavouriteButton } from "./FavouriteButton";
 
 export type ResourceCardData = Resource & {
   creators: { name: string } | null;
@@ -38,18 +38,41 @@ function getMimeLabel(mimeType: string): string {
 
 interface ResourceCardProps {
   resource: ResourceCardData;
+  isFavourited?: boolean;
+  userId?: string | null;
 }
 
-export function ResourceCard({ resource }: ResourceCardProps) {
+export function ResourceCard({
+  resource,
+  isFavourited = false,
+  userId = null,
+}: ResourceCardProps) {
   const previewUrl = getPreviewImageUrl(resource.preview_image_path);
   const mimeLabel = getMimeLabel(resource.file_type);
   const creatorName = resource.creators?.name ?? "Unknown creator";
 
   return (
-    <li>
+    // group lives on <li> so both the image zoom and the heart overlay respond to hover on the card.
+    // FavouriteButton is positioned outside <Link> to avoid nesting a <button> inside an <a>.
+    <li className="group relative">
+      {/* Heart — always visible when saved; appears on hover when not saved */}
+      <div
+        className={`absolute right-2 top-2 z-10 transition-opacity duration-150 motion-reduce:transition-none ${
+          isFavourited ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+        }`}
+      >
+        <FavouriteButton
+          resourceId={resource.id}
+          resourceSlug={resource.slug}
+          isFavourited={isFavourited}
+          userId={userId}
+          variant="card"
+        />
+      </div>
+
       <Link
         href={`/resources/${resource.slug}`}
-        className="group block overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="block overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {/* Preview image — 4:3 ratio feels richer than 16:9 for creative assets */}
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
@@ -61,10 +84,6 @@ export function ResourceCard({ resource }: ResourceCardProps) {
             className="object-cover transition-transform duration-300 group-hover:scale-[1.04] motion-reduce:transition-none"
             loading="lazy"
           />
-          {/* Favourite heart — UI only; wired in step 1.7 */}
-          <div className="absolute right-2 top-2 rounded-full bg-background/80 p-1.5 text-muted-foreground opacity-0 backdrop-blur transition-opacity duration-150 group-hover:opacity-100 motion-reduce:transition-none">
-            <Heart className="size-3.5" strokeWidth={1.5} />
-          </div>
         </div>
 
         {/* Card body */}
