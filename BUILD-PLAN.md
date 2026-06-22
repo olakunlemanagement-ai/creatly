@@ -604,6 +604,95 @@ The real download flow: server-side entitlement check → immutable attribution 
 - Immutability holds — no UPDATE/DELETE on downloads (already enforced in 1.2b; don't add policies that weaken it).
 - Don't build Paystack/subscription creation here — that's Phase 2. This step only READS subscription state.
 
+## UI POLISH PASS (pre-Phase-2) — make it feel engineered, not AI-generated
+
+Goal: remove the "AI-built / template" feel and make Creatly feel like a real product crafted by a design-minded engineer. Motion is **subtle & premium** (Linear/Stripe school) — restraint, not spectacle. Three bounded steps.
+
+---
+
+### UI-1 — Design polish & motion foundation ⬜ (design-led)
+
+Establish reusable motion + interaction primitives and apply a refinement pass to existing surfaces. This is the "de-template-ify" step.
+
+**Apply the frontend-design skill.** Stay within established green/terracotta/cream tokens.
+
+**Motion approach (locked):** subtle & premium. Prefer CSS transitions + a small Intersection-Observer-based reveal hook for scroll animations. Only add a motion library (e.g. framer-motion) if genuinely needed and justified — keep the bundle lean (mobile audience). Respect `prefers-reduced-motion` everywhere — all motion must gracefully disable.
+
+**Scope:**
+1. **Reveal-on-scroll primitive** — a small reusable hook/component (`useReveal` or `<Reveal>`) using IntersectionObserver that fades + gently translates content in as it enters the viewport. Applied tastefully to sections (hero content, category row, featured strip, grid sections) — staggered, not everything-at-once.
+2. **Micro-interactions** — refine across existing components:
+   - Buttons: subtle press/scale + smooth color transitions on hover/active/focus.
+   - Cards: already have hover lift — refine timing/easing so it feels smooth and intentional (good easing curves, ~200ms, not linear).
+   - Links/nav: smooth underline or color transitions.
+   - Focus-visible states that look designed, not default-browser.
+3. **Browse hero elevation** — make it feel alive (currently dull):
+   - Animate the hero content in on load (staggered fade/translate of headline → subline → search → stat line).
+   - A subtle, tasteful background treatment on the green band — e.g. a soft animated gradient sheen, faint grain/texture, or a slow subtle motion — NOT a loud moving graphic. Premium and quiet.
+   - Address the parked backlog items: trim hero vertical padding so categories peek above the fold; fix category pill left-edge clipping (scroll-padding).
+4. **Spacing & typography refinement pass** — audit the existing pages for the default-shadcn-spacing tells: overly uniform gaps, cramped or too-loose sections, inconsistent rhythm. Tighten to a deliberate vertical rhythm. Make sure the serif/sans pairing is used with intent (sizes, weights, letter-spacing on headings).
+5. **Polish details that signal craft:** consistent border-radii, considered shadows (soft, layered, not default), hover/active feedback on every interactive element, smooth page-level transitions where cheap.
+
+**Acceptance criteria:**
+1. A reusable reveal-on-scroll primitive exists and is applied tastefully (staggered, not all-at-once) on browse.
+2. Buttons, cards, links, and focus states have refined, intentional micro-interactions (good easing, ~200ms).
+3. Browse hero animates in on load and has a subtle premium background treatment; no loud/garish motion.
+4. Parked backlog cleared: hero padding trimmed (categories peek above fold), category pills not clipped at the left edge.
+5. `prefers-reduced-motion` fully respected — all motion disables cleanly.
+6. Spacing/typography refined away from default-shadcn uniformity; deliberate vertical rhythm.
+7. Bundle stays lean — no heavy animation dep unless justified and noted; mobile-fast.
+8. TypeScript strict, no `any`; typecheck + lint pass.
+9. One clean commit, e.g. `feat(ui): add motion primitives, micro-interactions, hero elevation`.
+
+**Watch for:** motion must be subtle (premium, not agency-flashy); reduced-motion respected; don't bloat the bundle; don't break existing functionality (search, favourites, download) — this is presentation only.
+
+---
+
+### UI-2 — Real preview thumbnails ⬜
+
+Replace the flat colored placeholders with designed, mockup-style thumbnails so the catalogue looks like real creative work, not AI placeholders. (Dev/seed imagery — real creator uploads come in Phase 4/5.)
+
+**Scope:**
+- Create designed thumbnail images that *look like* the resource type: an Instagram-story-style graphic, a font specimen card, a presentation-slide thumbnail, a mockup scene, a brand-kit board, an icon-set grid. On-brand aesthetic.
+- Recommended approach: generate these as local assets in `/public/seed/` (reliable, no external-host issues — we learned that lesson) OR as richly-designed SVG/CSS thumbnails. Decide and justify.
+- Update the seed resources' `preview_image_path` (and a couple of `preview_images` for the lightbox demo) to point at the new assets.
+- Ensure they look great in cards, the detail gallery, and the lightbox.
+
+**Acceptance criteria:**
+1. Seed resources display designed, realistic-looking preview thumbnails (not flat color blocks) across browse cards, detail gallery, and lightbox.
+2. Images are reliably served (local `/public` or generated) — no external-host failures.
+3. On-brand, varied per resource type; mobile-fast (sized/optimized).
+4. One clean commit, e.g. `chore(seed): add realistic preview thumbnails`.
+
+**Watch for:** use local/generated assets (picsum-style external hosting caused failures before); keep file sizes reasonable.
+
+---
+
+### UI-3 — Landing page ⬜ (design-led)
+
+Build a real home page at `/` (currently the Next.js default — the biggest "unfinished" tell). The marketing front door.
+
+**Apply the frontend-design skill.** Subtle premium motion (reuse UI-1 primitives). On-brand.
+
+**Scope (typical high-converting structure, on-brand & animated):**
+- Hero: strong serif headline, value prop, primary CTA ("Browse resources" / "Get started"), secondary CTA; animated in; tasteful background.
+- Social-proof / value strip (e.g. "Thousands of templates, fonts, mockups" / categories).
+- "What you get" / feature section — a few benefit blocks (affordability, local payments, curated for African creatives) with reveal-on-scroll.
+- Category showcase (pulls from categories table) linking into /browse.
+- A featured-resources teaser (real seed resources) → links to /browse.
+- Pricing teaser pointing to /pricing (built in Phase 2) — keep CTA wired even if /pricing 404s for now.
+- Footer (brand, links, support email from config).
+- Fully responsive, mobile-first, fast.
+
+**Acceptance criteria:**
+1. `/` is a real, branded, animated landing page (no Next.js default content anywhere).
+2. Sections reveal on scroll (reusing UI-1 primitives); hero animates in; motion subtle + reduced-motion respected.
+3. Pulls real categories + featured resources from the DB; CTAs wired (browse, signup, pricing).
+4. Footer with brand + support email from config (no hardcoded brand string).
+5. Mobile-first, fast; TypeScript strict, no `any`; typecheck + lint pass.
+6. One clean commit, e.g. `feat(landing): add animated marketing home page`.
+
+**Watch for:** reuse UI-1 motion primitives (don't reinvent); don't hardcode brand name; keep it fast; pricing CTA may point at a not-yet-built route — fine.
+
 ---
 
 ## PHASE 2 — Payments & Entitlements ⬜
