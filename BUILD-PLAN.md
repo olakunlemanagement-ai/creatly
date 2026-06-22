@@ -610,7 +610,7 @@ Goal: remove the "AI-built / template" feel and make Creatly feel like a real pr
 
 ---
 
-### UI-1 — Design polish & motion foundation ⬜ (design-led)
+### UI-1 — Design polish & motion foundation ✅ (design-led)
 
 Establish reusable motion + interaction primitives and apply a refinement pass to existing surfaces. This is the "de-template-ify" step.
 
