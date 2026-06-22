@@ -537,8 +537,72 @@ Wire the heart icon (UI-only since 1.4) to real save/unsave, and build the favou
 - Optimistic update must roll back on failure (don't leave a false "saved" state).
 - Don't build the full Phase 3 dashboard shell — just the minimal favourites page.
 
-### 1.8 — Download mechanic ⬜ (GUARDED)
-`POST /api/downloads/[resourceId]`: auth → entitlement → resource check → **log download (immutable, with creator_id) BEFORE issuing URL** → 60s signed URL → client trigger. `lib/entitlement.ts` and `lib/download.ts`. In Phase 1 (pre-payments), entitlement returns false for everyone except a test path — design it so Phase 2 wires real subscription state in without rework. Download history endpoint. *(Full scope + acceptance criteria to be expanded — this is the most guarded step in Phase 1.)*
+### 1.8 — Download mechanic ⬜ (GUARDED — most critical step in Phase 1)
+
+The real download flow: server-side entitlement check → immutable attribution log → short-lived signed URL → client-triggered download. This is the foundation of creator revenue share. Build it exactly right; it is expensive to fix later. NO test-only code paths or bypasses — testing is done by inserting a real subscription row in the DB (see "Testing" below).
+
+**Locked principles (from PRD §9 and CONVENTIONS §7 — non-negotiable):**
+- Entitlement is checked **server-side on every download request.** Never trust the client.
+- The download is **logged BEFORE the signed URL is issued.** If the log insert fails, no URL is returned.
+- The `downloads` row is **immutable** (append-only — enforced by 1.2b RLS + revoked grants) and records `creator_id` **denormalised from the resource at download time** (never changes if the resource is later reassigned).
+- Signed URL is **short-lived (60s TTL).**
+
+**Scope:**
+
+1. **`lib/entitlement.ts` — `getUserEntitlement(userId)`** (the real authority, replacing the 1.6 stub):
+   - Returns whether the user has an active entitlement and the relevant subscription.
+   - Entitled if: the user is `owner_id` of a subscription with `status = 'active'`, OR an accepted member of a team subscription (via `team_members.profile_id` where `invite_accepted = true`) whose subscription is `status = 'active'`.
+   - Returns a typed result, e.g. `{ entitled: boolean; subscription: Subscription | null; reason?: 'no_subscription' | 'inactive' }`.
+   - Pure server-side. This is the single source of truth used by the download route (and reusable in Phase 2/3).
+
+2. **`lib/download.ts`** — helpers:
+   - `logDownload({ userId, resource, subscriptionId, planType })` → inserts the immutable `downloads` row with `creator_id` copied from `resource.creator_id`, `plan_type` denormalised. Returns the inserted row or throws.
+   - `createSignedUrl(filePath)` → calls Supabase Storage to create a signed URL for the `resource-files` bucket with **60s** expiry. Returns the URL.
+
+3. **`app/api/downloads/[resourceId]/route.ts` (POST)** — the gated endpoint, in this exact order (CONVENTIONS §5.2):
+   1. **Auth** — authenticated user? If not → 401 `{ reason: 'unauthorized' }`.
+   2. **Validate** — `resourceId` is a uuid (Zod).
+   3. **Resource** — fetch the resource; must exist and be `status = 'published'` (or 404). Need `creator_id`, `file_path`, `file_name`.
+   4. **Entitlement** — `getUserEntitlement(user.id)`; if not entitled → 403 `{ reason: 'no_active_subscription' }`. Do NOT log, do NOT issue URL.
+   5. **Log** — insert the immutable `downloads` row (with `creator_id`, `subscription_id`, `plan_type`). If this insert fails → abort with 500, NO URL issued.
+   6. **Signed URL** — only after the log commits, create the 60s signed URL for the file.
+   7. **Respond** — `{ url, fileName }`.
+   - Optionally increment `resources.download_count` (denormalised cache) after a successful log — non-authoritative; the `downloads` table is the source of truth. Keep it simple (best-effort; don't fail the download if the counter update fails).
+
+4. **`GET /api/downloads`** — the user's download history (paginated), own rows only (RLS), newest first. (Used by the dashboard in Phase 3; build the endpoint now.)
+
+5. **Client wiring — replace the 1.6 stubbed download button:**
+   - On click (subscriber state): POST to `/api/downloads/[resourceId]`, receive `{ url, fileName }`, then trigger the browser download by programmatically creating an `<a href={url} download={fileName}>` and clicking it.
+   - Handle the states: 401 → redirect to login; 403 → show the subtle subscribe prompt / route to /pricing (consistent with 1.6 free-user treatment); success → download begins.
+   - Loading/disabled state on the button during the request. Error toast on failure.
+
+6. **Storage:** the `resource-files` bucket is private (from 1.2b). Confirm signed-URL generation works against it. NOTE: seed resources have fake `file_path`s pointing at files that don't exist in storage — see Testing for how to handle.
+
+**Testing (no test-only code — use real data):**
+- Insert one real `active` subscription row for your test user in Supabase (owner_id = your user id, plan_type e.g. 'personal_monthly', status 'active', amount_kobo whatever). The real `getUserEntitlement` will then grant downloads — exercising the genuine path. Delete the row when done.
+- For an actual file to download: upload one small real file to the `resource-files` bucket and point one resource's `file_path` at it (the seed `file_path`s are fake). Then the full flow (log + signed URL + download) can be verified end-to-end on that resource.
+- Verify the guarded behaviours explicitly: (a) guest → 401; (b) logged-in but no active subscription → 403, and confirm NO `downloads` row was written; (c) entitled user → a `downloads` row IS written with correct `creator_id`, then a working signed URL; (d) confirm you cannot UPDATE/DELETE a `downloads` row (immutability — try it in SQL, expect rejection).
+
+**Acceptance criteria (done when):**
+1. `getUserEntitlement` correctly returns entitled for an active owner OR active accepted team member; not entitled otherwise; typed result.
+2. `POST /api/downloads/[resourceId]` enforces order: auth → validate → resource(published) → entitlement → log → signed URL → respond. A failure at any gate stops the flow.
+3. Entitlement failure returns 403 and writes NO download row and issues NO URL.
+4. On success, an immutable `downloads` row is written with `creator_id` denormalised from the resource, BEFORE the signed URL is created; if the log fails, no URL is returned.
+5. Signed URL has a 60s TTL against the private `resource-files` bucket.
+6. Client download button (subscriber) triggers an actual browser download via the returned signed URL; 401→login, 403→subtle subscribe prompt.
+7. `GET /api/downloads` returns the user's own history, paginated, newest first.
+8. Verified by test: guest→401; no-sub→403 (no row written); entitled→row written + working URL; downloads row cannot be updated/deleted.
+9. No test-only/bypass code anywhere; entitlement reads real subscription state so Phase 2 needs no rework here.
+10. TypeScript strict, no `any`; Zod validates input; conventions route shape; typecheck + lint pass.
+11. One clean commit, e.g. `feat(downloads): add entitlement check, immutable attribution log, and signed-url download`.
+
+**Watch for (review the plan carefully — this is the guarded step):**
+- Log MUST precede the signed URL. Reject any plan that issues the URL first or logs after.
+- `creator_id` on the download row is copied from the resource at download time — not looked up later, not a join.
+- No bypass / test-only entitlement path. Real subscription read only.
+- Entitlement must cover BOTH owner and accepted team member (not just owner_id).
+- Immutability holds — no UPDATE/DELETE on downloads (already enforced in 1.2b; don't add policies that weaken it).
+- Don't build Paystack/subscription creation here — that's Phase 2. This step only READS subscription state.
 
 ---
 
