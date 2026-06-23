@@ -7,7 +7,7 @@ import { Search, Menu, ChevronDown } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { UserDropdown } from "@/components/nav/UserDropdown";
 import { MobileOverlay } from "@/components/nav/MobileOverlay";
-import { useScrollDirection } from "@/hooks/useScrollDirection";
+import { useScrollPosition } from "@/hooks/useScrollPosition";
 import { useReducedMotion } from "framer-motion";
 import { CONTACT_EMAIL } from "@/lib/config";
 import type { AuthenticatedUser } from "@/lib/auth";
@@ -124,11 +124,12 @@ function SearchForm({
 }
 
 export function HeaderClient({ auth, categories }: HeaderClientProps) {
-  const scrollDir = useScrollDirection(8);
+  const scrolled = useScrollPosition();
   const prefersReduced = useReducedMotion();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const hidden = !prefersReduced && scrollDir === "down";
+  // Hidden at the very top; slides in once the user scrolls at all
+  const hidden = !scrolled;
 
   return (
     <>
