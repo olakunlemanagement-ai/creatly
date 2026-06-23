@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Reveal } from "@/components/shared/Reveal";
 import { Logo } from "@/components/brand/Logo";
+import { Button } from "@/components/ui/button";
 
 // Each collage item: positioning/shadow classes + final rotate value for FM animation
 const COLLAGE = [
@@ -107,19 +109,20 @@ export function LandingHero() {
 
           <Reveal delay={240}>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              {/* Shimmer CTA */}
-              <Link
-                href="/signup"
-                className="cta-shimmer rounded-xl bg-terracotta-500 px-7 py-3.5 text-sm font-semibold text-white transition-all hover:bg-terracotta-600 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400 motion-reduce:transition-none"
+              <Button
+                variant="terracotta"
+                size="cta"
+                className="cta-shimmer"
+                asChild
               >
-                Start creating →
-              </Link>
-              <Link
-                href="/browse"
-                className="rounded-xl border border-cream-200/25 px-7 py-3.5 text-sm font-medium text-cream-200 transition-all hover:border-cream-200/50 hover:text-cream-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream-300 motion-reduce:transition-none"
-              >
-                Browse the library
-              </Link>
+                <Link href="/signup">
+                  Start creating
+                  <ArrowRight className="size-4 transition-transform duration-150 group-hover/button:translate-x-1 motion-reduce:transition-none" />
+                </Link>
+              </Button>
+              <Button variant="ghost-cream" size="cta" asChild>
+                <Link href="/browse">Browse the library</Link>
+              </Button>
             </div>
           </Reveal>
 

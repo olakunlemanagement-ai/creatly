@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, CheckCircle2, ArrowRight, Loader2 } from "lucide-react";
 
 import { signupSchema, type SignupInput } from "@/lib/validations/auth";
 import { createClient } from "@/lib/supabase/client";
 import { APP_NAME } from "@/lib/config";
+import { Button } from "@/components/ui/button";
 
 import {
   Form,
@@ -170,7 +171,7 @@ export function SignupForm() {
                     <button
                       type="button"
                       onClick={() => setShowPassword((p) => !p)}
-                      className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+                      className="absolute inset-y-0 right-3 flex items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -200,7 +201,7 @@ export function SignupForm() {
                     <button
                       type="button"
                       onClick={() => setShowConfirm((p) => !p)}
-                      className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+                      className="absolute inset-y-0 right-3 flex items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
                     >
                       {showConfirm ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -218,13 +219,25 @@ export function SignupForm() {
             </p>
           )}
 
-          <button
+          <Button
             type="submit"
+            variant="terracotta"
+            size="cta"
             disabled={form.formState.isSubmitting}
-            className="mt-1 w-full rounded-lg bg-terracotta-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400"
+            className="mt-1 w-full"
           >
-            {form.formState.isSubmitting ? "Creating account…" : "Create account →"}
-          </button>
+            {form.formState.isSubmitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Creating account…
+              </>
+            ) : (
+              <>
+                Create account
+                <ArrowRight className="size-4 transition-transform duration-150 group-hover/button:translate-x-1 motion-reduce:transition-none" />
+              </>
+            )}
+          </Button>
         </form>
       </Form>
 

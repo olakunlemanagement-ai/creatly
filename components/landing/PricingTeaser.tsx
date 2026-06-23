@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { Reveal } from "@/components/shared/Reveal";
+import { Button } from "@/components/ui/button";
 
 export function PricingTeaser() {
   return (
@@ -26,18 +28,15 @@ export function PricingTeaser() {
             </div>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row lg:mt-0 lg:shrink-0">
-              <Link
-                href="/pricing"
-                className="rounded-xl bg-terracotta-500 px-7 py-3.5 text-center text-sm font-semibold text-white transition-all hover:bg-terracotta-600 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400 motion-reduce:transition-none"
-              >
-                See plans →
-              </Link>
-              <Link
-                href="/browse"
-                className="rounded-xl border border-border px-7 py-3.5 text-center text-sm font-medium text-foreground/80 transition-colors hover:border-foreground/30 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                Browse first
-              </Link>
+              <Button variant="terracotta" size="cta" asChild>
+                <Link href="/pricing">
+                  See plans
+                  <ArrowRight className="size-4 transition-transform duration-150 group-hover/button:translate-x-1 motion-reduce:transition-none" />
+                </Link>
+              </Button>
+              <Button variant="ghost-terracotta" size="cta" asChild>
+                <Link href="/browse">Browse first</Link>
+              </Button>
             </div>
           </div>
         </Reveal>

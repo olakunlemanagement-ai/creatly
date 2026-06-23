@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Menu, ChevronDown } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
+import { Button } from "@/components/ui/button";
 import { UserDropdown } from "@/components/nav/UserDropdown";
 import { MobileOverlay } from "@/components/nav/MobileOverlay";
 import { useScrollPosition } from "@/hooks/useScrollPosition";
@@ -188,18 +189,22 @@ export function HeaderClient({ auth, categories }: HeaderClientProps) {
                   <UserDropdown auth={auth} />
                 ) : (
                   <>
-                    <Link
-                      href="/login"
-                      className="rounded-md px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 hover:text-stone-900"
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-full text-stone-700 hover:bg-stone-100 hover:text-stone-900"
+                      asChild
                     >
-                      Sign In
-                    </Link>
-                    <Link
-                      href="/signup"
-                      className="rounded-full bg-terracotta-500 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400"
+                      <Link href="/login">Sign In</Link>
+                    </Button>
+                    <Button
+                      variant="terracotta"
+                      size="sm"
+                      className="rounded-full"
+                      asChild
                     >
-                      Sign Up
-                    </Link>
+                      <Link href="/signup">Sign Up</Link>
+                    </Button>
                   </>
                 )}
               </div>

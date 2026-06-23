@@ -5,9 +5,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowRight, Loader2 } from "lucide-react";
 
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
 
 import {
   Form,
@@ -163,9 +165,10 @@ export function LoginForm({
                 <button
                   type="button"
                   onClick={() => resendVerification(loginError.email)}
-                  className="mt-1 font-medium text-terracotta-600 underline-offset-4 hover:underline"
+                  className="group mt-1 inline-flex items-center gap-1 font-medium text-terracotta-600 underline-offset-4 hover:underline"
                 >
-                  Resend verification email →
+                  Resend verification email
+                  <ArrowRight className="size-3.5 transition-transform duration-150 group-hover:translate-x-1 motion-reduce:transition-none" />
                 </button>
               )}
             </div>
@@ -178,13 +181,25 @@ export function LoginForm({
             </p>
           )}
 
-          <button
+          <Button
             type="submit"
+            variant="terracotta"
+            size="cta"
             disabled={form.formState.isSubmitting}
-            className="mt-1 w-full rounded-lg bg-terracotta-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400"
+            className="mt-1 w-full"
           >
-            {form.formState.isSubmitting ? "Signing in…" : "Sign in →"}
-          </button>
+            {form.formState.isSubmitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Signing in…
+              </>
+            ) : (
+              <>
+                Sign in
+                <ArrowRight className="size-4 transition-transform duration-150 group-hover/button:translate-x-1 motion-reduce:transition-none" />
+              </>
+            )}
+          </Button>
         </form>
       </Form>
 

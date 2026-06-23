@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Reveal } from "@/components/shared/Reveal";
 import type { Category } from "@/types/database";
@@ -97,9 +98,10 @@ export function CategoryBento({ categories }: CategoryBentoProps) {
           <div className="mt-8">
             <Link
               href="/browse"
-              className="text-sm font-medium text-terracotta-600 underline-offset-4 hover:underline motion-reduce:transition-none"
+              className="group inline-flex items-center gap-1 text-sm font-medium text-terracotta-600 underline-offset-4 hover:underline"
             >
-              Browse all resources →
+              Browse all resources
+              <ArrowRight className="size-3.5 transition-transform duration-150 group-hover:translate-x-1 motion-reduce:transition-none" />
             </Link>
           </div>
         </Reveal>

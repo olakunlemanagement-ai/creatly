@@ -2,9 +2,10 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { X, ChevronRight } from "lucide-react";
+import { X, ChevronRight, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Logo } from "@/components/brand/Logo";
+import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/actions/auth";
 import { CONTACT_EMAIL } from "@/lib/config";
 import type { AuthenticatedUser } from "@/lib/auth";
@@ -69,10 +70,10 @@ export function MobileOverlay({ open, onClose, auth, categories }: MobileOverlay
             </Link>
             <button
               onClick={onClose}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-cream-200 transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream-200"
+              className="flex size-10 items-center justify-center rounded-full text-cream-200 transition-all duration-150 hover:scale-110 hover:bg-white/10 hover:text-cream-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream-200 active:scale-95 motion-reduce:transition-colors"
               aria-label="Close menu"
             >
-              <X className="h-5 w-5" />
+              <X className="size-5" />
             </button>
           </div>
 
@@ -94,7 +95,7 @@ export function MobileOverlay({ open, onClose, auth, categories }: MobileOverlay
                     style={{ fontFamily: "var(--font-heading)" }}
                   >
                     {label}
-                    <ChevronRight className="h-5 w-5 text-cream-300" />
+                    <ChevronRight className="size-5 text-cream-300" />
                   </Link>
                 </motion.li>
               ))}
@@ -140,8 +141,13 @@ export function MobileOverlay({ open, onClose, auth, categories }: MobileOverlay
                 <p className="text-sm text-cream-300">
                   Signed in as <span className="font-medium text-cream-100">{auth.user.email}</span>
                 </p>
-                <Link href="/dashboard" onClick={onClose} className="block text-sm font-medium text-cream-100 hover:text-terracotta-400">
-                  Dashboard →
+                <Link
+                  href="/dashboard"
+                  onClick={onClose}
+                  className="group inline-flex items-center gap-1.5 text-sm font-medium text-cream-100 transition-colors hover:text-terracotta-400"
+                >
+                  Dashboard
+                  <ArrowRight className="size-3.5 transition-transform duration-150 group-hover:translate-x-1 motion-reduce:transition-none" />
                 </Link>
                 <form action={signOut}>
                   <button type="submit" className="text-sm text-cream-300 hover:text-cream-100">
@@ -151,20 +157,12 @@ export function MobileOverlay({ open, onClose, auth, categories }: MobileOverlay
               </div>
             ) : (
               <div className="flex gap-3">
-                <Link
-                  href="/login"
-                  onClick={onClose}
-                  className="flex-1 rounded-lg border border-white/20 py-3 text-center text-sm font-medium text-cream-200 transition-colors hover:border-white/40 hover:text-cream-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream-200"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/signup"
-                  onClick={onClose}
-                  className="flex-1 rounded-lg bg-terracotta-500 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400"
-                >
-                  Sign Up
-                </Link>
+                <Button variant="ghost-cream" size="cta" className="flex-1 justify-center" asChild>
+                  <Link href="/login" onClick={onClose}>Sign In</Link>
+                </Button>
+                <Button variant="terracotta" size="cta" className="flex-1 justify-center" asChild>
+                  <Link href="/signup" onClick={onClose}>Sign Up</Link>
+                </Button>
               </div>
             )}
           </div>

@@ -4,13 +4,14 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { Mail } from "lucide-react";
+import { Mail, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 
 import {
   requestPasswordResetSchema,
   type RequestPasswordResetInput,
 } from "@/lib/validations/auth";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
 
 import {
   Form,
@@ -66,9 +67,10 @@ export function RequestResetForm() {
         </div>
         <Link
           href="/login"
-          className="inline-block text-sm font-medium text-terracotta-600 underline-offset-4 hover:underline"
+          className="group inline-flex items-center gap-1.5 text-sm font-medium text-terracotta-600 underline-offset-4 hover:underline"
         >
-          ← Back to sign in
+          <ArrowLeft className="size-3.5 transition-transform duration-150 group-hover:-translate-x-1 motion-reduce:transition-none" />
+          Back to sign in
         </Link>
       </div>
     );
@@ -115,21 +117,34 @@ export function RequestResetForm() {
             )}
           />
 
-          <button
+          <Button
             type="submit"
+            variant="terracotta"
+            size="cta"
             disabled={form.formState.isSubmitting}
-            className="mt-1 w-full rounded-lg bg-terracotta-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400"
+            className="mt-1 w-full"
           >
-            {form.formState.isSubmitting ? "Sending…" : "Send reset link →"}
-          </button>
+            {form.formState.isSubmitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Sending…
+              </>
+            ) : (
+              <>
+                Send reset link
+                <ArrowRight className="size-4 transition-transform duration-150 group-hover/button:translate-x-1 motion-reduce:transition-none" />
+              </>
+            )}
+          </Button>
         </form>
       </Form>
 
       <Link
         href="/login"
-        className="block text-center text-sm font-medium text-terracotta-600 underline-offset-4 hover:underline"
+        className="group flex items-center justify-center gap-1.5 text-sm font-medium text-terracotta-600 underline-offset-4 hover:underline"
       >
-        ← Back to sign in
+        <ArrowLeft className="size-3.5 transition-transform duration-150 group-hover:-translate-x-1 motion-reduce:transition-none" />
+        Back to sign in
       </Link>
     </div>
   );

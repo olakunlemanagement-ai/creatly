@@ -4,12 +4,13 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 import { resetPasswordSchema, type ResetPasswordInput } from "@/lib/validations/auth";
 import { createClient } from "@/lib/supabase/client";
 import { PasswordStrengthMeter } from "@/components/auth/PasswordStrengthMeter";
+import { Button } from "@/components/ui/button";
 
 import {
   Form,
@@ -98,7 +99,7 @@ export function UpdatePasswordForm() {
                     <button
                       type="button"
                       onClick={() => setShowPassword((p) => !p)}
-                      className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+                      className="absolute inset-y-0 right-3 flex items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -129,7 +130,7 @@ export function UpdatePasswordForm() {
                     <button
                       type="button"
                       onClick={() => setShowConfirm((p) => !p)}
-                      className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+                      className="absolute inset-y-0 right-3 flex items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
                     >
                       {showConfirm ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -147,23 +148,44 @@ export function UpdatePasswordForm() {
               {serverError.includes("expired") && (
                 <Link
                   href="/reset-password"
-                  className="mt-1 block font-medium underline-offset-4 hover:underline"
+                  className="group mt-1 inline-flex items-center gap-1 font-medium underline-offset-4 hover:underline"
                 >
-                  Request a new reset link →
+                  Request a new reset link
+                  <ArrowRight className="size-3.5 transition-transform duration-150 group-hover:translate-x-1 motion-reduce:transition-none" />
                 </Link>
               )}
             </div>
           )}
 
-          <button
+          <Button
             type="submit"
+            variant="terracotta"
+            size="cta"
             disabled={form.formState.isSubmitting}
-            className="mt-1 w-full rounded-lg bg-terracotta-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400"
+            className="mt-1 w-full"
           >
-            {form.formState.isSubmitting ? "Saving…" : "Set new password →"}
-          </button>
+            {form.formState.isSubmitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Saving…
+              </>
+            ) : (
+              <>
+                Set new password
+                <ArrowRight className="size-4 transition-transform duration-150 group-hover/button:translate-x-1 motion-reduce:transition-none" />
+              </>
+            )}
+          </Button>
         </form>
       </Form>
+
+      <Link
+        href="/login"
+        className="group flex items-center justify-center gap-1.5 text-sm font-medium text-terracotta-600 underline-offset-4 hover:underline"
+      >
+        <ArrowLeft className="size-3.5 transition-transform duration-150 group-hover:-translate-x-1 motion-reduce:transition-none" />
+        Back to sign in
+      </Link>
     </div>
   );
 }

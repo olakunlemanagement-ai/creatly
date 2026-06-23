@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { Reveal } from "@/components/shared/Reveal";
 import { getPreviewImageUrl } from "@/lib/storage";
 import type { ResourceCardData } from "@/components/resource/ResourceCard";
@@ -29,9 +30,10 @@ export function FeaturedStrip({ resources }: FeaturedStripProps) {
             </div>
             <Link
               href="/browse"
-              className="hidden text-sm font-medium text-terracotta-600 underline-offset-4 hover:underline sm:block"
+              className="group hidden items-center gap-1 text-sm font-medium text-terracotta-600 underline-offset-4 hover:underline sm:inline-flex"
             >
-              View all →
+              View all
+              <ArrowRight className="size-3.5 transition-transform duration-150 group-hover:translate-x-1 motion-reduce:transition-none" />
             </Link>
           </div>
         </Reveal>
@@ -88,9 +90,10 @@ export function FeaturedStrip({ resources }: FeaturedStripProps) {
           <div className="mt-8 sm:hidden">
             <Link
               href="/browse"
-              className="text-sm font-medium text-terracotta-600 underline-offset-4 hover:underline"
+              className="group inline-flex items-center gap-1 text-sm font-medium text-terracotta-600 underline-offset-4 hover:underline"
             >
-              View all resources →
+              View all resources
+              <ArrowRight className="size-3.5 transition-transform duration-150 group-hover:translate-x-1 motion-reduce:transition-none" />
             </Link>
           </div>
         </Reveal>

@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { Reveal } from "@/components/shared/Reveal";
+import { Button } from "@/components/ui/button";
 
 export function CreatorBand() {
   return (
@@ -39,12 +41,12 @@ export function CreatorBand() {
 
         <Reveal delay={180}>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link
-              href="/creators"
-              className="inline-flex items-center rounded-xl bg-terracotta-500 px-7 py-3.5 text-sm font-semibold text-white transition-all hover:bg-terracotta-600 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400 motion-reduce:transition-none"
-            >
-              Become a creator →
-            </Link>
+            <Button variant="terracotta" size="cta" asChild>
+              <Link href="/creators">
+                Become a creator
+                <ArrowRight className="size-4 transition-transform duration-150 group-hover/button:translate-x-1 motion-reduce:transition-none" />
+              </Link>
+            </Button>
             <p className="text-xs text-cream-300/50">
               Applications open. Launch in minutes.
             </p>
