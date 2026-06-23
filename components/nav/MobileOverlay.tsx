@@ -6,6 +6,7 @@ import { X, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Logo } from "@/components/brand/Logo";
 import { signOut } from "@/lib/actions/auth";
+import { CONTACT_EMAIL } from "@/lib/config";
 import type { AuthenticatedUser } from "@/lib/auth";
 import type { Category } from "@/types/database";
 
@@ -17,9 +18,9 @@ interface MobileOverlayProps {
 }
 
 const NAV_LINKS = [
-  { label: "Browse",       href: "/browse" },
-  { label: "For Creators", href: "/creators" },
-  { label: "Pricing",      href: "/pricing" },
+  { label: "Browse",   href: "/browse" },
+  { label: "Pricing",  href: "/pricing" },
+  { label: "License",  href: "/license" },
 ] as const;
 
 const EXPO_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1];
@@ -36,7 +37,6 @@ const itemVariants = {
 export function MobileOverlay({ open, onClose, auth, categories }: MobileOverlayProps) {
   const prefersReduced = useReducedMotion();
 
-  // Lock body scroll while menu is open; close on Escape
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
@@ -78,7 +78,7 @@ export function MobileOverlay({ open, onClose, auth, categories }: MobileOverlay
 
           {/* Scrollable content */}
           <nav className="flex-1 overflow-y-auto px-5 py-6" aria-label="Mobile navigation">
-            {/* Primary links — stagger in */}
+            {/* Primary links */}
             <motion.ul
               className="space-y-1"
               variants={prefersReduced ? undefined : listVariants}
@@ -121,6 +121,16 @@ export function MobileOverlay({ open, onClose, auth, categories }: MobileOverlay
                 </ul>
               </div>
             )}
+
+            {/* Contact */}
+            <div className="mt-8 border-t border-white/10 pt-6">
+              <a
+                href={`mailto:${CONTACT_EMAIL}`}
+                className="text-sm text-cream-300 transition-colors hover:text-cream-100"
+              >
+                Contact Us
+              </a>
+            </div>
           </nav>
 
           {/* Auth actions */}
@@ -146,14 +156,14 @@ export function MobileOverlay({ open, onClose, auth, categories }: MobileOverlay
                   onClick={onClose}
                   className="flex-1 rounded-lg border border-white/20 py-3 text-center text-sm font-medium text-cream-200 transition-colors hover:border-white/40 hover:text-cream-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream-200"
                 >
-                  Log in
+                  Sign In
                 </Link>
                 <Link
                   href="/signup"
                   onClick={onClose}
                   className="flex-1 rounded-lg bg-terracotta-500 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400"
                 >
-                  Sign up
+                  Sign Up
                 </Link>
               </div>
             )}

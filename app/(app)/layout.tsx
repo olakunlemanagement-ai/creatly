@@ -17,8 +17,7 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-screen flex-col">
-      {/* Inner app pages: no hero underneath, so header is always solid */}
-      <SiteHeader transparent={false} />
+      <SiteHeader />
       <main id="main-content" className="flex-1 pt-16 lg:pt-[6.5rem]">
         {children}
       </main>

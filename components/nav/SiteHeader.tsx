@@ -3,12 +3,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { HeaderClient } from "@/components/nav/HeaderClient";
 import type { Category } from "@/types/database";
 
-interface SiteHeaderProps {
-  /** When false the header always shows as solid (e.g. on inner pages without a hero). */
-  transparent?: boolean;
-}
-
-export async function SiteHeader({ transparent = true }: SiteHeaderProps) {
+export async function SiteHeader() {
   const supabase = await createClient();
 
   const [auth, { data: categories }] = await Promise.all([
@@ -25,7 +20,6 @@ export async function SiteHeader({ transparent = true }: SiteHeaderProps) {
     <HeaderClient
       auth={auth}
       categories={categories ?? []}
-      transparent={transparent}
     />
   );
 }
