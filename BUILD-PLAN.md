@@ -694,6 +694,277 @@ Build a real home page at `/` (currently the Next.js default — the biggest "un
 **Watch for:** reuse UI-1 motion primitives (don't reinvent); don't hardcode brand name; keep it fast; pricing CTA may point at a not-yet-built route — fine.
 
 ---
+PHASE 1.9 — Brand, Navigation & Onboarding ⬜
+
+The "doesn't feel AI-generated" pass with teeth: a real logo/identity, a proper navigation system, a rebuilt landing page, branded auth, and a guided onboarding flow. Plus one live bug fix (verification email). Phase 1 shipped the storefront and the guarded download mechanic; this phase makes Creatly feel like an owned brand before we take money in Phase 2.
+
+Applies to every step in this phase: use the frontend-design skill (/mnt/skills/public/frontend-design/SKILL.md); stay within and extend the established green/terracotta/cream tokens and the UI-1 motion primitives (reuse <Reveal> / useReveal, don't reinvent); subtle premium motion only; prefers-reduced-motion always respected; mobile-first at 375px; no bundle bloat.
+
+
+1.9.0 — Fix: verification email not sending ⬜ (bug fix — do FIRST)
+
+Email verification (built in 1.3) is not delivering. Onboarding (1.9.5) depends on a working verify flow, so this is unblocked first. No new features — diagnose and fix the existing pipeline.
+
+Decisions (locked):
+
+
+Production email provider is Resend, wired into Supabase as custom SMTP (the 1.3 plan already anticipated switching off Supabase built-in with "no rework needed").
+Sender identity: noreply@joincreatly.com (requires a verified domain in Resend).
+
+
+Scope:
+
+
+Diagnose in order, documenting findings:
+
+Confirm whether Supabase is still on default built-in SMTP (rate-limited to a few/hour, silently drops/delays — the most likely cause for "not sending").
+Check Authentication → URL Configuration: Site URL = https://joincreatly.com; redirect allow-list includes https://joincreatly.com/**, http://localhost:3000/**, and the Vercel preview pattern. A missing redirect URL surfaces as otp_expired/404 even when mail sends.
+Verify the confirm template still contains the {{ .ConfirmationURL }} token (a broken/edited template kills the link).
+Verify the callback route from 1.3 exchanges the code for a session (exchangeCodeForSession) and redirects to /browse (per 1.3 decision), handling the expired/invalid case with a resend path.
+Check Auth logs (Dashboard → Logs → Auth) for send failures; locally, check Inbucket.
+
+
+
+Wire Resend SMTP in Supabase (Host smtp.resend.com, port 465, user resend, password = RESEND_API_KEY, sender noreply@joincreatly.com).
+Branded confirm-signup template — inline-styled HTML on-brand (forest/terracotta/cream, Creatly wordmark), preserving {{ .ConfirmationURL }}. This is the "branded Resend templates come later" item from 1.3, brought in now.
+Env + DNS: add RESEND_API_KEY to env (lib/env.ts validation + Vercel). Domain DNS verification (SPF/DKIM for joincreatly.com) is a founder action if not already done — if blocked, record the exact DNS records needed in BLOCKERS.md and continue; do not stall the phase.
+
+
+Acceptance criteria (done when):
+
+
+A signup on a fresh email delivers a verification mail within ~60s (via Resend, not built-in SMTP).
+Clicking the link confirms the account and lands the user on /browse with a session (no otp_expired).
+The unverified-login block and resend flow from 1.3 still work end-to-end.
+Confirm-signup email is on-brand and contains a working {{ .ConfirmationURL }}.
+RESEND_API_KEY is validated in lib/env.ts; if DNS verification is outstanding, BLOCKERS.md documents the exact records.
+No 1.3 auth logic regressed; pnpm typecheck + pnpm lint pass.
+One clean commit, e.g. fix(auth): wire Resend SMTP + branded verification email.
+
+
+Watch for: default Supabase SMTP is the prime suspect; redirect allow-list is the second; don't rewrite 1.3 flows, only fix the pipeline; DNS is a founder action — log it, don't block.
+
+
+1.9.1 — Brand identity: logo & mark ⬜ 🔶 CHECKPOINT (design-led)
+
+
+🔶 CHECKPOINT: complete, self-review, and commit this step, then STOP and present the logo (all variants, on cream + forest, favicon, OG) to the founder for approval before continuing. The logo anchors everything visual downstream — don't /clear past it unapproved.
+
+
+
+Creatly has no real logo — the wordmark reads as a default. Build an ownable identity as code (SVG components), themeable and crisp at every size.
+
+Use the frontend-design skill.
+
+Decisions (locked):
+
+
+A wordmark + monogram system. Monogram: a "C" built as a stylised aperture/loop (a nod to lens/creativity and woven geometry) from overlapping forest + terracotta arcs. Wordmark: "Creatly" in the display face, tight tracking, a small terracotta accent on the descender.
+Implemented as inline SVG React components (vector, currentColor-themeable) — no raster source of truth.
+
+
+Scope:
+
+
+components/brand/Logo.tsx exporting three variants: full (mark + wordmark — nav, footer), mark (monogram — favicon, mobile nav, loading), wordmark (text). Props for tone (ink | cream | mono) and size. Generate real SVG geometry — no placeholder.
+Favicon + icons: app/icon.svg (Next 15 auto-favicon), app/apple-icon.png (180×180), and a dynamic app/opengraph-image.tsx (mark + tagline on a brand field) — replaces any Next default OG/favicon.
+Use APP_NAME from config for any text alongside the logo where appropriate; never hardcode the brand string elsewhere.
+
+
+Acceptance criteria (done when):
+
+
+<Logo /> renders crisply at 24px and ~200px; all three variants work; tone variants legible on cream and forest.
+Browser tab shows the Creatly mark (not the Next default); OG image renders the brand.
+All vector — no raster placeholder anywhere; tokens/currentColor used, no hardcoded hex in the component beyond defined brand values.
+pnpm typecheck + pnpm lint pass.
+One clean commit, e.g. feat(brand): add Creatly logo system, favicon, and OG image.
+
+
+Watch for: keep it vector + themeable; don't introduce a new palette (extend tokens); replace the Next default favicon/OG, don't leave both.
+
+
+1.9.2 — Navigation system ⬜ (design-led)
+
+There is no dedicated nav component — build a real one used across public + app surfaces. Auth-aware, with category discovery and a clear creator entry point.
+
+Use the frontend-design skill. Reuse UI-1 motion primitives.
+
+Decisions (locked):
+
+
+Sticky, transparent over the hero, solidifying to cream with backdrop-blur on scroll.
+Auth-aware actions; a distinguished "For Creators" entry (funnels into the pulled-forward creator phase).
+
+
+Scope:
+
+
+components/nav/SiteHeader.tsx (+ supporting pieces): left = <Logo variant="full" />; center (desktop) = Browse, Categories (mega-menu), For Creators, Pricing; right = search affordance + auth-aware actions.
+
+Logged out: Log in (ghost) + Sign up (terracotta solid pill — the high-contrast anchor).
+Logged in: avatar dropdown — Dashboard, Favourites, Billing (Phase 2), Log out, + Creator Studio when the user is a creator (role check; the role column lands in the creator phase — until then the item is simply absent).
+
+
+
+Categories mega-menu: multi-column panel from the categories table (not hardcoded), each with a tiny preview; opens with the expo ease; keyboard accessible.
+Search affordance: expands/routes into the existing 1.5 FTS search (/browse?q=) — do not rebuild search.
+Mobile: full-screen overlay menu (logo mark + close), large display-font links, mono section labels, focus-trapped, closes on route change.
+A11y: keyboard-navigable dropdowns, aria-expanded, skip-to-content, visible focus.
+Wire the header into the public layout and app layout consistently (replace whatever ad-hoc nav exists).
+
+
+Acceptance criteria (done when):
+
+
+Sticky header transparent over hero, solid + blur on scroll; consistent across public and app routes.
+Mega-menu renders categories from the DB, opens/closes smoothly, keyboard accessible.
+Auth-aware: correct actions for logged-out / logged-in; Creator Studio item appears only for creators (gracefully absent until the role exists).
+Search affordance routes into existing FTS search (no search rebuild).
+Mobile overlay works, traps focus, closes on navigation; reduced-motion respected.
+pnpm typecheck + pnpm lint pass.
+One clean commit, e.g. feat(nav): add auth-aware site header with category mega-menu and mobile overlay.
+
+
+Watch for: don't rebuild 1.5 search — link into it; categories from the table, not hardcoded; the Creator Studio item must no-op/absent until the creator role exists; don't fight the hero (z-index/spacing).
+
+
+1.9.3 — Auth UI redesign ⬜ (design-led)
+
+The 1.3 auth screens work but read as default. Rebuild their presentation only — flows, validation, and redirects from 1.3 are untouched.
+
+Use the frontend-design skill.
+
+Scope:
+
+
+Split-screen layout (desktop): left = form on cream; right = branded forest panel with grain texture, the logo mark, and a staggered asset collage (reuse UI-2 thumbnails). Mobile: brand panel collapses to a slim header.
+Apply to signup, login, reset-password, update-password: large display headings, mono field labels, generous spacing, terracotta primary buttons with loading states, inline (not submit-only) validation, password strength meter on signup, clear error/success states. Keep all existing React-Hook-Form + Zod (lib/validations/auth.ts) wiring — presentation change only.
+Preserve every 1.3 behaviour: verification-required gate, resend, no account enumeration, safe next redirects, land on /browse.
+
+
+Acceptance criteria (done when):
+
+
+All four auth screens are branded split-screen (slim header on mobile); no default/AI-looking forms.
+Inline validation + password strength + proper loading/error states present.
+All 1.3 flows still pass (verify-before-login, resend, no enumeration, safe next, /browse landing) — no behavioural regression.
+Reduced-motion respected; mobile-first at 375px.
+pnpm typecheck + pnpm lint pass.
+One clean commit, e.g. feat(auth-ui): branded split-screen auth screens.
+
+
+Watch for: presentation only — do not alter 1.3 auth logic, schemas, or redirects; reuse the shared Zod schemas; no enumeration leaks reintroduced via new error copy.
+
+
+1.9.4 — Landing page: full redesign (rip & replace) ⬜ 🔶 CHECKPOINT (design-led)
+
+
+🔶 CHECKPOINT: complete, self-review, and commit this step, then STOP and present the rebuilt landing page (desktop + 375px mobile) to the founder for approval before continuing to 1.9.5. The hero treatment and art direction set the product's first impression — don't /clear past it unapproved.
+
+
+
+The UI-3 landing page is replaced — not refined — with a bold, editorial, asset-forward home page. Founder decision: rip and replace. Reuse UI-1 motion primitives and UI-2 thumbnails; pull live categories + featured resources as UI-3 did.
+
+Use the frontend-design skill.
+
+Decisions (locked):
+
+
+Editorial bold-minimalism: oversized type-led asymmetric hero (not centered-hero-with-gradient), monospace eyebrows/labels, intentional negative space, subtle grain texture, high-contrast terracotta CTA, real asset previews as proof.
+Hero height ~88vh (resolves the parked "hero too tall" tell on the home page).
+
+
+Scope (sections, each a component in components/landing/):
+
+
+Hero — mono eyebrow (// SUBSCRIPTION-BASED CREATIVE LIBRARY), oversized asymmetric display headline (second line terracotta), one-line subcopy, primary terracotta CTA (Start creating →) + ghost (Browse the library), and an overlapping, slightly-rotated parallax collage of real UI-2 previews. Grain texture; staggered load-in via UI-1 primitives.
+Category showcase — asymmetric bento grid from the categories table; hover zoom + terracotta accent; links to /browse?category=.
+Featured strip — real is_featured resources; mono metadata; links to /browse.
+Value pillars — staggered (not evenly-spaced) rows: Curated for quality / Fair pay for creators / Download with confidence; hand-drawn-style line icons.
+For-Creators band — dark forest, grain overlay, mono kicker // FOR CREATORS, CTA → the creator landing (route from the creator phase; wire the href even if it 404s until then).
+Pricing teaser — compact, links to /pricing (Phase 2; href wired).
+Footer — large wordmark, link columns, mono copyright, support email from config (no hardcoded brand).
+
+
+
+Reveal-on-scroll per section (UI-1), hero parallax, magnetic CTA hover; reduced-motion disables non-essential motion; lazy-load below-fold imagery; no CLS.
+
+
+Acceptance criteria (done when):
+
+
+/ is fully replaced: asymmetric, type-led hero (no centered-gradient look), ~88vh; old UI-3 layout gone.
+Real categories + featured resources pulled from the DB; real UI-2 previews used throughout (no placeholders).
+All sections responsive (collage stacks, bento → single column on mobile); reveal-on-scroll via UI-1 primitives; reduced-motion respected.
+For-Creators band + pricing teaser CTAs wired (may 404 until their routes exist).
+Footer uses APP_NAME/support email from config — no hardcoded brand string.
+Lighthouse not regressed (lazy-load, no CLS); pnpm typecheck + pnpm lint pass.
+One clean commit, e.g. feat(landing): editorial rip-and-replace home page.
+
+
+Watch for: this replaces UI-3 — remove the old page, don't layer on it; reuse UI-1/UI-2, don't reinvent motion or imagery; no hardcoded brand; creator/pricing routes may not exist yet (wire hrefs); keep it fast.
+
+
+1.9.5 — Onboarding flow ⬜
+
+1.3 has no post-signup onboarding. Add a short guided wizard after first verified login that captures intent (consumer vs creator) and personalises the experience — and routes would-be creators toward the pulled-forward creator phase.
+
+Decisions (locked):
+
+
+Runs once, after first verified login; persisted so refresh doesn't restart it; skipped for already-onboarded users.
+Needs an onboarded flag (and, looking ahead, a role) on the profile. These columns are introduced as a NEW migration here (1.2b/1.3 migrations untouched) so onboarding is self-contained and the creator phase can build on role.
+
+
+Scope:
+
+
+Migration (new file): add profiles.onboarded boolean not null default false and profiles.role text not null default 'consumer' check (role in ('consumer','creator','admin')). RLS: a user may update their own onboarded/role to consumer/creator only (never self-assign admin — enforce in policy/server). Regenerate types/database.ts.
+Wizard (app/onboarding/), mono step indicator 01 / 03:
+
+Step 1 — intent: "How will you use Creatly?" → I'm here to download (consumer) or I want to sell my work (creator). Sets role.
+Step 2 — personalise: multi-select interest categories (chips, from categories), optional display name/avatar.
+Step 3 — done: confirmation + next action (Browse, or — if creator — Start your creator profile, routing toward the creator phase). Subtle on-brand motion moment.
+
+
+
+Gating: after first verified login, if onboarded = false route to /onboarding; on completion set onboarded = true and route (consumer → /browse; creator → creator apply/landing, href wired even if that route arrives in the creator phase). Already-onboarded users never see it.
+Server-side writes only; never trust the client for role (no admin), and validate interests against real categories.
+
+
+Acceptance criteria (done when):
+
+
+New migration adds onboarded + role with safe RLS (no client self-assignment of admin); types regenerated; earlier migrations untouched.
+Wizard runs once after first verified login, persists progress, sets role + interests, marks onboarded, and is skipped thereafter.
+Consumer completes → /browse; creator completes → creator apply/landing (href wired even if 404 until the creator phase).
+All writes server-side and validated; reduced-motion respected; mobile-first.
+pnpm typecheck + pnpm lint pass.
+One clean commit, e.g. feat(onboarding): add post-signup onboarding wizard with role + interests.
+
+
+Watch for: new migration only; role cannot be set to admin by a client; don't break the 1.3 verify→/browse path (onboarding interleaves after first login, doesn't replace the redirect logic); creator route may not exist yet — wire the href.
+
+
+PHASE 1.10 — Creator Side (pulled forward from Phase 5) ⬜
+
+Pulled forward per CEO request to onboard creators and start ingesting assets before Payments. Sits after the brand/onboarding phase and before Phase 2. The role column it depends on is introduced in 1.9.5. Approved creator assets must flow into the existing catalogue, detail page, and the guarded 1.8 download mechanic (entitlement + immutable attribution) — do not fork those.
+
+Launch decision (locked): auto-approve everything behind a single flag CREATOR_AUTO_APPROVE (default true) — creators and their uploads go live without a human gate, but all server-side validation (file type/size, ownership, role, immutable creator_id) still runs. Flipping the flag to false later re-enables manual review with no code change.
+
+To be expanded (detailed steps written before this phase is started, like the other stubs):
+1.10.1 Data model — extend profiles.role usage, creator_profiles, and resource review columns (new migration) ·
+1.10.2 /creators landing + become-a-creator apply flow ·
+1.10.3 Creator Studio dashboard + profile editor ·
+1.10.4 Multi-step asset upload to the private resource-files bucket (+ preview generation) ·
+1.10.5 Admin review queue (built but empty under auto-approve; honors the flag) ·
+1.10.6 Public creator storefront /creators/[handle].
+
+Guardrails that already apply (carry into expansion): catalogue/detail/download are reused, not forked; only approved assets are public; all creator/admin writes are server-side and role-checked; creator_id is immutable and is the attribution source the 1.8 download log denormalises; never trust the client for role, review_status, or creator_id.
+
+
+Removes the old ## PHASE 5 — Creator Dashboard stub (its scope is now Phase 1.10, pulled forward). If a later, separate creator-payouts/earnings addendum is still wanted post-Payments, note it under Phase 2/3 when those are expanded.
 
 ## PHASE 2 — Payments & Entitlements ⬜
 2.1 Paystack plans (annual = monthly ×10) + env · 2.2 Pricing page · 2.3 Checkout · 2.4 Webhook handler (idempotent, signature-verified) · 2.5 Team plans + invites · 2.6 Subscription status page · 2.7 Payment history. *(Expanded when Phase 1 completes.)*
