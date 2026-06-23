@@ -13,7 +13,11 @@
       "Bash(git log*)",
       "Bash(git diff*)",
       "Bash(git add *)",
-      "Bash(pnpm dlx *)"
+      "Bash(pnpm dlx *)",
+      "Bash(curl -s http://localhost:3000/browse)",
+      "Bash(curl -s http://localhost:3000/resources/bold-gradient-instagram-story-pack)",
+      "Bash(git -C /c/Users/USER/creatly add next.config.ts)",
+      "Bash(git -C /c/Users/USER/creatly commit -m ' *)"
     ],
     "deny": [
       "Bash(git push*)",

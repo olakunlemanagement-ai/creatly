@@ -104,13 +104,12 @@ function Mark({
   );
 }
 
-// ── Wordmark ("Creatly" text with accent on the y-dot) ─────────────────────
+// ── Wordmark ("Creatly" text with accent dot) ──────────────────────────────
 function Wordmark({
   size = 24,
   colors,
   ...props
 }: { size?: number; colors: ReturnType<typeof resolveColors> } & SVGProps<SVGSVGElement>) {
-  // Wordmark is text-based; height = size, width ≈ 5.5× height
   const h = size;
   const w = Math.round(h * 5.5);
 
@@ -125,6 +124,7 @@ function Wordmark({
       aria-label="Creatly"
       {...props}
     >
+      {/* Single text element — no split, no font-metric dependency */}
       <text
         x="0"
         y={h * 0.78}
@@ -134,23 +134,11 @@ function Wordmark({
         fontFamily="var(--font-heading, Georgia, serif)"
         fill={colors.text}
       >
-        Creati
+        Creatly
       </text>
-      {/* The 'y' is split: the stem in brand colour, the accent dot in terracotta */}
-      <text
-        x={w * 0.845}
-        y={h * 0.78}
-        fontSize={h}
-        fontWeight="700"
-        letterSpacing="-0.03em"
-        fontFamily="var(--font-heading, Georgia, serif)"
-        fill={colors.text}
-      >
-        y
-      </text>
-      {/* Terracotta under-dot accent on the y */}
+      {/* Terracotta accent dot — decorative, sits below the trailing 'y' */}
       <circle
-        cx={w * 0.868}
+        cx={w * 0.955}
         cy={h * 0.94}
         r={h * 0.055}
         fill={colors.accent}
@@ -198,21 +186,10 @@ function FullLogo({
           fontFamily="var(--font-heading, Georgia, serif)"
           fill={colors.text}
         >
-          Creati
-        </text>
-        <text
-          x={wordW * 0.845}
-          y={wordH * 0.78}
-          fontSize={wordH}
-          fontWeight="700"
-          letterSpacing="-0.03em"
-          fontFamily="var(--font-heading, Georgia, serif)"
-          fill={colors.text}
-        >
-          y
+          Creatly
         </text>
         <circle
-          cx={wordW * 0.868}
+          cx={wordW * 0.955}
           cy={wordH * 0.94}
           r={wordH * 0.055}
           fill={colors.accent}

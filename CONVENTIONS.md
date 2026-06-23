@@ -108,6 +108,14 @@ Follow the folder structure in PRD §19.1 exactly. Key rules:
 
 **Rule:** The service-role client bypasses RLS. It is used in exactly one place — the Paystack webhook handler — and nowhere else. If you find yourself reaching for it elsewhere, you are doing something wrong.
 
+### 4.1a Admin client exceptions
+The service-role client (`createAdminClient()`) may also be used in server actions that need to write columns blocked by RLS for non-admins, provided:
+1. The caller's identity has already been verified via `getAuthenticatedUser()`.
+2. All inputs have been validated (Zod schema + DB cross-check) before the admin client touches the DB.
+3. A comment at the call site names the RLS constraint being bypassed and why.
+
+Current approved exception: `lib/actions/onboarding.ts` — updates `profiles.role` and `profiles.onboarded` after signup; the `profiles: update` policy blocks non-admins from changing their own role column.
+
 ### 4.2 No client-side writes to protected data
 - The browser never writes directly to `downloads`, `subscriptions`, `subscription_events`, or any monetary/attribution table.
 - Those writes happen server-side, in route handlers, after validation and entitlement checks.
@@ -219,6 +227,22 @@ The order — **auth → validate → authorize → execute → respond → hand
   ```
 - Currency is explicit on every amount (`currency: 'NGN'`). NGN is primary; the field exists so multi-currency is a data change, not a schema change.
 - Annual price = monthly price × 10 (the "2 months free" rule). This is a fixed stored value per plan, **not** a runtime calculation (PRD §5.2).
+
+---
+
+## 6a. Constants & Mappings
+
+### 6a.1 UI role values vs DB role values
+
+The `profiles.role` column check constraint allows `('user', 'admin', 'creator')`. The onboarding UI presents `'consumer'` and `'creator'` as the two user-facing choices. These are **not** the same namespace.
+
+| UI / `ONBOARDING_ROLES` value | DB `profiles.role` value | Notes |
+|-------------------------------|--------------------------|-------|
+| `'consumer'`                  | `'user'`                 | Default on signup; no DB 'consumer' value exists |
+| `'creator'`                   | `'creator'`              | Set during onboarding; grants creator-dashboard access |
+| _(server-only)_               | `'admin'`                | Never accepted from client input |
+
+**`ROLE_DB_MAP`** in `lib/actions/onboarding.ts` is the single source of this translation. Do not inline the mapping elsewhere.
 
 ---
 

@@ -3,8 +3,13 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { ONBOARDING_ROLES } from "@/types/database";
+
+// The DB check constraint uses 'user' for non-creator accounts (not 'consumer').
+// Map the UI value to the DB value here — the only place this translation lives.
+const ROLE_DB_MAP = { consumer: "user", creator: "creator" } as const;
 
 // Validate role is only consumer/creator — never admin (server-side guard).
 const completeOnboardingSchema = z.object({
@@ -52,25 +57,35 @@ export async function completeOnboarding(
     }
   }
 
-  // Build the profile update — only fields that changed
+  // Using admin client here — identity already verified via getAuthenticatedUser()
+  // and inputs validated; user-scoped client cannot update role column due to RLS.
+  // (profiles: update policy requires new.role = current_role for non-admins)
+  // Map the UI role value to the DB-allowed value ('consumer' → 'user').
   type ProfileUpdate = {
     onboarded: boolean;
     role: string;
     full_name?: string;
   };
 
-  const update: ProfileUpdate = { onboarded: true, role };
+  const dbRole = ROLE_DB_MAP[role];
+  const update: ProfileUpdate = { onboarded: true, role: dbRole };
   if (display_name) {
     update.full_name = display_name;
   }
 
-  const { error: updateError } = await supabase
+  const admin = createAdminClient();
+  const { error: updateError } = await admin
     .from("profiles")
     .update(update)
     .eq("id", auth.user.id);
 
   if (updateError) {
-    console.error("[onboarding] profile update failed:", updateError.message);
+    console.error("[onboarding] profile update failed", {
+      message: updateError.message,
+      code: updateError.code,
+      details: updateError.details,
+      hint: updateError.hint,
+    });
     return { error: "Could not save your preferences. Please try again." };
   }
 
