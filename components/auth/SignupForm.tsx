@@ -4,37 +4,30 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
 
 import { signupSchema, type SignupInput } from "@/lib/validations/auth";
 import { createClient } from "@/lib/supabase/client";
 import { APP_NAME } from "@/lib/config";
 
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { PasswordStrengthMeter } from "@/components/auth/PasswordStrengthMeter";
+
+// Shared label style: mono eyebrow
+const labelClass = "font-mono text-[10px] uppercase tracking-widest text-muted-foreground";
 
 export function SignupForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  // Always show the "check email" state after submit — never reveal if the
-  // email was already registered (account enumeration prevention).
+  // Always show "check email" state after submit — no enumeration of existing emails.
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -47,6 +40,8 @@ export function SignupForm() {
       confirm_password: "",
     },
   });
+
+  const passwordValue = form.watch("password");
 
   async function onSubmit(values: SignupInput) {
     setServerError(null);
@@ -74,176 +69,175 @@ export function SignupForm() {
 
   if (submitted) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Check your email</CardTitle>
-          <CardDescription>
+      <div className="space-y-6">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-green-100">
+          <CheckCircle2 className="h-6 w-6 text-brand-green-600" />
+        </div>
+        <div className="space-y-2">
+          <h1
+            className="font-heading text-3xl text-foreground"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            Check your email
+          </h1>
+          <p className="text-sm leading-relaxed text-muted-foreground">
             We&apos;ve sent a verification link to your inbox. Click it to
             activate your {APP_NAME} account.
-          </CardDescription>
-        </CardHeader>
-        <CardFooter>
-          <p className="text-sm text-muted-foreground">
-            Wrong email?{" "}
-            <button
-              onClick={() => setSubmitted(false)}
-              className="text-primary underline-offset-4 hover:underline"
-            >
-              Go back
-            </button>
           </p>
-        </CardFooter>
-      </Card>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Wrong email?{" "}
+          <button
+            onClick={() => setSubmitted(false)}
+            className="font-medium text-terracotta-600 underline-offset-4 hover:underline"
+          >
+            Go back
+          </button>
+        </p>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Create your account</CardTitle>
-        <CardDescription>
-          Join {APP_NAME} and access thousands of creative resources.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col gap-4"
-          >
-            <FormField
-              control={form.control}
-              name="full_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full name (optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ada Okafor" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+    <div className="space-y-8">
+      {/* Heading */}
+      <div className="space-y-1">
+        <p className={labelClass}>{"// Create account"}</p>
+        <h1
+          className="font-heading text-3xl text-foreground"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
+          Join {APP_NAME}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Unlimited creative resources, made for African creators.
+        </p>
+      </div>
 
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
+      {/* Form */}
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col gap-5"
+        >
+          <FormField
+            control={form.control}
+            name="full_name"
+            render={({ field }) => (
+              <FormItem className="space-y-1.5">
+                <FormLabel className={labelClass}>Full name (optional)</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ada Okafor" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem className="space-y-1.5">
+                <FormLabel className={labelClass}>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder="ada@example.com"
+                    autoComplete="email"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem className="space-y-1.5">
+                <FormLabel className={labelClass}>Password</FormLabel>
+                <FormControl>
+                  <div className="relative">
                     <Input
-                      type="email"
-                      placeholder="ada@example.com"
-                      autoComplete="email"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      className="pr-10"
                       {...field}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        autoComplete="new-password"
-                        className="pr-10"
-                        {...field}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((p) => !p)}
-                        className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
-                        aria-label={
-                          showPassword ? "Hide password" : "Show password"
-                        }
-                      >
-                        {showPassword ? (
-                          <EyeOff className="size-4" />
-                        ) : (
-                          <Eye className="size-4" />
-                        )}
-                      </button>
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    8+ characters, one uppercase letter, one number.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="confirm_password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm password</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        type={showConfirm ? "text" : "password"}
-                        autoComplete="new-password"
-                        className="pr-10"
-                        {...field}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirm((p) => !p)}
-                        className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
-                        aria-label={
-                          showConfirm
-                            ? "Hide confirm password"
-                            : "Show confirm password"
-                        }
-                      >
-                        {showConfirm ? (
-                          <EyeOff className="size-4" />
-                        ) : (
-                          <Eye className="size-4" />
-                        )}
-                      </button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {serverError && (
-              <p className="text-sm text-destructive">{serverError}</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((p) => !p)}
+                      className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                </FormControl>
+                <PasswordStrengthMeter value={passwordValue} />
+                <FormMessage />
+              </FormItem>
             )}
+          />
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={form.formState.isSubmitting}
-            >
-              {form.formState.isSubmitting ? "Creating account…" : "Create account"}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-      <CardFooter>
-        <p className="text-sm text-muted-foreground">
-          Already have an account?{" "}
-          <Link
-            href="/login"
-            className="text-primary underline-offset-4 hover:underline"
+          <FormField
+            control={form.control}
+            name="confirm_password"
+            render={({ field }) => (
+              <FormItem className="space-y-1.5">
+                <FormLabel className={labelClass}>Confirm password</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type={showConfirm ? "text" : "password"}
+                      autoComplete="new-password"
+                      className="pr-10"
+                      {...field}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirm((p) => !p)}
+                      className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+                      aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
+                    >
+                      {showConfirm ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {serverError && (
+            <p className="rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+              {serverError}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={form.formState.isSubmitting}
+            className="mt-1 w-full rounded-lg bg-terracotta-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400"
           >
-            Sign in
-          </Link>
-        </p>
-      </CardFooter>
-    </Card>
+            {form.formState.isSubmitting ? "Creating account…" : "Create account →"}
+          </button>
+        </form>
+      </Form>
+
+      {/* Footer link */}
+      <p className="text-center text-sm text-muted-foreground">
+        Already have an account?{" "}
+        <Link
+          href="/login"
+          className="font-medium text-terracotta-600 underline-offset-4 hover:underline"
+        >
+          Sign in
+        </Link>
+      </p>
+    </div>
   );
 }

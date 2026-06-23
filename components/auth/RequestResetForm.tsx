@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { Mail } from "lucide-react";
 
 import {
   requestPasswordResetSchema,
@@ -11,7 +12,6 @@ import {
 } from "@/lib/validations/auth";
 import { createClient } from "@/lib/supabase/client";
 
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -21,14 +21,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+
+// Shared label style: mono eyebrow
+const labelClass = "font-mono text-[10px] uppercase tracking-widest text-muted-foreground";
 
 export function RequestResetForm() {
   // Always show the same confirmation regardless of whether the email exists
@@ -43,7 +38,7 @@ export function RequestResetForm() {
   async function onSubmit(values: RequestPasswordResetInput) {
     const supabase = createClient();
 
-    // Errors are intentionally ignored — same response either way.
+    // Errors are intentionally ignored — same response either way (no enumeration).
     await supabase.auth.resetPasswordForEmail(values.email, {
       redirectTo: `${window.location.origin}/auth/confirm?next=/update-password`,
     });
@@ -53,77 +48,89 @@ export function RequestResetForm() {
 
   if (submitted) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Check your email</CardTitle>
-          <CardDescription>
+      <div className="space-y-6">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-green-100">
+          <Mail className="h-6 w-6 text-brand-green-600" />
+        </div>
+        <div className="space-y-2">
+          <h1
+            className="font-heading text-3xl text-foreground"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            Check your email
+          </h1>
+          <p className="text-sm leading-relaxed text-muted-foreground">
             If an account exists for that address, we&apos;ve sent a password
             reset link. Check your inbox and follow the instructions.
-          </CardDescription>
-        </CardHeader>
-        <CardFooter>
-          <Link
-            href="/login"
-            className="text-sm text-primary underline-offset-4 hover:underline"
-          >
-            Back to sign in
-          </Link>
-        </CardFooter>
-      </Card>
+          </p>
+        </div>
+        <Link
+          href="/login"
+          className="inline-block text-sm font-medium text-terracotta-600 underline-offset-4 hover:underline"
+        >
+          ← Back to sign in
+        </Link>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Reset your password</CardTitle>
-        <CardDescription>
-          Enter your email and we&apos;ll send you a reset link.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col gap-4"
-          >
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="ada@example.com"
-                      autoComplete="email"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={form.formState.isSubmitting}
-            >
-              {form.formState.isSubmitting ? "Sending…" : "Send reset link"}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-      <CardFooter>
-        <Link
-          href="/login"
-          className="text-sm text-primary underline-offset-4 hover:underline"
+    <div className="space-y-8">
+      {/* Heading */}
+      <div className="space-y-1">
+        <p className={labelClass}>{"// Account recovery"}</p>
+        <h1
+          className="font-heading text-3xl text-foreground"
+          style={{ fontFamily: "var(--font-heading)" }}
         >
-          Back to sign in
-        </Link>
-      </CardFooter>
-    </Card>
+          Reset your password
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Enter your email and we&apos;ll send you a reset link.
+        </p>
+      </div>
+
+      {/* Form */}
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col gap-5"
+        >
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem className="space-y-1.5">
+                <FormLabel className={labelClass}>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder="ada@example.com"
+                    autoComplete="email"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <button
+            type="submit"
+            disabled={form.formState.isSubmitting}
+            className="mt-1 w-full rounded-lg bg-terracotta-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400"
+          >
+            {form.formState.isSubmitting ? "Sending…" : "Send reset link →"}
+          </button>
+        </form>
+      </Form>
+
+      <Link
+        href="/login"
+        className="block text-center text-sm font-medium text-terracotta-600 underline-offset-4 hover:underline"
+      >
+        ← Back to sign in
+      </Link>
+    </div>
   );
 }
