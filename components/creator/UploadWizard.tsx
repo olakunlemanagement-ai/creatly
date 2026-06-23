@@ -93,8 +93,6 @@ export function UploadWizard({ categories, userId, existingDraftId }: UploadWiza
     },
   });
 
-  // ── File upload helpers ────────────────────────────────────────────────────
-
   async function handleSourceFile(file: File) {
     setFileError(null);
     if (file.size > MAX_FILE_SIZE_BYTES) {
@@ -169,7 +167,6 @@ export function UploadWizard({ categories, userId, existingDraftId }: UploadWiza
       startSubmitting(async () => {
         const result = await submitAsset(data);
         if (result?.error) setServerError(result.error);
-        // On success the action redirects to /resources/[slug]
       });
     })();
   }
@@ -178,7 +175,6 @@ export function UploadWizard({ categories, userId, existingDraftId }: UploadWiza
 
   return (
     <div className="space-y-8">
-      {/* Step bar */}
       <div className="flex items-center justify-between">
         <StepBar current={step} />
         <span className="font-mono text-xs text-muted-foreground">
@@ -186,7 +182,7 @@ export function UploadWizard({ categories, userId, existingDraftId }: UploadWiza
         </span>
       </div>
 
-      {/* ── Step 1: Files ─────────────────────────────────────────────── */}
+      {/* Step 1: Files */}
       {step === 1 && (
         <div className="space-y-6">
           <div>
@@ -198,7 +194,6 @@ export function UploadWizard({ categories, userId, existingDraftId }: UploadWiza
             </h2>
           </div>
 
-          {/* Source file drop zone */}
           <div className="space-y-2">
             <label className="block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
               Resource file <span className="text-terracotta-500">*</span>
@@ -247,7 +242,6 @@ export function UploadWizard({ categories, userId, existingDraftId }: UploadWiza
             {fileError && <p className="text-xs text-destructive">{fileError}</p>}
           </div>
 
-          {/* Preview image */}
           <div className="space-y-2">
             <label className="block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
               Preview image <span className="text-terracotta-500">*</span>
@@ -315,7 +309,7 @@ export function UploadWizard({ categories, userId, existingDraftId }: UploadWiza
         </div>
       )}
 
-      {/* ── Step 2: Details ───────────────────────────────────────────── */}
+      {/* Step 2: Details */}
       {step === 2 && (
         <div className="space-y-5">
           <div>
@@ -327,7 +321,6 @@ export function UploadWizard({ categories, userId, existingDraftId }: UploadWiza
             </h2>
           </div>
 
-          {/* Title */}
           <div>
             <label className="block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
               Title <span className="text-terracotta-500">*</span>
@@ -343,7 +336,6 @@ export function UploadWizard({ categories, userId, existingDraftId }: UploadWiza
             )}
           </div>
 
-          {/* Description */}
           <div>
             <label className="block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
               Description
@@ -356,7 +348,6 @@ export function UploadWizard({ categories, userId, existingDraftId }: UploadWiza
             />
           </div>
 
-          {/* Category */}
           <div>
             <label className="block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
               Category <span className="text-terracotta-500">*</span>
@@ -375,7 +366,6 @@ export function UploadWizard({ categories, userId, existingDraftId }: UploadWiza
             )}
           </div>
 
-          {/* Tags */}
           <div>
             <label className="block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
               Tags <span className="text-muted-foreground/60 normal-case font-sans text-[11px]">(comma-separated)</span>
@@ -388,7 +378,6 @@ export function UploadWizard({ categories, userId, existingDraftId }: UploadWiza
             />
           </div>
 
-          {/* Compatible software */}
           <div>
             <label className="block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
               Compatible software <span className="text-muted-foreground/60 normal-case font-sans text-[11px]">(comma-separated)</span>
@@ -431,7 +420,7 @@ export function UploadWizard({ categories, userId, existingDraftId }: UploadWiza
         </div>
       )}
 
-      {/* ── Step 3: Preview & submit ──────────────────────────────────── */}
+      {/* Step 3: Preview & submit */}
       {step === 3 && (
         <div className="space-y-6">
           <div>
@@ -443,7 +432,6 @@ export function UploadWizard({ categories, userId, existingDraftId }: UploadWiza
             </h2>
           </div>
 
-          {/* Mini preview card */}
           <div className="rounded-xl border border-border bg-card overflow-hidden">
             {previewFile && (
               <div className="aspect-[4/3] w-full bg-muted">
@@ -470,7 +458,6 @@ export function UploadWizard({ categories, userId, existingDraftId }: UploadWiza
             </div>
           </div>
 
-          {/* Summary */}
           <div className="rounded-xl border border-border bg-card p-4 text-sm space-y-2">
             <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Summary</p>
             {watchedValues.tags && String(watchedValues.tags).length > 0 && (

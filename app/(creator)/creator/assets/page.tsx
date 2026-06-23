@@ -48,7 +48,6 @@ export default async function StudioAssetsPage({
   if (creator) {
     query = query.eq("creator_id", creator.id);
   } else {
-    // No creator entity yet — return empty
     return <EmptyState />;
   }
 
@@ -67,7 +66,7 @@ export default async function StudioAssetsPage({
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -88,7 +87,6 @@ export default async function StudioAssetsPage({
         </Link>
       </div>
 
-      {/* Filter tabs */}
       <div className="flex flex-wrap gap-2 border-b border-border pb-4">
         {FILTER_TABS.map(({ value, label }) => (
           <Link
@@ -106,7 +104,6 @@ export default async function StudioAssetsPage({
         ))}
       </div>
 
-      {/* Asset list */}
       {!assets || assets.length === 0 ? (
         <EmptyState />
       ) : (
@@ -118,7 +115,6 @@ export default async function StudioAssetsPage({
                 key={asset.id}
                 className="flex items-start gap-4 rounded-xl border border-border bg-card p-4"
               >
-                {/* Preview thumbnail */}
                 {asset.preview_image_path ? (
                   <Image
                     src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/resource-previews/${asset.preview_image_path}`}

@@ -4,7 +4,7 @@ import { APP_NAME } from "@/lib/config";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { CreatorProfile } from "@/types/database";
-import { ProfileEditor } from "@/app/(app)/creator/profile/ProfileEditor";
+import { ProfileEditor } from "@/components/creator/ProfileEditor";
 
 export const metadata: Metadata = { title: `Edit Profile — ${APP_NAME}` };
 
@@ -24,7 +24,7 @@ export default async function StudioProfilePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 space-y-6">
       <div>
         <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
           {"// Profile"}

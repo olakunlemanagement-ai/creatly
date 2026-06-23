@@ -43,7 +43,6 @@ export function ProfileEditor({ profile }: ProfileEditorProps) {
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-      {/* Read-only handle */}
       <div>
         <label className={labelClass}>Handle</label>
         <div className="mt-1.5 flex items-center gap-1 rounded-lg border border-input bg-muted/40 px-3 py-2 text-sm text-muted-foreground">

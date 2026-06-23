@@ -12,14 +12,12 @@ export default async function StudioOverviewPage() {
 
   const supabase = await createClient();
 
-  // Look up the creator entity for this user
   const { data: creator } = await supabase
     .from("creators")
     .select("id, name")
     .eq("user_id", auth.user.id)
     .maybeSingle();
 
-  // Counts by review_status for this creator's resources
   const statusCounts: Record<string, number> = {
     draft: 0,
     submitted: 0,
@@ -41,7 +39,6 @@ export default async function StudioOverviewPage() {
     }
   }
 
-  // Total downloads for this creator's resources
   let totalDownloads = 0;
   if (creator) {
     const { count } = await supabase
@@ -59,7 +56,7 @@ export default async function StudioOverviewPage() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 space-y-8">
       <div>
         <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
           {"// Overview"}
@@ -72,7 +69,6 @@ export default async function StudioOverviewPage() {
         </h1>
       </div>
 
-      {/* Status counts */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {STAT_CARDS.map(({ label, value, href, color }) => (
           <Link
@@ -86,18 +82,14 @@ export default async function StudioOverviewPage() {
         ))}
       </div>
 
-      {/* Downloads */}
       <div className="rounded-xl border border-border bg-card p-5">
         <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
           Total downloads
         </p>
         <p className="mt-2 text-4xl font-bold text-foreground">{totalDownloads.toLocaleString()}</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Across all your published assets
-        </p>
+        <p className="mt-1 text-xs text-muted-foreground">Across all your published assets</p>
       </div>
 
-      {/* CTA */}
       <div className="flex flex-wrap gap-3">
         <Link
           href="/creator/upload"

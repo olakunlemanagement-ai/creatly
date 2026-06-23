@@ -4,7 +4,7 @@ import { APP_NAME } from "@/lib/config";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Category, Resource } from "@/types/database";
-import { UploadWizard } from "@/app/(app)/creator/upload/UploadWizard";
+import { UploadWizard } from "@/components/creator/UploadWizard";
 
 export const metadata: Metadata = { title: `Upload Asset — ${APP_NAME}` };
 
@@ -19,7 +19,6 @@ export default async function UploadPage({
   const supabase = await createClient();
   const { edit: editId } = await searchParams;
 
-  // Fetch active categories for the detail form
   const { data: categories } = await supabase
     .from("categories")
     .select("id, name")
@@ -27,7 +26,6 @@ export default async function UploadPage({
     .order("sort_order")
     .returns<Pick<Category, "id" | "name">[]>();
 
-  // If editing a draft, verify ownership
   let draftId: string | undefined;
   if (editId) {
     const { data: creator } = await supabase
@@ -52,7 +50,7 @@ export default async function UploadPage({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 space-y-6">
       <div>
         <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
           {"// Upload"}
