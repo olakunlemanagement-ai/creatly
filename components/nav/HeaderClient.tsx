@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Search, Menu, ChevronDown } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Search, Menu } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Logo } from "@/components/brand/Logo";
 import { UserDropdown } from "@/components/nav/UserDropdown";
@@ -19,43 +19,53 @@ interface HeaderClientProps {
   transparent?: boolean;
 }
 
-const NAV_LINKS = [
-  { label: "Browse",       href: "/browse" },
-  { label: "For Creators", href: "/creators" },
-  { label: "Pricing",      href: "/pricing" },
-] as const;
+// Isolated into its own component so the parent doesn't need a Suspense boundary.
+// useSearchParams() requires Suspense when used in a component that renders
+// during SSR — wrapping here keeps the boundary tight.
+function CategoryLinks({
+  categories,
+}: {
+  categories: Pick<Category, "id" | "name" | "slug">[];
+}) {
+  const searchParams = useSearchParams();
+  const activeSlug = searchParams.get("category");
 
-export function HeaderClient({ auth, categories, transparent = true }: HeaderClientProps) {
+  return (
+    <>
+      {categories.map((cat) => (
+        <Link
+          key={cat.id}
+          href={`/browse?category=${cat.slug}`}
+          className={[
+            "flex-1 text-center text-xs font-medium transition-colors duration-150 hover:text-white",
+            activeSlug === cat.slug ? "text-terracotta-400" : "text-white/75",
+          ].join(" ")}
+        >
+          {cat.name}
+        </Link>
+      ))}
+    </>
+  );
+}
+
+export function HeaderClient({
+  auth,
+  categories,
+  transparent = true,
+}: HeaderClientProps) {
   const scrolled = useScrolled(16);
   const solid = !transparent || scrolled;
-  const pathname = usePathname();
+  const router = useRouter();
   const prefersReduced = useReducedMotion();
 
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [megaOpen, setMegaOpen] = useState(false);
-  const megaRef = useRef<HTMLDivElement>(null);
+  const [query, setQuery] = useState("");
 
-  const closeMega = useCallback(() => setMegaOpen(false), []);
-
-  useEffect(() => {
-    if (!megaOpen) return;
-    const handler = (e: MouseEvent | FocusEvent) => {
-      if (megaRef.current && !megaRef.current.contains(e.target as Node)) closeMega();
-    };
-    document.addEventListener("mousedown", handler);
-    document.addEventListener("focusin", handler);
-    return () => {
-      document.removeEventListener("mousedown", handler);
-      document.removeEventListener("focusin", handler);
-    };
-  }, [megaOpen, closeMega]);
-
-  useEffect(() => {
-    if (!megaOpen) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") closeMega(); };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [megaOpen, closeMega]);
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = query.trim();
+    router.push(q ? `/browse?q=${encodeURIComponent(q)}` : "/browse");
+  }
 
   return (
     <>
@@ -72,151 +82,139 @@ export function HeaderClient({ auth, categories, transparent = true }: HeaderCli
         initial={prefersReduced ? false : { y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className={[
-          "fixed inset-x-0 top-0 z-50 transition-all duration-300 motion-reduce:transition-none",
-          solid
-            ? "border-b border-white/20 bg-white/80 shadow-sm backdrop-blur-md"
-            : "bg-transparent",
-        ].join(" ")}
+        className="fixed inset-x-0 top-0 z-50"
       >
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+        {/* ── TOP BAR ── */}
+        <div
+          className={[
+            "transition-all duration-300 motion-reduce:transition-none",
+            solid
+              ? "border-b border-white/20 bg-white/80 shadow-sm backdrop-blur-md"
+              : "bg-transparent",
+          ].join(" ")}
+        >
+          <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-6">
 
-          {/* Left: Logo with hover pulse */}
-          <motion.div
-            whileHover={prefersReduced ? {} : { scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className="shrink-0"
-          >
-            <Link href="/" aria-label="Home">
-              <Logo variant="full" tone={solid ? "ink" : "cream"} size={30} />
-            </Link>
-          </motion.div>
+            {/* Left: Logo */}
+            <motion.div
+              whileHover={prefersReduced ? {} : { scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              className="shrink-0"
+            >
+              <Link href="/" aria-label="Home">
+                <Logo variant="full" tone={solid ? "ink" : "cream"} size={30} />
+              </Link>
+            </motion.div>
 
-          {/* Center: Desktop nav */}
-          <nav className="hidden lg:flex lg:items-center lg:gap-6" aria-label="Primary navigation">
-            {NAV_LINKS.map(({ label, href }) => {
-              const isActive = pathname === href || pathname.startsWith(`${href}/`);
-              return (
-                <Link
-                  key={href}
-                  href={href}
+            {/* Center: Search bar — desktop only */}
+            <form
+              onSubmit={handleSearch}
+              role="search"
+              aria-label="Search resources"
+              className="mx-auto hidden w-full max-w-sm lg:flex"
+            >
+              <div className="relative w-full">
+                <Search
                   className={[
-                    "relative py-1 text-sm font-medium transition-colors duration-150 hover:opacity-100",
-                    solid
-                      ? "text-foreground/80 hover:text-foreground"
-                      : "text-cream-100/80 hover:text-cream-100",
+                    "pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2",
+                    solid ? "text-muted-foreground" : "text-cream-200",
                   ].join(" ")}
-                >
-                  {label}
-                  {/* Animated underline — layoutId lets it slide between active links */}
-                  {isActive && (
-                    <motion.span
-                      layoutId="nav-underline"
-                      className="absolute -bottom-0.5 left-0 right-0 h-0.5 rounded-full bg-terracotta-500"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    />
-                  )}
-                </Link>
-              );
-            })}
+                  aria-hidden
+                />
+                <input
+                  type="search"
+                  placeholder="Search templates, fonts, mockups…"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className={[
+                    "w-full rounded-full py-2 pl-9 pr-4 text-sm outline-none ring-1 transition-all duration-200",
+                    solid
+                      ? "bg-muted/70 text-foreground placeholder:text-muted-foreground ring-border/40 focus:ring-brand-green-400"
+                      : "bg-white/15 text-cream-100 placeholder:text-cream-300/70 ring-white/20 backdrop-blur-sm focus:bg-white/20 focus:ring-white/40",
+                  ].join(" ")}
+                />
+              </div>
+            </form>
 
-            {/* Categories mega-menu */}
-            <div ref={megaRef} className="relative">
-              <button
-                onClick={() => setMegaOpen((o) => !o)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setMegaOpen((o) => !o); }
-                }}
-                aria-haspopup="menu"
-                aria-expanded={megaOpen}
+            {/* Right: Auth actions */}
+            <div className="flex items-center gap-2">
+              {/* Mobile: search icon navigates to /browse */}
+              <Link
+                href="/browse"
+                aria-label="Search resources"
                 className={[
-                  "flex items-center gap-1 text-sm font-medium transition-colors duration-150 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  solid ? "text-foreground/80 hover:text-foreground" : "text-cream-100/80 hover:text-cream-100",
+                  "flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-black/10 lg:hidden",
+                  solid ? "text-foreground/70" : "text-cream-100/70 hover:bg-white/10",
                 ].join(" ")}
               >
-                Categories
-                <ChevronDown className={["h-3.5 w-3.5 transition-transform duration-200", megaOpen ? "rotate-180" : ""].join(" ")} />
+                <Search className="h-4 w-4" />
+              </Link>
+
+              {/* Desktop auth */}
+              <div className="hidden lg:flex lg:items-center lg:gap-2">
+                {auth ? (
+                  <UserDropdown auth={auth} />
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      className={[
+                        "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                        solid
+                          ? "text-foreground/80 hover:bg-muted hover:text-foreground"
+                          : "text-cream-100/80 hover:bg-white/10 hover:text-cream-100",
+                      ].join(" ")}
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      href="/signup"
+                      className="rounded-full bg-terracotta-500 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400"
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )}
+              </div>
+
+              {/* Mobile hamburger */}
+              <button
+                onClick={() => setMobileOpen(true)}
+                className={[
+                  "flex h-9 w-9 items-center justify-center rounded-md transition-colors lg:hidden",
+                  solid ? "text-foreground hover:bg-muted" : "text-cream-100 hover:bg-white/10",
+                ].join(" ")}
+                aria-label="Open menu"
+                aria-expanded={mobileOpen}
+              >
+                <Menu className="h-5 w-5" />
               </button>
-
-              {megaOpen && (
-                <div
-                  role="menu"
-                  className="absolute left-0 top-full mt-2 w-72 rounded-xl border border-border bg-background p-4 shadow-xl animate-in fade-in-0 slide-in-from-top-2 duration-150"
-                >
-                  {categories.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">No categories yet.</p>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                      {categories.map((cat) => (
-                        <Link
-                          key={cat.id}
-                          href={`/browse?category=${cat.slug}`}
-                          role="menuitem"
-                          onClick={closeMega}
-                          className="block rounded-md px-2 py-1.5 text-sm text-foreground/80 transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                          {cat.name}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
-          </nav>
-
-          {/* Right: Search + auth */}
-          <div className="flex items-center gap-2">
-            <Link
-              href="/browse"
-              aria-label="Search resources"
-              className={[
-                "flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-black/10",
-                solid ? "text-foreground/70" : "text-cream-100/70 hover:bg-white/10",
-              ].join(" ")}
-            >
-              <Search className="h-4 w-4" />
-            </Link>
-
-            <div className="hidden lg:flex lg:items-center lg:gap-2">
-              {auth ? (
-                <UserDropdown auth={auth} />
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className={[
-                      "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                      solid
-                        ? "text-foreground/80 hover:bg-muted hover:text-foreground"
-                        : "text-cream-100/80 hover:bg-white/10 hover:text-cream-100",
-                    ].join(" ")}
-                  >
-                    Log in
-                  </Link>
-                  <Link
-                    href="/signup"
-                    className="rounded-lg bg-terracotta-500 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400"
-                  >
-                    Sign up
-                  </Link>
-                </>
-              )}
-            </div>
-
-            <button
-              onClick={() => setMobileOpen(true)}
-              className={[
-                "flex h-9 w-9 items-center justify-center rounded-md transition-colors lg:hidden",
-                solid ? "text-foreground hover:bg-muted" : "text-cream-100 hover:bg-white/10",
-              ].join(" ")}
-              aria-label="Open menu"
-              aria-expanded={mobileOpen}
-            >
-              <Menu className="h-5 w-5" />
-            </button>
           </div>
         </div>
+
+        {/* ── BOTTOM BAR — category strip, desktop only ── */}
+        <nav
+          aria-label="Category navigation"
+          className="hidden bg-[#14342B] lg:block"
+        >
+          <div className="mx-auto flex h-10 max-w-7xl items-center px-4 sm:px-6">
+            {categories.length > 0 && (
+              <Suspense
+                fallback={categories.map((cat) => (
+                  <span
+                    key={cat.id}
+                    className="flex-1 text-center text-xs font-medium text-white/75"
+                  >
+                    {cat.name}
+                  </span>
+                ))}
+              >
+                <CategoryLinks categories={categories} />
+              </Suspense>
+            )}
+          </div>
+        </nav>
       </motion.header>
 
       <MobileOverlay
