@@ -49,7 +49,7 @@ const FAQS = [
 export default function CreatorsLandingPage() {
   return (
     <>
-      <SiteHeader transparent={false} />
+      <SiteHeader />
 
       <main id="main-content">
         {/* Hero */}
