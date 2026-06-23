@@ -1,0 +1,11 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Aperture C mark — forest + terracotta -->
+  <!-- Outer C body -->
+  <path d="M 26 8 A 13 13 0 1 0 26 24 L 22 24 A 9 9 0 1 1 22 8 Z" fill="#1a3d2f"/>
+  <!-- Top terracotta accent arc -->
+  <path d="M 26 10 L 28 7 A 2 2 0 0 0 24 6 L 22 9.5 A 1.5 1.5 0 0 1 24.5 10 Z" fill="#c8732e"/>
+  <!-- Bottom terracotta accent arc -->
+  <path d="M 26 22 L 28 25 A 2 2 0 0 1 24 26 L 22 22.5 A 1.5 1.5 0 0 0 24.5 22 Z" fill="#c8732e"/>
+  <!-- Centre terracotta dot -->
+  <circle cx="16" cy="16" r="2.5" fill="#c8732e"/>
+</svg>
