@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, LayoutDashboard, Heart, CreditCard } from "lucide-react";
+import { LogOut, LayoutDashboard, Heart, CreditCard, Pencil } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,7 +67,14 @@ export function UserDropdown({ auth }: UserDropdownProps) {
           </Link>
         </DropdownMenuItem>
 
-        {/* Creator Studio — absent until creator role is implemented in 1.10 */}
+        {auth.profile.role === "creator" && (
+          <DropdownMenuItem asChild>
+            <Link href="/studio" className="flex items-center gap-2">
+              <Pencil className="h-4 w-4" />
+              Creator Studio
+            </Link>
+          </DropdownMenuItem>
+        )}
 
         <DropdownMenuSeparator />
 
