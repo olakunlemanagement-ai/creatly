@@ -23,6 +23,15 @@ const envSchema = z.object({
 
   // ── Resend ──────────────────────────────────────────────────────────────────
   RESEND_API_KEY: z.string().min(1),
+
+  // ── Creator flags ───────────────────────────────────────────────────────────
+  // When 'true' (default), creators and uploads are auto-approved on submit.
+  // Flip to 'false' to require admin review (zero code change needed).
+  CREATOR_AUTO_APPROVE: z
+    .string()
+    .optional()
+    .default("true")
+    .transform((v) => v !== "false"),
 });
 
 export const env = envSchema.parse(process.env);

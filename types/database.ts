@@ -1,6 +1,7 @@
 // ============================================================
 // ENUM CONSTANTS — single source of truth for all status/type values.
 // Reference these constants; never write the raw string literals inline.
+// NOTE: pnpm gen:types overwrites this file. Re-add this block after regenerating.
 // ============================================================
 
 export const PLAN_TYPES = [
@@ -23,19 +24,20 @@ export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUS)[number];
 export const RESOURCE_STATUS = ["draft", "published", "archived"] as const;
 export type ResourceStatus = (typeof RESOURCE_STATUS)[number];
 
+export const REVIEW_STATUS = ["draft", "submitted", "approved", "rejected"] as const;
+export type ReviewStatus = (typeof REVIEW_STATUS)[number];
+
 export const USER_ROLE = ["user", "admin", "creator"] as const;
 export type UserRole = (typeof USER_ROLE)[number];
 
-// Onboarding role — the consumer/creator intent captured during onboarding.
-// 'admin' is only set server-side (service role). Never accept it from client input.
+export const CREATOR_PROFILE_STATUS = ["pending", "approved", "suspended"] as const;
+export type CreatorProfileStatus = (typeof CREATOR_PROFILE_STATUS)[number];
+
 export const ONBOARDING_ROLES = ["consumer", "creator"] as const;
 export type OnboardingRole = (typeof ONBOARDING_ROLES)[number];
 
 // ============================================================
-// SUPABASE GENERATED TYPES
-// Regenerate with: pnpm gen:types
-// NOTE: after running gen:types, re-add the ENUM CONSTANTS block above
-// (the generator overwrites this file entirely).
+// SUPABASE GENERATED TYPES (below — do not edit by hand)
 // ============================================================
 
 export type Json =
@@ -148,6 +150,48 @@ export type Database = {
           },
         ]
       }
+      creator_profiles: {
+        Row: {
+          avatar_path: string | null
+          banner_path: string | null
+          bio: string | null
+          created_at: string
+          display_name: string
+          handle: string
+          location: string | null
+          socials: Json
+          status: string
+          user_id: string
+          website: string | null
+        }
+        Insert: {
+          avatar_path?: string | null
+          banner_path?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name: string
+          handle: string
+          location?: string | null
+          socials?: Json
+          status?: string
+          user_id: string
+          website?: string | null
+        }
+        Update: {
+          avatar_path?: string | null
+          banner_path?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string
+          handle?: string
+          location?: string | null
+          socials?: Json
+          status?: string
+          user_id?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       creators: {
         Row: {
           avatar_path: string | null
@@ -160,6 +204,7 @@ export type Database = {
           profile_id: string | null
           slug: string
           updated_at: string
+          user_id: string | null
           website_url: string | null
         }
         Insert: {
@@ -173,6 +218,7 @@ export type Database = {
           profile_id?: string | null
           slug: string
           updated_at?: string
+          user_id?: string | null
           website_url?: string | null
         }
         Update: {
@@ -186,6 +232,7 @@ export type Database = {
           profile_id?: string | null
           slug?: string
           updated_at?: string
+          user_id?: string | null
           website_url?: string | null
         }
         Relationships: [
@@ -421,8 +468,13 @@ export type Database = {
           is_featured: boolean
           preview_image_path: string
           preview_images: string[]
+          rejection_reason: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
           slug: string
           status: string
+          submitted_at: string | null
           tags: string[]
           title: string
           updated_at: string
@@ -443,8 +495,13 @@ export type Database = {
           is_featured?: boolean
           preview_image_path: string
           preview_images?: string[]
+          rejection_reason?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           slug: string
           status?: string
+          submitted_at?: string | null
           tags?: string[]
           title: string
           updated_at?: string
@@ -465,8 +522,13 @@ export type Database = {
           is_featured?: boolean
           preview_image_path?: string
           preview_images?: string[]
+          rejection_reason?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           slug?: string
           status?: string
+          submitted_at?: string | null
           tags?: string[]
           title?: string
           updated_at?: string
@@ -649,6 +711,7 @@ export type Database = {
         Returns: undefined
       }
       is_admin: { Args: never; Returns: boolean }
+      is_creator: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
@@ -786,7 +849,7 @@ export const Constants = {
 } as const
 
 // ============================================================
-// NAMED TYPE ALIASES — convenience wrappers over generated row types.
+// NAMED TYPE ALIASES
 // ============================================================
 
 type DBRow<T extends keyof Database["public"]["Tables"]> =
@@ -804,3 +867,4 @@ export type Notification = DBRow<"notifications">;
 export type NotificationPreference = DBRow<"notification_preferences">;
 export type CategoryFollow = DBRow<"category_follows">;
 export type Creator = DBRow<"creators">;
+export type CreatorProfile = DBRow<"creator_profiles">;
