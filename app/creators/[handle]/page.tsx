@@ -101,7 +101,7 @@ export default async function CreatorStorefrontPage({
 
   return (
     <>
-      <SiteHeader transparent={false} />
+      <SiteHeader />
 
       <main id="main-content">
         {/* Banner */}
