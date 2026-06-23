@@ -22,8 +22,7 @@ const envSchema = z.object({
   // PAYSTACK_PLAN_TEAM_ANNUAL: z.string().min(1),
 
   // ── Resend ──────────────────────────────────────────────────────────────────
-  // TODO(step-3.x): uncomment when adding email integration
-  // RESEND_API_KEY: z.string().min(1),
+  RESEND_API_KEY: z.string().min(1),
 });
 
 export const env = envSchema.parse(process.env);
