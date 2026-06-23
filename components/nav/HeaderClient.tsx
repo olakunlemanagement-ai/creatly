@@ -2,7 +2,7 @@
 
 import { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search, Menu, ChevronDown } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
@@ -125,11 +125,14 @@ function SearchForm({
 }
 
 export function HeaderClient({ auth, categories }: HeaderClientProps) {
-  const pastHero = useScrollPosition("landing-hero");
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
+  const pastHero = useScrollPosition(isHomePage ? "landing-hero" : undefined);
   const prefersReduced = useReducedMotion();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const hidden = !pastHero;
+  // Hide only on the home page until past the hero; always visible everywhere else.
+  const hidden = isHomePage && !pastHero;
 
   return (
     <>
