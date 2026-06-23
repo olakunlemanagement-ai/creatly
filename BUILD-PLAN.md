@@ -693,6 +693,103 @@ Build a real home page at `/` (currently the Next.js default — the biggest "un
 
 **Watch for:** reuse UI-1 motion primitives (don't reinvent); don't hardcode brand name; keep it fast; pricing CTA may point at a not-yet-built route — fine.
 
+UI-4 — Lively UI & Animation pass ⬜ (design-led)
+
+
+⚙️ AUTONOMOUS — this step self-drives, commits, and stops. No prompt needed between tasks. Log blockers to BLOCKERS.md and continue.
+
+
+
+Goal: make Creatly feel alive — energetic, premium, editorial. Framer Motion is justified here given the scope; install it if not already present (pnpm add framer-motion). All motion respects prefers-reduced-motion. Stay within brand tokens (forest, terracotta, cream). Do NOT touch auth logic, download mechanic, RLS, or any server-side code — presentation only.
+
+Decisions (locked):
+
+
+Framer Motion for JS-driven animation (page transitions, stagger, tilt, count-up).
+CSS only for simple effects (shimmer, gradient mesh, glassmorphism).
+Every animated element has a prefers-reduced-motion fallback (instant/no motion).
+Mobile-first — no animation that tanks performance on low-end devices (use will-change sparingly, avoid animating layout properties).
+
+
+
+Task 1 — Glassmorphism navbar
+
+
+Replace the current solid navbar background with: backdrop-blur-md bg-white/70 dark:bg-forest/70 border-b border-white/20 — frosted glass effect.
+Smooth slide-down entrance on first load (framer-motion AnimatePresence + motion.header, y: -100 → 0).
+Active nav link: animated underline that slides in (motion.span with layoutId="nav-underline" for smooth transfer between links).
+Logo: subtle scale pulse on hover (whileHover={{ scale: 1.05 }}).
+Mobile overlay menu: items stagger in (variants with staggerChildren: 0.07).
+
+
+Task 2 — Landing hero: animated gradient mesh background
+
+
+Replace the static hero background with a slow CSS animated gradient mesh: 3–4 radial gradients in forest/terracotta/cream, animating position via @keyframes (slow, ~20s loop, subtle — not a disco). Use background-size: 400% 400% with background-position animation.
+Hero text: animate in word-by-word using Framer Motion motion.span with staggerChildren on the headline. Subline and CTA follow with delay.
+CTA button: shimmer sweep on hover — a ::after pseudo-element with a diagonal gradient that slides across on hover via CSS @keyframes.
+Floating asset collage (the staggered previews): on load, each card animates in with a slight rotation + scale from 0 (initial: { opacity: 0, scale: 0.8, rotate: -3 }, animate: { opacity: 1, scale: 1, rotate: Xdeg }), staggered 0.1s per card.
+
+
+Task 3 — Scroll-triggered section entrances
+
+
+Wrap every landing section and browse section in a <ScrollReveal> component (update the existing <Reveal> / useReveal from UI-1 to use Framer Motion useInView + motion.div).
+Entrance: { opacity: 0, y: 40 } → { opacity: 1, y: 0 }, duration: 0.6, ease: [0.16, 1, 0.3, 1] (expo out).
+Children stagger: staggerChildren: 0.08 on the parent variants so grid items, feature blocks, and category tiles cascade in.
+Apply to: landing sections, browse hero, category row, featured strip, resource grid (first page load only — not on filter/search updates).
+
+
+Task 4 — Resource card: 3D tilt + shine
+
+
+Wrap ResourceCard in a <TiltCard> client component: track mouse position on onMouseMove, apply a subtle CSS transform: perspective(800px) rotateX(Xdeg) rotateY(Ydeg) (max ±8deg). Smooth reset on onMouseLeave.
+Shine/glare: a ::after radial gradient that follows the mouse position (CSS custom properties --mouse-x, --mouse-y updated via JS), low opacity (~0.15) — the "glass shine" effect.
+Image zoom on card hover: already present from 1.4b — ensure it's scale(1.05) inside overflow-hidden, smooth transition: transform 0.4s ease.
+Favourite heart: fade + scale in on card hover (currently always visible — change to opacity: 0 → 1 on card hover, scale: 0.8 → 1).
+
+
+Task 5 — Count-up stats animation
+
+
+Landing trust strip / stats (e.g. "2,400+ resources", "50+ creators"): when they scroll into view, animate the number counting up from 0 using a custom useCountUp(target, duration) hook (Framer Motion useMotionValue + useTransform, or a simple requestAnimationFrame loop).
+Trigger once on first useInView.
+
+
+Task 6 — Category tiles: bounce-in + color flood hover
+
+
+Category tiles/pills on load: stagger bounce-in (type: "spring", stiffness: 300, damping: 20).
+Hover: background color floods from center outward — CSS radial-gradient transition or a motion.div scale from 0 on the background layer (position: absolute, scale: 0 → 1, border-radius: 50% → 0% via Framer layoutId or simple spring scale).
+
+
+Task 7 — Page transitions
+
+
+Wrap the root layout children in a Framer Motion AnimatePresence with a motion.div per page: initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -8 }, duration: 0.25. Smooth, not dramatic.
+Use key={pathname} (from usePathname) on the motion wrapper to trigger per-route.
+
+
+
+Acceptance criteria (done when):
+
+
+Navbar is glassmorphism; slides in on load; active link has animated underline; logo pulses on hover; mobile menu items stagger in.
+Landing hero has animated gradient mesh background, word-by-word headline entrance, shimmer CTA, staggered collage card entrance.
+All landing + browse sections reveal on scroll with staggered children; expo-out easing.
+Resource cards have 3D tilt + mouse-tracked shine; image zoom smooth; heart fades in on hover.
+Stats count up on scroll-into-view; triggers once.
+Category tiles bounce in on load; hover floods background.
+Page transitions are smooth (fade + 8px y) between routes.
+prefers-reduced-motion: ALL motion above is instant/disabled — no layout shift, no broken UI.
+Bundle impact is acceptable — framer-motion is tree-shaken; no other new heavy deps.
+No auth, RLS, download, or server logic touched — presentation only.
+pnpm typecheck + pnpm lint pass; pnpm build clean.
+One clean commit: feat(ui): lively animation pass — glassmorphism nav, hero mesh, card tilt, scroll reveals, page transitions.
+
+
+Watch for: don't animate layout properties (width/height) — only transform + opacity for performance; tilt effect must reset cleanly on mouse leave; count-up must not re-trigger on every scroll; page transition AnimatePresence needs mode="wait" to prevent overlap; shine effect must not cause repaints on every frame (use CSS custom properties, not inline style recalc).
+
 ---
 PHASE 1.9 — Brand, Navigation & Onboarding ✅
 
