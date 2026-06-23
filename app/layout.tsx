@@ -35,7 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${dmSans.variable} ${dmSerifDisplay.variable} ${geistMono.variable}`}>
-      <body className="antialiased"><PageTransition>{children}</PageTransition></body>
+      <body className="antialiased" suppressHydrationWarning><PageTransition>{children}</PageTransition></body>
     </html>
   );
 }
