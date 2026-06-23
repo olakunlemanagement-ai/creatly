@@ -947,7 +947,7 @@ One clean commit, e.g. feat(onboarding): add post-signup onboarding wizard with 
 Watch for: new migration only; role cannot be set to admin by a client; don't break the 1.3 verify→/browse path (onboarding interleaves after first login, doesn't replace the redirect logic); creator route may not exist yet — wire the href.
 
 
-PHASE 1.10 — Creator Side (pulled forward from Phase 5) ⬜
+PHASE 1.10 — Creator Side (pulled forward from Phase 5) ✅
 
 Supply side of the marketplace: creators apply, get a profile, upload assets, assets go live. Approved assets flow into the existing catalogue, detail page, and the guarded 1.8 download mechanic — do NOT fork those.
 
@@ -956,7 +956,7 @@ Launch decision (locked): CREATOR_AUTO_APPROVE env flag, default true. When true
 Phase guardrails (apply to every step): catalogue/detail/download reused not forked; only approved assets are public; ALL creator/admin writes are server-side and role-checked; creator_id is immutable and is the attribution source 1.8 denormalises; never trust the client for role, review_status, or creator_id. Reuse the ROLE_DB_MAP pattern from 1.9.5 ('creator' UI value → DB value). Use createAdminClient() only after getAuthenticatedUser() + Zod validation, with a comment explaining why (same pattern as the onboarding action). TS strict, no any. Zod-validate every external input.
 
 
-1.10.1 — Data model + storage (new migration) ⬜
+1.10.1 — Data model + storage (new migration) ✅
 
 Scope:
 
@@ -1009,7 +1009,7 @@ Commit: feat(creator): creator_profiles, resource review columns, storage polici
 Watch for: verify each ADD COLUMN actually landed (1.9.5 trap); don't fork the creators/resources entities — extend and reuse; don't weaken 1.2b immutability or 1.8 guards.
 
 
-1.10.2 — /creators landing + apply flow ⬜ (design-led)
+1.10.2 — /creators landing + apply flow ✅ (design-led)
 
 Use frontend-design skill. Reuse UI-1 motion + brand tokens. This is the route the navbar "For Creators" and landing "For Creators" band already point at.
 
@@ -1048,7 +1048,7 @@ Commit: feat(creator): /creators landing + become-a-creator apply flow.
 Watch for: role write needs admin client (RLS blocks self role-change, per 1.9.5); honor CREATOR_AUTO_APPROVE; don't trust client status/role.
 
 
-1.10.3 — Creator Studio dashboard + profile editor ⬜ (design-led)
+1.10.3 — Creator Studio dashboard + profile editor ✅ (design-led)
 
 Scope:
 
@@ -1075,7 +1075,7 @@ Commit: feat(creator): Creator Studio dashboard + profile editor.
 Watch for: ownership check on every read/write (a creator sees only their own); reuse existing card/grid components.
 
 
-1.10.4 — Asset upload flow ⬜
+1.10.4 — Asset upload flow ✅
 
 Scope:
 
@@ -1114,7 +1114,7 @@ Commit: feat(creator): multi-step asset upload to private bucket.
 Watch for: server-side file validation is mandatory (don't trust client MIME); creator_id from server; honor the flag; reuse catalogue/detail components for preview, don't rebuild.
 
 
-1.10.5 — Admin review queue ⬜
+1.10.5 — Admin review queue ✅
 
 Scope:
 

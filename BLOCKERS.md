@@ -78,4 +78,27 @@ The app validates this at boot (`lib/env.ts`) and will fail to start if it is mi
 
 ---
 
+---
+
+## 1.10.5 — First Admin Bootstrap
+
+Before any asset can be manually reviewed, at least one user must have `role = 'admin'` in the `profiles` table. There is no sign-up flow for admins — the first admin is bootstrapped via SQL.
+
+### Steps
+
+1. Sign up normally at `/signup` with the admin email address.
+2. In the Supabase dashboard → SQL Editor, run:
+
+```sql
+UPDATE profiles
+SET role = 'admin'
+WHERE email = 'your-admin@example.com';
+```
+
+3. The user can now access `/admin/review`. Non-admins get a 404 (no information leak).
+
+> ⚠️ This only needs to be done once. Subsequent admins can be promoted by the first admin via the same SQL command, or via an admin management UI added in a future step.
+
+---
+
 *Log resolutions here as: `✅ Resolved YYYY-MM-DD — <note>`*
