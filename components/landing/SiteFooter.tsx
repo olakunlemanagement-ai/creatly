@@ -1,0 +1,79 @@
+import Link from "next/link";
+import { APP_NAME, SUPPORT_EMAIL, APP_DOMAIN } from "@/lib/config";
+import { Logo } from "@/components/brand/Logo";
+
+const LINKS = [
+  {
+    heading: "Explore",
+    items: [
+      { label: "Browse resources", href: "/browse" },
+      { label: "Pricing", href: "/pricing" },
+      { label: "For creators", href: "/creators" },
+    ],
+  },
+  {
+    heading: "Account",
+    items: [
+      { label: "Sign up", href: "/signup" },
+      { label: "Log in", href: "/login" },
+      { label: "Dashboard", href: "/dashboard" },
+    ],
+  },
+  {
+    heading: "Support",
+    items: [
+      { label: SUPPORT_EMAIL, href: `mailto:${SUPPORT_EMAIL}` },
+      { label: APP_DOMAIN, href: `https://${APP_DOMAIN}` },
+    ],
+  },
+] as const;
+
+export function SiteFooter() {
+  const year = new Date().getFullYear();
+
+  return (
+    <footer className="border-t border-border bg-brand-green-900">
+      <div className="mx-auto max-w-7xl px-5 sm:px-6">
+
+        {/* Large wordmark */}
+        <div className="border-b border-white/10 py-14 sm:py-16">
+          <Logo variant="full" tone="cream" size={40} />
+          <p className="mt-4 max-w-[360px] text-sm leading-relaxed text-cream-300/70">
+            Creative resources for African creatives. One subscription, unlimited downloads.
+          </p>
+        </div>
+
+        {/* Link columns */}
+        <div className="grid grid-cols-2 gap-8 py-12 sm:grid-cols-3 lg:grid-cols-3">
+          {LINKS.map((col) => (
+            <div key={col.heading}>
+              <p className="font-mono text-[10px] uppercase tracking-widest text-cream-300/50">
+                {col.heading}
+              </p>
+              <ul className="mt-4 space-y-3">
+                {col.items.map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className="text-sm text-cream-300/70 transition-colors hover:text-cream-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream-200"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* Copyright */}
+        <div className="border-t border-white/10 py-6">
+          <p className="font-mono text-xs text-cream-300/40">
+            © {year} {APP_NAME}. All rights reserved.
+          </p>
+        </div>
+
+      </div>
+    </footer>
+  );
+}
