@@ -24,7 +24,7 @@ export default function LicensePage() {
 
       <dl className="mt-12 space-y-8 border-t border-stone-200 pt-8">
         <div>
-          <dt className="font-semibold text-stone-900">What's included</dt>
+          <dt className="font-semibold text-stone-900">What&apos;s included</dt>
           <dd className="mt-2 text-stone-600">
             Use assets in personal and commercial projects — websites, social
             media, print, video, and more — for as long as you hold an active
@@ -32,7 +32,7 @@ export default function LicensePage() {
           </dd>
         </div>
         <div>
-          <dt className="font-semibold text-stone-900">What's not allowed</dt>
+          <dt className="font-semibold text-stone-900">What&apos;s not allowed</dt>
           <dd className="mt-2 text-stone-600">
             Reselling, redistributing, or sublicensing the raw asset files is
             not permitted. You may not claim ownership of the original designs.
@@ -48,7 +48,7 @@ export default function LicensePage() {
             >
               {CONTACT_EMAIL}
             </a>{" "}
-            and we'll be happy to help.
+            and we&apos;ll be happy to help.
           </dd>
         </div>
       </dl>
