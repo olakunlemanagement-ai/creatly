@@ -69,7 +69,7 @@ export function UserDropdown({ auth }: UserDropdownProps) {
 
         {auth.profile.role === "creator" && (
           <DropdownMenuItem asChild>
-            <Link href="/studio" className="flex items-center gap-2">
+            <Link href="/creator" className="flex items-center gap-2">
               <Pencil className="h-4 w-4" />
               Creator Studio
             </Link>

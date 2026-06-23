@@ -4,9 +4,9 @@ import { LayoutDashboard, Package, User } from "lucide-react";
 import { getAuthenticatedUser } from "@/lib/auth";
 
 const NAV_ITEMS = [
-  { href: "/studio", label: "Overview", icon: LayoutDashboard, exact: true },
-  { href: "/studio/assets", label: "My Assets", icon: Package, exact: false },
-  { href: "/studio/profile", label: "Profile", icon: User, exact: false },
+  { href: "/creator", label: "Overview", icon: LayoutDashboard, exact: true },
+  { href: "/creator/assets", label: "My Assets", icon: Package, exact: false },
+  { href: "/creator/profile", label: "Profile", icon: User, exact: false },
 ];
 
 export default async function StudioLayout({
@@ -17,7 +17,7 @@ export default async function StudioLayout({
   const auth = await getAuthenticatedUser();
 
   // Unauthenticated → middleware handles, but guard here too
-  if (!auth) redirect("/login?next=/studio");
+  if (!auth) redirect("/login?next=/creator");
 
   // Non-creators → prompt to apply
   if (auth.profile.role !== "creator") {

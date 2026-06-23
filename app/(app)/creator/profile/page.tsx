@@ -4,7 +4,7 @@ import { APP_NAME } from "@/lib/config";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { CreatorProfile } from "@/types/database";
-import { ProfileEditor } from "@/app/(app)/studio/profile/ProfileEditor";
+import { ProfileEditor } from "@/app/(app)/creator/profile/ProfileEditor";
 
 export const metadata: Metadata = { title: `Edit Profile — ${APP_NAME}` };
 

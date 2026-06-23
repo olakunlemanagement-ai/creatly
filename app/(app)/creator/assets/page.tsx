@@ -81,7 +81,7 @@ export default async function StudioAssetsPage({
           </h1>
         </div>
         <Link
-          href="/studio/upload"
+          href="/creator/upload"
           className="shrink-0 rounded-xl bg-terracotta-500 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600"
         >
           Upload →
@@ -93,7 +93,7 @@ export default async function StudioAssetsPage({
         {FILTER_TABS.map(({ value, label }) => (
           <Link
             key={value}
-            href={value ? `/studio/assets?status=${value}` : "/studio/assets"}
+            href={value ? `/creator/assets?status=${value}` : "/creator/assets"}
             className={[
               "rounded-full px-4 py-1.5 text-xs font-medium transition-colors",
               (filterStatus ?? "") === value
@@ -154,7 +154,7 @@ export default async function StudioAssetsPage({
                 <div className="flex shrink-0 flex-col gap-1.5">
                   {(asset.review_status === "draft" || asset.review_status === "rejected") && (
                     <Link
-                      href={`/studio/upload?edit=${asset.id}`}
+                      href={`/creator/upload?edit=${asset.id}`}
                       className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground/80 transition-colors hover:border-foreground/40"
                     >
                       Edit
@@ -186,7 +186,7 @@ function EmptyState() {
         Upload your first template, font, or mockup to get started.
       </p>
       <Link
-        href="/studio/upload"
+        href="/creator/upload"
         className="mt-6 inline-block rounded-xl bg-terracotta-500 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600"
       >
         Upload your first asset →

@@ -52,10 +52,10 @@ export default async function StudioOverviewPage() {
   }
 
   const STAT_CARDS = [
-    { label: "Draft", value: statusCounts.draft, href: "/studio/assets?status=draft", color: "text-muted-foreground" },
-    { label: "Submitted", value: statusCounts.submitted, href: "/studio/assets?status=submitted", color: "text-amber-600" },
-    { label: "Published", value: statusCounts.approved, href: "/studio/assets?status=approved", color: "text-brand-green-600" },
-    { label: "Rejected", value: statusCounts.rejected, href: "/studio/assets?status=rejected", color: "text-destructive" },
+    { label: "Draft", value: statusCounts.draft, href: "/creator/assets?status=draft", color: "text-muted-foreground" },
+    { label: "Submitted", value: statusCounts.submitted, href: "/creator/assets?status=submitted", color: "text-amber-600" },
+    { label: "Published", value: statusCounts.approved, href: "/creator/assets?status=approved", color: "text-brand-green-600" },
+    { label: "Rejected", value: statusCounts.rejected, href: "/creator/assets?status=rejected", color: "text-destructive" },
   ];
 
   return (
@@ -100,13 +100,13 @@ export default async function StudioOverviewPage() {
       {/* CTA */}
       <div className="flex flex-wrap gap-3">
         <Link
-          href="/studio/upload"
+          href="/creator/upload"
           className="rounded-xl bg-terracotta-500 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600"
         >
           Upload new asset →
         </Link>
         <Link
-          href="/studio/assets"
+          href="/creator/assets"
           className="rounded-xl border border-border px-6 py-2.5 text-sm font-medium text-foreground/80 transition-colors hover:border-foreground/30"
         >
           Manage assets

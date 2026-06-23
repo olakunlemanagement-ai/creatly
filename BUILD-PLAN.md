@@ -1114,7 +1114,7 @@ Scope:
 
 
 app/creators/page.tsx — public marketing page: value prop (earn from your work), how-it-works, FAQ, CTA Become a creator → /creators/apply. Editorial, on-brand. Pulls nothing sensitive; public.
-app/creators/apply/page.tsx — gated: if not logged in → /login?next=/creators/apply; if already a creator → redirect /studio.
+app/creators/apply/page.tsx — gated: if not logged in → /login?next=/creators/apply; if already a creator → redirect /creator.
 
 Form (RHF + Zod, schema in lib/validations/creator.ts): handle (live uniqueness check via a small route/RPC, regex ^[a-z0-9_]{3,30}$), display_name, bio, location, optional website, agree-to-terms checkbox.
 
@@ -1124,7 +1124,7 @@ Server action applyAsCreator:
 
 getAuthenticatedUser() → validate inputs → on CREATOR_AUTO_APPROVE=true insert creator_profiles with status='approved', set profiles.role to creator (via ROLE_DB_MAP), ensure/create the linked creators row with user_id. Admin client for the role write (verified-identity comment, per 1.9.5 pattern).
 Uniqueness conflict on handle → 409, friendly inline error.
-On success → redirect /studio.
+On success → redirect /creator.
 
 
 
@@ -1134,10 +1134,10 @@ Acceptance criteria:
 
 
 /creators renders on-brand; CTAs wired; navbar/landing links resolve (no 404).
-/creators/apply gates correctly (guest→login, existing creator→studio).
+/creators/apply gates correctly (guest→login, existing creator→/creator).
 Handle uniqueness checked live + enforced server-side; invalid handle rejected by Zod.
 Submitting creates creator_profiles (approved under the flag), sets role, links creators row — all server-side; client cannot self-assign admin or approved-without-flag.
-Redirects to /studio on success; reduced-motion respected; mobile-first.
+Redirects to /creator on success; reduced-motion respected; mobile-first.
 pnpm typecheck + pnpm lint pass.
 Commit: feat(creator): /creators landing + become-a-creator apply flow.
 
@@ -1150,21 +1150,21 @@ Watch for: role write needs admin client (RLS blocks self role-change, per 1.9.5
 Scope:
 
 
-Route group app/(app)/studio/ gated to creator role (middleware or layout guard via getAuthenticatedUser() + role check; non-creators → /creators).
-studio/page.tsx — overview: counts by review_status (draft/submitted/approved/rejected), basic stats (downloads, favourites) from real data where available, CTA to upload.
-studio/assets/page.tsx — list/grid of the creator's OWN resources with review_status badges; edit drafts, delete drafts, view rejection_reason, resubmit rejected.
-studio/profile/page.tsx — edit creator_profiles (display_name, bio, avatar, banner, location, website, socials) with live preview of the public storefront card. Avatar/banner upload to creator-avatars/previews bucket.
+Route group app/(app)/creator/ gated to creator role (middleware or layout guard via getAuthenticatedUser() + role check; non-creators → /creators).
+creator/page.tsx — overview: counts by review_status (draft/submitted/approved/rejected), basic stats (downloads, favourites) from real data where available, CTA to upload.
+creator/assets/page.tsx — list/grid of the creator's OWN resources with review_status badges; edit drafts, delete drafts, view rejection_reason, resubmit rejected.
+creator/profile/page.tsx — edit creator_profiles (display_name, bio, avatar, banner, location, website, socials) with live preview of the public storefront card. Avatar/banner upload to creator-avatars/previews bucket.
 Add "Creator Studio" to the navbar avatar dropdown when role is creator (the 1.9.2 nav already conditionally renders it — wire it live now).
 
 
 Acceptance criteria:
 
 
-/studio/* accessible only to creators; others redirected.
+/creator/* accessible only to creators; others redirected.
 Overview shows accurate counts + available stats.
 Asset list shows only the creator's own resources with correct status badges; draft edit/delete + resubmit work; all writes server-side + ownership-checked.
 Profile editor saves and shows live preview; image uploads land in the correct bucket/path.
-Navbar Creator Studio entry appears for creators, routes to /studio.
+Navbar Creator Studio entry appears for creators, routes to /creator.
 pnpm typecheck + pnpm lint pass.
 Commit: feat(creator): Creator Studio dashboard + profile editor.
 

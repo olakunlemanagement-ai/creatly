@@ -4,7 +4,7 @@ import { APP_NAME } from "@/lib/config";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Category, Resource } from "@/types/database";
-import { UploadWizard } from "@/app/(app)/studio/upload/UploadWizard";
+import { UploadWizard } from "@/app/(app)/creator/upload/UploadWizard";
 
 export const metadata: Metadata = { title: `Upload Asset — ${APP_NAME}` };
 

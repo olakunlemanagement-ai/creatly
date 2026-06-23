@@ -38,7 +38,7 @@ export function ApplyForm() {
           form.setError("root", { message: result.error });
         }
       }
-      // On success the server action redirects to /studio
+      // On success the server action redirects to /creator
     });
   }
 

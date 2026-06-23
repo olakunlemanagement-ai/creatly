@@ -28,7 +28,7 @@ export default async function ApplyPage() {
     .maybeSingle();
 
   if (profile) {
-    redirect("/studio");
+    redirect("/creator");
   }
 
   return (
@@ -62,7 +62,7 @@ export default async function ApplyPage() {
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
             Already a creator?{" "}
-            <Link href="/studio" className="text-terracotta-500 hover:underline">
+            <Link href="/creator" className="text-terracotta-500 hover:underline">
               Go to your studio →
             </Link>
           </p>
