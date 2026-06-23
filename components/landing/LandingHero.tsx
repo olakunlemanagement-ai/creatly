@@ -46,6 +46,7 @@ export function LandingHero() {
 
   return (
     <section
+      id="landing-hero"
       className="hero-gradient-mesh relative overflow-hidden"
       style={{ minHeight: "88vh" }}
     >

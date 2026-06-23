@@ -125,12 +125,11 @@ function SearchForm({
 }
 
 export function HeaderClient({ auth, categories }: HeaderClientProps) {
-  const scrolled = useScrollPosition();
+  const pastHero = useScrollPosition("landing-hero");
   const prefersReduced = useReducedMotion();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Hidden at the very top; slides in once the user scrolls at all
-  const hidden = !scrolled;
+  const hidden = !pastHero;
 
   return (
     <>
