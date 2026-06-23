@@ -694,14 +694,14 @@ Build a real home page at `/` (currently the Next.js default — the biggest "un
 **Watch for:** reuse UI-1 motion primitives (don't reinvent); don't hardcode brand name; keep it fast; pricing CTA may point at a not-yet-built route — fine.
 
 ---
-PHASE 1.9 — Brand, Navigation & Onboarding ⬜
+PHASE 1.9 — Brand, Navigation & Onboarding ✅
 
 The "doesn't feel AI-generated" pass with teeth: a real logo/identity, a proper navigation system, a rebuilt landing page, branded auth, and a guided onboarding flow. Plus one live bug fix (verification email). Phase 1 shipped the storefront and the guarded download mechanic; this phase makes Creatly feel like an owned brand before we take money in Phase 2.
 
 Applies to every step in this phase: use the frontend-design skill (/mnt/skills/public/frontend-design/SKILL.md); stay within and extend the established green/terracotta/cream tokens and the UI-1 motion primitives (reuse <Reveal> / useReveal, don't reinvent); subtle premium motion only; prefers-reduced-motion always respected; mobile-first at 375px; no bundle bloat.
 
 
-1.9.0 — Fix: verification email not sending ⬜ (bug fix — do FIRST)
+1.9.0 — Fix: verification email not sending ✅ (bug fix — do FIRST)
 
 Email verification (built in 1.3) is not delivering. Onboarding (1.9.5) depends on a working verify flow, so this is unblocked first. No new features — diagnose and fix the existing pipeline.
 
@@ -745,7 +745,7 @@ One clean commit, e.g. fix(auth): wire Resend SMTP + branded verification email.
 Watch for: default Supabase SMTP is the prime suspect; redirect allow-list is the second; don't rewrite 1.3 flows, only fix the pipeline; DNS is a founder action — log it, don't block.
 
 
-1.9.1 — Brand identity: logo & mark ⬜ 🔶 CHECKPOINT (design-led)
+1.9.1 — Brand identity: logo & mark ✅ 🔶 CHECKPOINT (design-led)
 
 
 🔶 CHECKPOINT: complete, self-review, and commit this step, then STOP and present the logo (all variants, on cream + forest, favicon, OG) to the founder for approval before continuing. The logo anchors everything visual downstream — don't /clear past it unapproved.
@@ -784,7 +784,7 @@ One clean commit, e.g. feat(brand): add Creatly logo system, favicon, and OG ima
 Watch for: keep it vector + themeable; don't introduce a new palette (extend tokens); replace the Next default favicon/OG, don't leave both.
 
 
-1.9.2 — Navigation system ⬜ (design-led)
+1.9.2 — Navigation system ✅ (design-led)
 
 There is no dedicated nav component — build a real one used across public + app surfaces. Auth-aware, with category discovery and a clear creator entry point.
 
@@ -829,7 +829,7 @@ One clean commit, e.g. feat(nav): add auth-aware site header with category mega-
 Watch for: don't rebuild 1.5 search — link into it; categories from the table, not hardcoded; the Creator Studio item must no-op/absent until the creator role exists; don't fight the hero (z-index/spacing).
 
 
-1.9.3 — Auth UI redesign ⬜ (design-led)
+1.9.3 — Auth UI redesign ✅ (design-led)
 
 The 1.3 auth screens work but read as default. Rebuild their presentation only — flows, validation, and redirects from 1.3 are untouched.
 
@@ -857,7 +857,7 @@ One clean commit, e.g. feat(auth-ui): branded split-screen auth screens.
 Watch for: presentation only — do not alter 1.3 auth logic, schemas, or redirects; reuse the shared Zod schemas; no enumeration leaks reintroduced via new error copy.
 
 
-1.9.4 — Landing page: full redesign (rip & replace) ⬜ 🔶 CHECKPOINT (design-led)
+1.9.4 — Landing page: full redesign (rip & replace) ✅ 🔶 CHECKPOINT (design-led)
 
 
 🔶 CHECKPOINT: complete, self-review, and commit this step, then STOP and present the rebuilt landing page (desktop + 375px mobile) to the founder for approval before continuing to 1.9.5. The hero treatment and art direction set the product's first impression — don't /clear past it unapproved.
@@ -906,7 +906,7 @@ One clean commit, e.g. feat(landing): editorial rip-and-replace home page.
 Watch for: this replaces UI-3 — remove the old page, don't layer on it; reuse UI-1/UI-2, don't reinvent motion or imagery; no hardcoded brand; creator/pricing routes may not exist yet (wire hrefs); keep it fast.
 
 
-1.9.5 — Onboarding flow ⬜
+1.9.5 — Onboarding flow ✅
 
 1.3 has no post-signup onboarding. Add a short guided wizard after first verified login that captures intent (consumer vs creator) and personalises the experience — and routes would-be creators toward the pulled-forward creator phase.
 
