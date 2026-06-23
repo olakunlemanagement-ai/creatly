@@ -949,22 +949,225 @@ Watch for: new migration only; role cannot be set to admin by a client; don't br
 
 PHASE 1.10 — Creator Side (pulled forward from Phase 5) ⬜
 
-Pulled forward per CEO request to onboard creators and start ingesting assets before Payments. Sits after the brand/onboarding phase and before Phase 2. The role column it depends on is introduced in 1.9.5. Approved creator assets must flow into the existing catalogue, detail page, and the guarded 1.8 download mechanic (entitlement + immutable attribution) — do not fork those.
+Supply side of the marketplace: creators apply, get a profile, upload assets, assets go live. Approved assets flow into the existing catalogue, detail page, and the guarded 1.8 download mechanic — do NOT fork those.
 
-Launch decision (locked): auto-approve everything behind a single flag CREATOR_AUTO_APPROVE (default true) — creators and their uploads go live without a human gate, but all server-side validation (file type/size, ownership, role, immutable creator_id) still runs. Flipping the flag to false later re-enables manual review with no code change.
+Launch decision (locked): CREATOR_AUTO_APPROVE env flag, default true. When true, creators and uploads go live with no human gate, but all server-side validation still runs. Flipping to false re-enables manual review with zero code change.
 
-To be expanded (detailed steps written before this phase is started, like the other stubs):
-1.10.1 Data model — extend profiles.role usage, creator_profiles, and resource review columns (new migration) ·
-1.10.2 /creators landing + become-a-creator apply flow ·
-1.10.3 Creator Studio dashboard + profile editor ·
-1.10.4 Multi-step asset upload to the private resource-files bucket (+ preview generation) ·
-1.10.5 Admin review queue (built but empty under auto-approve; honors the flag) ·
-1.10.6 Public creator storefront /creators/[handle].
-
-Guardrails that already apply (carry into expansion): catalogue/detail/download are reused, not forked; only approved assets are public; all creator/admin writes are server-side and role-checked; creator_id is immutable and is the attribution source the 1.8 download log denormalises; never trust the client for role, review_status, or creator_id.
+Phase guardrails (apply to every step): catalogue/detail/download reused not forked; only approved assets are public; ALL creator/admin writes are server-side and role-checked; creator_id is immutable and is the attribution source 1.8 denormalises; never trust the client for role, review_status, or creator_id. Reuse the ROLE_DB_MAP pattern from 1.9.5 ('creator' UI value → DB value). Use createAdminClient() only after getAuthenticatedUser() + Zod validation, with a comment explaining why (same pattern as the onboarding action). TS strict, no any. Zod-validate every external input.
 
 
-Removes the old ## PHASE 5 — Creator Dashboard stub (its scope is now Phase 1.10, pulled forward). If a later, separate creator-payouts/earnings addendum is still wanted post-Payments, note it under Phase 2/3 when those are expanded.
+1.10.1 — Data model + storage (new migration) ⬜
+
+Scope:
+
+
+New timestamped migration (YYYYMMDDHHMMSS_creator_side.sql — correct prefix, do not edit earlier migrations).
+creator_profiles table:
+
+user_id uuid primary key references auth.users on delete cascade
+handle text unique not null (slug, lowercase, ^[a-z0-9_]{3,30}$)
+display_name text not null, bio text, avatar_path text, banner_path text, location text, website text, socials jsonb not null default '{}'
+status text not null default 'approved' check (status in ('pending','approved','suspended'))
+created_at timestamptz not null default now()
+
+
+
+Extend resources (use ADD COLUMN IF NOT EXISTS, but VERIFY each landed — the 1.9.5 lesson: a silently-skipped add):
+
+creator_id uuid references creators(id) — NOTE align with existing schema: resources already have a creator linkage from Phase 1; confirm the real column/table name (creators.id) and reuse it. The review columns below are the new part.
+review_status text not null default 'draft' check (review_status in ('draft','submitted','approved','rejected'))
+rejection_reason text, submitted_at timestamptz, reviewed_at timestamptz, reviewed_by uuid references auth.users
+
+
+
+Map creator identity: a creator's creator_profiles.user_id links to their creators row (the existing catalogue creator entity). Add a creators.user_id uuid unique references auth.users if it doesn't exist, so uploaded resources attribute to the right public creator. Confirm and reuse existing structure rather than duplicating.
+RLS:
+
+creator_profiles: public SELECT where status='approved'; owner SELECT/UPDATE own; INSERT own (auth.uid() = user_id); admin all. No client DELETE.
+resources: extend existing published-only public read to status='published' AND review_status='approved' for public/anon. Creators SELECT/UPDATE/INSERT their OWN rows (creator_id resolves to their creator entity). Admin all. Keep immutability/guards from 1.2b intact.
+Never allow a client to set review_status='approved' directly — enforce via policy with_check (non-admin can only set draft/submitted) AND server-side.
+
+
+
+Storage: reuse the private resource-files bucket (1.2b) for originals and resource-previews (public) for previews. Add bucket policies allowing an authenticated creator to upload to a path namespaced by their id (e.g. resource-files/{user_id}/...). Signed-URL download (1.8) already serves originals — unchanged.
+Regenerate types/database.ts; pnpm typecheck.
+
+
+Acceptance criteria:
+
+
+Migration applies cleanly to remote (pnpm supabase db push), correct timestamp prefix.
+creator_profiles exists with constraints above; status defaults to approved (matches auto-approve launch).
+Review columns exist on resources and are VERIFIED present (queried information_schema.columns), not silently skipped.
+Public/anon can only read resources that are BOTH published and review_status='approved'.
+RLS prevents a non-admin client from setting review_status='approved' or another user's creator_id.
+Creator can upload to their namespaced storage path; download mechanic (1.8) still works unchanged.
+Types regenerated; pnpm typecheck + pnpm lint pass.
+Commit: feat(creator): creator_profiles, resource review columns, storage policies.
+
+
+Watch for: verify each ADD COLUMN actually landed (1.9.5 trap); don't fork the creators/resources entities — extend and reuse; don't weaken 1.2b immutability or 1.8 guards.
+
+
+1.10.2 — /creators landing + apply flow ⬜ (design-led)
+
+Use frontend-design skill. Reuse UI-1 motion + brand tokens. This is the route the navbar "For Creators" and landing "For Creators" band already point at.
+
+Scope:
+
+
+app/creators/page.tsx — public marketing page: value prop (earn from your work), how-it-works, FAQ, CTA Become a creator → /creators/apply. Editorial, on-brand. Pulls nothing sensitive; public.
+app/creators/apply/page.tsx — gated: if not logged in → /login?next=/creators/apply; if already a creator → redirect /studio.
+
+Form (RHF + Zod, schema in lib/validations/creator.ts): handle (live uniqueness check via a small route/RPC, regex ^[a-z0-9_]{3,30}$), display_name, bio, location, optional website, agree-to-terms checkbox.
+
+
+
+Server action applyAsCreator:
+
+getAuthenticatedUser() → validate inputs → on CREATOR_AUTO_APPROVE=true insert creator_profiles with status='approved', set profiles.role to creator (via ROLE_DB_MAP), ensure/create the linked creators row with user_id. Admin client for the role write (verified-identity comment, per 1.9.5 pattern).
+Uniqueness conflict on handle → 409, friendly inline error.
+On success → redirect /studio.
+
+
+
+
+
+Acceptance criteria:
+
+
+/creators renders on-brand; CTAs wired; navbar/landing links resolve (no 404).
+/creators/apply gates correctly (guest→login, existing creator→studio).
+Handle uniqueness checked live + enforced server-side; invalid handle rejected by Zod.
+Submitting creates creator_profiles (approved under the flag), sets role, links creators row — all server-side; client cannot self-assign admin or approved-without-flag.
+Redirects to /studio on success; reduced-motion respected; mobile-first.
+pnpm typecheck + pnpm lint pass.
+Commit: feat(creator): /creators landing + become-a-creator apply flow.
+
+
+Watch for: role write needs admin client (RLS blocks self role-change, per 1.9.5); honor CREATOR_AUTO_APPROVE; don't trust client status/role.
+
+
+1.10.3 — Creator Studio dashboard + profile editor ⬜ (design-led)
+
+Scope:
+
+
+Route group app/(app)/studio/ gated to creator role (middleware or layout guard via getAuthenticatedUser() + role check; non-creators → /creators).
+studio/page.tsx — overview: counts by review_status (draft/submitted/approved/rejected), basic stats (downloads, favourites) from real data where available, CTA to upload.
+studio/assets/page.tsx — list/grid of the creator's OWN resources with review_status badges; edit drafts, delete drafts, view rejection_reason, resubmit rejected.
+studio/profile/page.tsx — edit creator_profiles (display_name, bio, avatar, banner, location, website, socials) with live preview of the public storefront card. Avatar/banner upload to creator-avatars/previews bucket.
+Add "Creator Studio" to the navbar avatar dropdown when role is creator (the 1.9.2 nav already conditionally renders it — wire it live now).
+
+
+Acceptance criteria:
+
+
+/studio/* accessible only to creators; others redirected.
+Overview shows accurate counts + available stats.
+Asset list shows only the creator's own resources with correct status badges; draft edit/delete + resubmit work; all writes server-side + ownership-checked.
+Profile editor saves and shows live preview; image uploads land in the correct bucket/path.
+Navbar Creator Studio entry appears for creators, routes to /studio.
+pnpm typecheck + pnpm lint pass.
+Commit: feat(creator): Creator Studio dashboard + profile editor.
+
+
+Watch for: ownership check on every read/write (a creator sees only their own); reuse existing card/grid components.
+
+
+1.10.4 — Asset upload flow ⬜
+
+Scope:
+
+
+studio/upload/ — multi-step wizard (mono step indicator, reuse onboarding wizard pattern):
+
+Step 1 Files: drag-drop source file(s) → upload to private resource-files/{user_id}/.... Client collects; SERVER validates type + size (Zod + server check). Show progress. Generate/derive preview thumbnail(s) to resource-previews; creator picks the primary preview.
+Step 2 Details: title, description, category (from categories), tags, file_type, compatible_software, license_type. Inline validation.
+Step 3 Preview & submit: render exactly as catalogue card + detail page would (reuse those components in preview mode). Show immutable attribution (creator name, not editable).
+
+
+
+Save-as-draft at any step; resumable (persist draft resources row with review_status='draft').
+Submit server action: getAuthenticatedUser() → verify creator role + ownership → validate → set fields. Submit behaviour by flag (SERVER decides):
+
+CREATOR_AUTO_APPROVE=true → review_status='approved', status='published', submitted_at=reviewed_at=now(), reviewed_by=null → live immediately ("Published").
+false → review_status='submitted', submitted_at=now() → enters review queue ("Submitted for review").
+
+
+
+creator_id set server-side from the creator's own entity — never from client. Immutable thereafter.
+
+
+Acceptance criteria:
+
+
+Multi-step upload works; files land in private bucket under the user's namespace; previews in public bucket; primary preview selectable.
+Server validates file type/size and all metadata; client values never trusted for creator_id/review_status/status.
+Save-as-draft + resume works.
+Under auto-approve, submit publishes live and the asset appears in browse/detail and is downloadable via 1.8 with correct immutable attribution; under manual mode it enters the queue.
+Preview step matches real catalogue/detail rendering.
+pnpm typecheck + pnpm lint pass.
+Commit: feat(creator): multi-step asset upload to private bucket.
+
+
+Watch for: server-side file validation is mandatory (don't trust client MIME); creator_id from server; honor the flag; reuse catalogue/detail components for preview, don't rebuild.
+
+
+1.10.5 — Admin review queue ⬜
+
+Scope:
+
+
+app/(app)/admin/review/page.tsx gated to admin role (reuse existing /admin guard from middleware; role check).
+Queue of review_status='submitted', newest first: full preview, metadata, creator, files.
+Actions (server actions, admin-only, admin client after identity check):
+
+Approve → review_status='approved', status='published', reviewed_at=now(), reviewed_by=admin.id. Asset goes live.
+Reject → require rejection_reason, set review_status='rejected', reviewed_at, reviewed_by. Creator sees reason in Studio, can resubmit.
+
+
+
+Under CREATOR_AUTO_APPROVE=true the queue is normally empty (assets auto-approve) — page still functions for when the flag flips. Document this.
+First-admin bootstrap: document in BLOCKERS.md that the first admin is set by manually flipping one profiles.role='admin' via SQL.
+
+
+Acceptance criteria:
+
+
+/admin/review admin-only; non-admins blocked.
+Submitted assets listed with full context; approve/reject work server-side with role checks; reject requires a reason.
+Approve makes the asset live in catalogue; reject surfaces reason to creator + allows resubmit.
+Queue functions correctly when flag is false; empty (by design) when true.
+First-admin bootstrap documented in BLOCKERS.md.
+pnpm typecheck + pnpm lint pass.
+Commit: feat(admin): submission review queue (approve/reject).
+
+
+Watch for: admin role enforced server-side, not just hidden in UI; reject reason mandatory; don't let approve be reachable by non-admins.
+
+
+1.10.6 — Public creator storefront ⬜ (design-led)
+
+Scope:
+
+
+app/creators/[handle]/page.tsx — public page for status='approved' creators: banner, avatar, display_name, bio, location, socials, and a grid (reuse ResourceGrid/ResourceCard) of their published+approved resources. Unknown/non-approved handle → notFound().
+Link resource-detail creator attribution (from 1.6) to /creators/[handle].
+generateMetadata from creator display_name + APP_NAME.
+
+
+Acceptance criteria:
+
+
+/creators/[handle] renders approved creators with their live assets; unknown/unapproved → 404 (no leak).
+Resource detail attribution links to the storefront.
+Reuses catalogue components; on-brand; mobile-first; metadata set.
+pnpm typecheck + pnpm lint pass.
+Commit: feat(creator): public creator storefront /creators/[handle].
+
+
+Watch for: only approved creators + approved/published assets are public; reuse existing grid/card.
 
 ## PHASE 2 — Payments & Entitlements ⬜
 2.1 Paystack plans (annual = monthly ×10) + env · 2.2 Pricing page · 2.3 Checkout · 2.4 Webhook handler (idempotent, signature-verified) · 2.5 Team plans + invites · 2.6 Subscription status page · 2.7 Payment history. *(Expanded when Phase 1 completes.)*
