@@ -152,9 +152,18 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
           {/* Creator */}
           <p className="text-sm text-muted-foreground">
             by{" "}
-            <span className="font-medium text-foreground">
-              {typedResource.creators?.name ?? "Unknown creator"}
-            </span>
+            {typedResource.creators?.is_public && typedResource.creators.slug ? (
+              <Link
+                href={`/creators/${typedResource.creators.slug}`}
+                className="font-medium text-foreground underline-offset-2 hover:underline"
+              >
+                {typedResource.creators.name}
+              </Link>
+            ) : (
+              <span className="font-medium text-foreground">
+                {typedResource.creators?.name ?? "Unknown creator"}
+              </span>
+            )}
           </p>
 
           {/* Description */}

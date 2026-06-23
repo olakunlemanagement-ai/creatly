@@ -1147,7 +1147,7 @@ Commit: feat(admin): submission review queue (approve/reject).
 Watch for: admin role enforced server-side, not just hidden in UI; reject reason mandatory; don't let approve be reachable by non-admins.
 
 
-1.10.6 — Public creator storefront ⬜ (design-led)
+1.10.6 — Public creator storefront ✅ (design-led)
 
 Scope:
 

@@ -9,3 +9,10 @@ export function getPreviewImageUrl(path: string): string {
   if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("/")) return path;
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/resource-previews/${path}`;
 }
+
+/** Returns a public URL for a creator avatar or banner from the creator-avatars bucket. */
+export function getCreatorAssetUrl(path: string | null | undefined): string | null {
+  if (!path) return null;
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/creator-avatars/${path}`;
+}
