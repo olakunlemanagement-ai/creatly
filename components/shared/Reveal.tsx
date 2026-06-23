@@ -1,6 +1,7 @@
 "use client";
 
-import { useReveal } from "@/hooks/useReveal";
+import { useRef } from "react";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 
 interface RevealProps {
   children: React.ReactNode;
@@ -11,22 +12,26 @@ interface RevealProps {
 /**
  * Fades + translates children into view as they enter the viewport.
  * Pass `delay` (ms) to stagger sibling reveals.
- * Motion is disabled automatically when prefers-reduced-motion is set.
+ * Powered by Framer Motion useInView; respects prefers-reduced-motion.
  */
 export function Reveal({ children, delay = 0, className }: RevealProps) {
-  const { ref, isVisible } = useReveal();
+  const ref = useRef<HTMLDivElement>(null);
+  const prefersReduced = useReducedMotion();
+  const isInView = useInView(ref, { once: true, margin: "0px 0px -40px 0px" });
 
   return (
-    <div
+    <motion.div
       ref={ref}
       className={className}
-      style={{
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? "translateY(0)" : "translateY(12px)",
-        transition: `opacity 420ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms, transform 420ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`,
+      initial={prefersReduced ? false : { opacity: 0, y: 40 }}
+      animate={isInView || prefersReduced ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+      transition={{
+        duration: 0.6,
+        delay: delay / 1000,
+        ease: [0.16, 1, 0.3, 1],
       }}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }

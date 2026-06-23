@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Sans, DM_Serif_Display, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { APP_NAME, APP_TAGLINE } from "@/lib/config";
+import { PageTransition } from "@/components/shared/PageTransition";
 
 const dmSans = DM_Sans({
   variable: "--font-sans",
@@ -34,7 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${dmSans.variable} ${dmSerifDisplay.variable} ${geistMono.variable}`}>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased"><PageTransition>{children}</PageTransition></body>
     </html>
   );
 }

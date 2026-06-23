@@ -5,6 +5,7 @@ import type { ResourceCardData } from "@/components/resource/ResourceCard";
 import type { Category } from "@/types/database";
 
 import { LandingHero } from "@/components/landing/LandingHero";
+import { TrustStats } from "@/components/landing/TrustStats";
 import { CategoryBento } from "@/components/landing/CategoryBento";
 import { FeaturedStrip } from "@/components/landing/FeaturedStrip";
 import { ValuePillars } from "@/components/landing/ValuePillars";
@@ -39,6 +40,7 @@ export default async function LandingPage() {
   return (
     <>
       <LandingHero />
+      <TrustStats />
       <CategoryBento categories={categories ?? []} />
       <FeaturedStrip resources={(featuredResources as ResourceCardData[] | null) ?? []} />
       <ValuePillars />

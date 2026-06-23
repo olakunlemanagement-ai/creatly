@@ -2,21 +2,48 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
 import { Reveal } from "@/components/shared/Reveal";
 
-// Collage of UI-2 seed thumbnails — overlapping, rotated for energy
+// Each collage item: positioning/shadow classes + final rotate value for FM animation
 const COLLAGE = [
-  { src: "/seed/social-instagram-story.svg", w: 200, h: 220, className: "absolute top-[6%] left-[5%] rotate-[-4deg] z-20 shadow-2xl rounded-xl" },
-  { src: "/seed/deck-pitch.svg",             w: 230, h: 175, className: "absolute top-[12%] left-[36%] rotate-[2.5deg] z-10 shadow-xl rounded-xl" },
-  { src: "/seed/font-lagos-display.svg",     w: 185, h: 185, className: "absolute top-[52%] left-[18%] rotate-[-2deg] z-30 shadow-2xl rounded-xl" },
-  { src: "/seed/mockup-phone.svg",           w: 155, h: 200, className: "absolute top-[50%] left-[58%] rotate-[4deg] z-20 shadow-xl rounded-xl" },
-  { src: "/seed/brand-afrobeat-kit.svg",     w: 170, h: 170, className: "absolute top-[3%] left-[66%] rotate-[-1.5deg] z-10 shadow-lg rounded-xl" },
+  { src: "/seed/social-instagram-story.svg", w: 200, h: 220, rotate: -4,  pos: "absolute top-[6%]  left-[5%]  z-20 shadow-2xl rounded-xl" },
+  { src: "/seed/deck-pitch.svg",             w: 230, h: 175, rotate:  2.5, pos: "absolute top-[12%] left-[36%] z-10 shadow-xl  rounded-xl" },
+  { src: "/seed/font-lagos-display.svg",     w: 185, h: 185, rotate: -2,   pos: "absolute top-[52%] left-[18%] z-30 shadow-2xl rounded-xl" },
+  { src: "/seed/mockup-phone.svg",           w: 155, h: 200, rotate:  4,   pos: "absolute top-[50%] left-[58%] z-20 shadow-xl  rounded-xl" },
+  { src: "/seed/brand-afrobeat-kit.svg",     w: 170, h: 170, rotate: -1.5, pos: "absolute top-[3%]  left-[66%] z-10 shadow-lg  rounded-xl" },
 ] as const;
 
+// Word-by-word headline definition
+const LINE_ONE = [
+  { text: "Everything ", accent: false },
+  { text: "a ",          accent: false },
+  { text: "creative",    accent: true  },
+];
+const LINE_TWO = [
+  { text: "needs ",  accent: false },
+  { text: "to ",     accent: false },
+  { text: "build.",  accent: false },
+];
+
+// Bezier must be typed as a 4-tuple for Framer Motion's strict types
+const EXPO_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+const sentenceVariants = {
+  hidden:  { opacity: 1 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.2 } },
+} as const;
+const wordVariants = {
+  hidden:  { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EXPO_OUT } },
+} as const;
+
 export function LandingHero() {
+  const prefersReduced = useReducedMotion();
+
   return (
     <section
-      className="relative overflow-hidden bg-brand-green-900"
+      className="hero-gradient-mesh relative overflow-hidden"
       style={{ minHeight: "88vh" }}
     >
       {/* Grain texture overlay */}
@@ -28,11 +55,8 @@ export function LandingHero() {
         }}
       />
 
-      {/* Depth glow */}
-      <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse at 70% 50%, rgba(200,115,46,0.06) 0%, transparent 65%)" }} />
-
       {/* Grid layout */}
-      <div className="relative mx-auto grid min-h-[inherit] max-w-7xl grid-cols-1 gap-0 px-5 pt-28 pb-16 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-8 lg:pt-32">
+      <div className="relative mx-auto grid min-h-[inherit] max-w-7xl grid-cols-1 gap-0 px-5 pb-16 pt-28 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-8 lg:pt-32">
 
         {/* Left: Text column */}
         <div className="flex flex-col items-start justify-center">
@@ -42,17 +66,30 @@ export function LandingHero() {
             </p>
           </Reveal>
 
-          <Reveal delay={80}>
-            <h1
-              className="mt-5 max-w-[580px] font-heading text-5xl leading-[1.08] text-cream-100 sm:text-6xl lg:text-7xl"
-              style={{ fontFamily: "var(--font-heading)", letterSpacing: "-0.02em" }}
-            >
-              Everything a{" "}
-              <span className="text-terracotta-400">creative</span>
-              <br />
-              needs to build.
-            </h1>
-          </Reveal>
+          {/* Word-by-word headline */}
+          <motion.h1
+            className="mt-5 max-w-[580px] font-heading text-5xl leading-[1.08] text-cream-100 sm:text-6xl lg:text-7xl"
+            style={{ fontFamily: "var(--font-heading)", letterSpacing: "-0.02em" }}
+            variants={prefersReduced ? undefined : sentenceVariants}
+            initial={prefersReduced ? false : "hidden"}
+            animate="visible"
+          >
+            {LINE_ONE.map(({ text, accent }, i) => (
+              <motion.span
+                key={i}
+                variants={prefersReduced ? undefined : wordVariants}
+                className={accent ? "text-terracotta-400" : ""}
+              >
+                {text}
+              </motion.span>
+            ))}
+            <br />
+            {LINE_TWO.map(({ text }, i) => (
+              <motion.span key={i} variants={prefersReduced ? undefined : wordVariants}>
+                {text}
+              </motion.span>
+            ))}
+          </motion.h1>
 
           <Reveal delay={160}>
             <p className="mt-6 max-w-[440px] text-base leading-relaxed text-cream-200/75 sm:text-lg">
@@ -62,9 +99,10 @@ export function LandingHero() {
 
           <Reveal delay={240}>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              {/* Shimmer CTA */}
               <Link
                 href="/signup"
-                className="rounded-xl bg-terracotta-500 px-7 py-3.5 text-sm font-semibold text-white transition-all hover:bg-terracotta-600 hover:shadow-lg hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400 motion-reduce:transition-none"
+                className="cta-shimmer rounded-xl bg-terracotta-500 px-7 py-3.5 text-sm font-semibold text-white transition-all hover:bg-terracotta-600 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400 motion-reduce:transition-none"
               >
                 Start creating →
               </Link>
@@ -84,10 +122,16 @@ export function LandingHero() {
           </Reveal>
         </div>
 
-        {/* Right: Image collage (hidden on mobile, shown lg+) */}
+        {/* Right: Animated image collage (lg+) */}
         <div className="relative hidden lg:block" style={{ height: "60vh", minHeight: 440 }}>
           {COLLAGE.map((item, i) => (
-            <div key={i} className={item.className}>
+            <motion.div
+              key={i}
+              className={item.pos}
+              initial={prefersReduced ? false : { opacity: 0, scale: 0.8, rotate: item.rotate - 4 }}
+              animate={{ opacity: 1, scale: 1, rotate: item.rotate }}
+              transition={{ duration: 0.65, delay: 0.35 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+            >
               <Image
                 src={item.src}
                 alt=""
@@ -96,7 +140,7 @@ export function LandingHero() {
                 className="block h-full w-full object-cover"
                 loading={i === 0 ? "eager" : "lazy"}
               />
-            </div>
+            </motion.div>
           ))}
         </div>
 

@@ -2,7 +2,9 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Search, Menu, ChevronDown } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 import { Logo } from "@/components/brand/Logo";
 import { UserDropdown } from "@/components/nav/UserDropdown";
 import { MobileOverlay } from "@/components/nav/MobileOverlay";
@@ -17,23 +19,28 @@ interface HeaderClientProps {
   transparent?: boolean;
 }
 
+const NAV_LINKS = [
+  { label: "Browse",       href: "/browse" },
+  { label: "For Creators", href: "/creators" },
+  { label: "Pricing",      href: "/pricing" },
+] as const;
+
 export function HeaderClient({ auth, categories, transparent = true }: HeaderClientProps) {
   const scrolled = useScrolled(16);
   const solid = !transparent || scrolled;
+  const pathname = usePathname();
+  const prefersReduced = useReducedMotion();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
   const megaRef = useRef<HTMLDivElement>(null);
 
-  // Close mega-menu on outside click or focus-out
   const closeMega = useCallback(() => setMegaOpen(false), []);
 
   useEffect(() => {
     if (!megaOpen) return;
     const handler = (e: MouseEvent | FocusEvent) => {
-      if (megaRef.current && !megaRef.current.contains(e.target as Node)) {
-        closeMega();
-      }
+      if (megaRef.current && !megaRef.current.contains(e.target as Node)) closeMega();
     };
     document.addEventListener("mousedown", handler);
     document.addEventListener("focusin", handler);
@@ -43,19 +50,16 @@ export function HeaderClient({ auth, categories, transparent = true }: HeaderCli
     };
   }, [megaOpen, closeMega]);
 
-  // Escape key closes mega-menu
   useEffect(() => {
     if (!megaOpen) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeMega();
-    };
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") closeMega(); };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [megaOpen, closeMega]);
 
   return (
     <>
-      {/* Skip-to-content for keyboard/screen-reader users */}
+      {/* Skip-to-content */}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-lg"
@@ -63,71 +67,77 @@ export function HeaderClient({ auth, categories, transparent = true }: HeaderCli
         Skip to content
       </a>
 
-      <header
+      {/* Slide-down entrance on first load */}
+      <motion.header
+        initial={prefersReduced ? false : { y: -80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className={[
           "fixed inset-x-0 top-0 z-50 transition-all duration-300 motion-reduce:transition-none",
           solid
-            ? "bg-cream-50/95 shadow-sm backdrop-blur-md"
+            ? "border-b border-white/20 bg-white/80 shadow-sm backdrop-blur-md"
             : "bg-transparent",
         ].join(" ")}
       >
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
 
-          {/* Left: Logo */}
-          <Link href="/" aria-label="Home" className="shrink-0">
-            <Logo
-              variant="full"
-              tone={solid ? "ink" : "cream"}
-              size={30}
-            />
-          </Link>
+          {/* Left: Logo with hover pulse */}
+          <motion.div
+            whileHover={prefersReduced ? {} : { scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="shrink-0"
+          >
+            <Link href="/" aria-label="Home">
+              <Logo variant="full" tone={solid ? "ink" : "cream"} size={30} />
+            </Link>
+          </motion.div>
 
           {/* Center: Desktop nav */}
-          <nav
-            className="hidden lg:flex lg:items-center lg:gap-6"
-            aria-label="Primary navigation"
-          >
-            <Link
-              href="/browse"
-              className={[
-                "text-sm font-medium transition-colors duration-150 hover:opacity-100",
-                solid
-                  ? "text-foreground/80 hover:text-foreground"
-                  : "text-cream-100/80 hover:text-cream-100",
-              ].join(" ")}
-            >
-              Browse
-            </Link>
+          <nav className="hidden lg:flex lg:items-center lg:gap-6" aria-label="Primary navigation">
+            {NAV_LINKS.map(({ label, href }) => {
+              const isActive = pathname === href || pathname.startsWith(`${href}/`);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={[
+                    "relative py-1 text-sm font-medium transition-colors duration-150 hover:opacity-100",
+                    solid
+                      ? "text-foreground/80 hover:text-foreground"
+                      : "text-cream-100/80 hover:text-cream-100",
+                  ].join(" ")}
+                >
+                  {label}
+                  {/* Animated underline — layoutId lets it slide between active links */}
+                  {isActive && (
+                    <motion.span
+                      layoutId="nav-underline"
+                      className="absolute -bottom-0.5 left-0 right-0 h-0.5 rounded-full bg-terracotta-500"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
 
             {/* Categories mega-menu */}
             <div ref={megaRef} className="relative">
               <button
                 onClick={() => setMegaOpen((o) => !o)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setMegaOpen((o) => !o);
-                  }
+                  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setMegaOpen((o) => !o); }
                 }}
                 aria-haspopup="menu"
                 aria-expanded={megaOpen}
                 className={[
                   "flex items-center gap-1 text-sm font-medium transition-colors duration-150 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  solid
-                    ? "text-foreground/80 hover:text-foreground"
-                    : "text-cream-100/80 hover:text-cream-100",
+                  solid ? "text-foreground/80 hover:text-foreground" : "text-cream-100/80 hover:text-cream-100",
                 ].join(" ")}
               >
                 Categories
-                <ChevronDown
-                  className={[
-                    "h-3.5 w-3.5 transition-transform duration-200",
-                    megaOpen ? "rotate-180" : "",
-                  ].join(" ")}
-                />
+                <ChevronDown className={["h-3.5 w-3.5 transition-transform duration-200", megaOpen ? "rotate-180" : ""].join(" ")} />
               </button>
 
-              {/* Dropdown panel */}
               {megaOpen && (
                 <div
                   role="menu"
@@ -153,35 +163,10 @@ export function HeaderClient({ auth, categories, transparent = true }: HeaderCli
                 </div>
               )}
             </div>
-
-            <Link
-              href="/creators"
-              className={[
-                "text-sm font-medium transition-colors duration-150 hover:opacity-100",
-                solid
-                  ? "text-foreground/80 hover:text-foreground"
-                  : "text-cream-100/80 hover:text-cream-100",
-              ].join(" ")}
-            >
-              For Creators
-            </Link>
-
-            <Link
-              href="/pricing"
-              className={[
-                "text-sm font-medium transition-colors duration-150 hover:opacity-100",
-                solid
-                  ? "text-foreground/80 hover:text-foreground"
-                  : "text-cream-100/80 hover:text-cream-100",
-              ].join(" ")}
-            >
-              Pricing
-            </Link>
           </nav>
 
-          {/* Right: Search + auth actions */}
+          {/* Right: Search + auth */}
           <div className="flex items-center gap-2">
-            {/* Search affordance — routes into 1.5 FTS search */}
             <Link
               href="/browse"
               aria-label="Search resources"
@@ -193,7 +178,6 @@ export function HeaderClient({ auth, categories, transparent = true }: HeaderCli
               <Search className="h-4 w-4" />
             </Link>
 
-            {/* Auth — desktop only */}
             <div className="hidden lg:flex lg:items-center lg:gap-2">
               {auth ? (
                 <UserDropdown auth={auth} />
@@ -220,7 +204,6 @@ export function HeaderClient({ auth, categories, transparent = true }: HeaderCli
               )}
             </div>
 
-            {/* Mobile hamburger */}
             <button
               onClick={() => setMobileOpen(true)}
               className={[
@@ -234,9 +217,8 @@ export function HeaderClient({ auth, categories, transparent = true }: HeaderCli
             </button>
           </div>
         </div>
-      </header>
+      </motion.header>
 
-      {/* Mobile full-screen overlay */}
       <MobileOverlay
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}

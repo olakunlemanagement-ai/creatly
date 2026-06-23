@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Resource } from "@/types/database";
@@ -19,8 +22,7 @@ function getMimeLabel(mimeType: string): string {
     "application/illustrator": "AI",
     "application/x-coreldraw": "CDR",
     "application/vnd.ms-powerpoint": "PPT",
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-      "PPTX",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": "PPTX",
     "video/mp4": "MP4",
     "video/quicktime": "MOV",
     "font/ttf": "TTF",
@@ -42,6 +44,8 @@ interface ResourceCardProps {
   userId?: string | null;
 }
 
+const MAX_TILT = 8; // degrees
+
 export function ResourceCard({
   resource,
   isFavourited = false,
@@ -51,15 +55,57 @@ export function ResourceCard({
   const mimeLabel = getMimeLabel(resource.file_type);
   const creatorName = resource.creators?.name ?? "Unknown creator";
 
+  const cardRef = useRef<HTMLLIElement>(null);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [shine, setShine] = useState({ x: 50, y: 50 });
+  const [isHovering, setIsHovering] = useState(false);
+
+  const prefersReduced =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLLIElement>) => {
+    if (prefersReduced || !cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const relX = (e.clientX - rect.left) / rect.width;
+    const relY = (e.clientY - rect.top) / rect.height;
+    setTilt({
+      x: (relY - 0.5) * -MAX_TILT * 2,
+      y: (relX - 0.5) *  MAX_TILT * 2,
+    });
+    setShine({ x: relX * 100, y: relY * 100 });
+  }, [prefersReduced]);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovering(false);
+    setTilt({ x: 0, y: 0 });
+  }, []);
+
+  const tiltStyle = prefersReduced ? {} : {
+    transform: isHovering
+      ? `perspective(800px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`
+      : "perspective(800px) rotateX(0deg) rotateY(0deg)",
+    transition: isHovering ? "none" : "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
+    willChange: isHovering ? "transform" : "auto",
+  };
+
   return (
-    // group lives on <li> so both the image zoom and the heart overlay respond to hover on the card.
-    // FavouriteButton is positioned outside <Link> to avoid nesting a <button> inside an <a>.
-    <li className="group relative">
-      {/* Heart — always visible when saved; appears on hover when not saved */}
+    <li
+      ref={cardRef}
+      className="group relative"
+      style={tiltStyle}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Heart — fades + scales in on hover; always visible when saved */}
       <div
-        className={`absolute right-2 top-2 z-10 transition-opacity duration-150 motion-reduce:transition-none ${
-          isFavourited ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-        }`}
+        className={[
+          "absolute right-2 top-2 z-10 transition-all duration-150 motion-reduce:transition-none",
+          isFavourited
+            ? "scale-100 opacity-100"
+            : "scale-[0.8] opacity-0 group-hover:scale-100 group-hover:opacity-100",
+        ].join(" ")}
       >
         <FavouriteButton
           resourceId={resource.id}
@@ -72,23 +118,33 @@ export function ResourceCard({
 
       <Link
         href={`/resources/${resource.slug}`}
-        className="block overflow-hidden rounded-xl border border-border bg-card transition-[transform,box-shadow] duration-200 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:shadow-[0_4px_20px_-4px_oklch(0.17_0.015_270_/_0.12),0_2px_8px_-2px_oklch(0.17_0.015_270_/_0.08)] motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="relative block overflow-hidden rounded-xl border border-border bg-card transition-[box-shadow] duration-200 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:shadow-[0_4px_20px_-4px_oklch(0.17_0.015_270_/_0.12),0_2px_8px_-2px_oklch(0.17_0.015_270_/_0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        {/* Preview image — 4:3 ratio feels richer than 16:9 for creative assets */}
+        {/* Mouse-tracked shine overlay */}
+        {isHovering && !prefersReduced && (
+          <span
+            className="pointer-events-none absolute inset-0 z-10 rounded-xl"
+            aria-hidden="true"
+            style={{
+              background: `radial-gradient(circle at ${shine.x}% ${shine.y}%, rgba(255,255,255,0.15) 0%, transparent 60%)`,
+            }}
+          />
+        )}
+
+        {/* Preview image */}
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
           <Image
             src={previewUrl}
             alt={resource.title}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover transition-transform duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04] motion-reduce:transition-none"
+            className="object-cover transition-transform duration-400 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05] motion-reduce:transition-none"
             loading="lazy"
           />
         </div>
 
         {/* Card body */}
         <div className="flex flex-col gap-1.5 p-3">
-          {/* Badges row: file type + category */}
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="inline-flex items-center rounded-full bg-terracotta-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-terracotta-700">
               {mimeLabel}
@@ -99,16 +155,10 @@ export function ResourceCard({
               </span>
             )}
           </div>
-
-          {/* Title */}
           <p className="line-clamp-2 text-sm font-medium leading-snug text-card-foreground">
             {resource.title}
           </p>
-
-          {/* Creator */}
-          <p className="truncate text-xs text-muted-foreground">
-            by {creatorName}
-          </p>
+          <p className="truncate text-xs text-muted-foreground">by {creatorName}</p>
         </div>
       </Link>
     </li>

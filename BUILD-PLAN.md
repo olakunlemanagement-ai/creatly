@@ -693,7 +693,7 @@ Build a real home page at `/` (currently the Next.js default — the biggest "un
 
 **Watch for:** reuse UI-1 motion primitives (don't reinvent); don't hardcode brand name; keep it fast; pricing CTA may point at a not-yet-built route — fine.
 
-UI-4 — Lively UI & Animation pass ⬜ (design-led)
+UI-4 — Lively UI & Animation pass ✅ (design-led)
 
 
 ⚙️ AUTONOMOUS — this step self-drives, commits, and stops. No prompt needed between tasks. Log blockers to BLOCKERS.md and continue.
