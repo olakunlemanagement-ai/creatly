@@ -6,7 +6,6 @@ import { createClient } from "@/lib/supabase/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { browseParamsSchema } from "@/lib/validations/browse";
 import { BrowseHero } from "@/components/resource/BrowseHero";
-import { CategoryQuickNav } from "@/components/resource/CategoryQuickNav";
 import { FeaturedStrip } from "@/components/resource/FeaturedStrip";
 import { SortControl } from "@/components/resource/SortControl";
 import { ResourceCard, type ResourceCardData } from "@/components/resource/ResourceCard";
@@ -135,20 +134,24 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
 
   return (
     <>
+      <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ChevronLeft className="size-3.5" />
+          Home
+        </Link>
+      </div>
+
       <Suspense>
-        <BrowseHero initialQuery={q ?? ""} />
+        <BrowseHero
+          categories={categories ?? []}
+          activeCategory={categorySlug ?? null}
+        />
       </Suspense>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <Reveal>
-          <Suspense>
-            <CategoryQuickNav
-              categories={categories ?? []}
-              activeCategory={categorySlug ?? null}
-            />
-          </Suspense>
-        </Reveal>
-
         {!isFiltered && (
           <FeaturedStrip
             resources={featuredResources as ResourceCardData[]}
