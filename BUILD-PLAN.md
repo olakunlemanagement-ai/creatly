@@ -1795,8 +1795,218 @@ feat(payments): step 2.8 — E2E smoke test + webhook unit tests
 
 Run `/clear` in Claude Code between steps. Review before committing. Money is in kobo.
 
-## PHASE 3 — User Dashboard ⬜
-3.1 Layout/nav · 3.2 Home · 3.3 Downloads · 3.4 Profile · 3.5 Account · 3.6 Notifications · 3.7 Notification prefs · 3.8 Help/support. *(Expanded later.)*
+PHASE 3 — User Dashboard ⬜
+
+
+⚙️ AUTONOMOUS RUN MODE — Phase 3 only
+
+Overrides the global "one step then STOP" rule for this phase only. Execute every step in order (3.1 → 3.8), build + self-review against acceptance criteria + one clean commit + /clear between steps, without stopping for prompts.
+
+Log blockers to BLOCKERS.md and continue. STOP at end of Phase 3.
+
+🔶 No checkpoints in Phase 3 — all steps are functional, not design-led decisions. Run straight through.
+
+Guardrails: reuse existing components/patterns; never weaken 1.8 download guarantees; TS strict no any; Zod-validate inputs; server components by default; 'use client' only where interactivity demands it; all data fetched server-side where possible (no stale client state for sensitive data).
+
+
+
+Phase context: The dashboard is the logged-in user's home base — downloads, profile, account, notifications. The creator studio (/creator/*) already exists from Phase 1.10; do NOT duplicate or merge it here. The dashboard is for consumers (and creators who want to manage their account/subscription). Reuse ResourceCard, ResourceGrid, brand tokens, motion primitives throughout.
+
+
+3.1 — Dashboard layout + shell ⬜
+
+Scope:
+
+
+app/(app)/dashboard/layout.tsx — persistent shell layout for all /dashboard/* routes:
+
+Sidebar (desktop): Creatly logo mark, nav links (Overview, Downloads, Favourites, Profile, Account, Notifications), upgrade nudge at bottom if free plan, user avatar + name.
+Top bar (mobile): hamburger → slide-in drawer with same nav links.
+Active link highlighted in terracotta.
+Sidebar collapses to icon-only at medium breakpoints (tooltips on hover).
+Auth-gated: middleware already covers /dashboard/* — layout just reads the session.
+
+
+
+app/(app)/dashboard/page.tsx — redirect to /dashboard/overview (the real home tab is 3.2).
+Reuse SiteHeader is NOT shown inside dashboard — the sidebar IS the nav for dashboard routes. Ensure the app layout doesn't double-render the site header inside /dashboard/*.
+
+
+Acceptance criteria:
+
+
+/dashboard/* routes all show the persistent sidebar/drawer shell.
+Active link highlighted; mobile drawer works and closes on navigation.
+Site header not shown inside dashboard (no double nav).
+Auth gate works — unauthenticated → /login?next=/dashboard.
+pnpm typecheck + pnpm lint pass.
+Commit: feat(dashboard): add persistent dashboard shell layout.
+
+
+
+3.2 — Dashboard overview (home tab) ⬜
+
+Scope:
+app/(app)/dashboard/overview/page.tsx — server component:
+
+
+Welcome header: "Good [morning/afternoon/evening], [display_name]." (time-based greeting, display_name from profile).
+Subscription status card: current plan (or "Free plan"), renewal date, usage. CTA: "Upgrade" → /pricing if free; "Manage" → /billing if subscribed. Reuse UpgradeNudge component.
+Recent downloads: last 4 downloads from downloads table (own rows, RLS), rendered as small ResourceCards. "View all" → /dashboard/downloads.
+Saved favourites teaser: last 4 favourites. "View all" → /dashboard/favourites.
+Quick actions: Browse resources, Upload (if creator role → /creator), Manage subscription.
+Loading skeletons for each section.
+
+
+Acceptance criteria:
+
+
+Time-based greeting with real display_name.
+Subscription card shows real status from use-subscription hook or server fetch.
+Recent downloads + favourites show real data, newest first, max 4 each.
+Empty states for each section (no downloads yet, no favourites yet).
+All links route correctly; skeletons show during load.
+Commit: feat(dashboard): overview page with greeting, subscription, recent activity.
+
+
+
+3.3 — Downloads history ⬜
+
+Scope:
+app/(app)/dashboard/downloads/page.tsx — server component:
+
+
+Fetch user's downloads joined with resources (title, preview_image_path, category, file_type, creator name), newest first, paginated (12/page, ?page= URL param).
+Render as a list (not grid — downloads are a record, not a browse experience): each row shows thumbnail, title, category, download date, file type badge, and a Re-download button.
+Re-download button: POST to existing /api/downloads/[resourceId] — reuses the full entitlement check + signed URL flow from 1.8. If still entitled → downloads again; if not (subscription lapsed) → shows subscribe prompt.
+Empty state: "No downloads yet — browse the library."
+Pagination with ?page= URL param.
+
+
+Acceptance criteria:
+
+
+Downloads list shows real data, newest first, paginated.
+Re-download triggers the real 1.8 flow (entitlement check → signed URL → browser download).
+Empty state and pagination work.
+Commit: feat(dashboard): downloads history with re-download.
+
+
+
+3.4 — Profile page ⬜
+
+Scope:
+app/(app)/dashboard/profile/page.tsx — client component (form):
+
+
+Edit profile: display_name, bio (optional), avatar upload (to avatars bucket).
+Avatar upload: drag-drop or click, preview before save, upload to Supabase Storage avatars/{user_id}, update profiles.avatar_url.
+Read-only: email (shown, not editable — email change is account settings), member since date.
+Save via server action — validate with Zod, update profiles row (user-scoped client is fine here — RLS allows own-row update for non-role fields).
+Success toast on save; inline validation.
+
+
+Acceptance criteria:
+
+
+Display_name + bio editable and saved to DB.
+Avatar upload works — image previewed, uploaded to storage, URL saved to profile.
+Email shown read-only; member since shown.
+Zod validation; success toast; error handling.
+Commit: feat(dashboard): profile editor with avatar upload.
+
+
+
+3.5 — Account settings ⬜
+
+Scope:
+app/(app)/dashboard/account/page.tsx:
+
+
+Change password: current password + new password + confirm (RHF + Zod). Server action calls supabase.auth.updateUser({ password }). Success → toast + sign out (force re-login with new password).
+Email address: show current, "Change email" button → inline form → supabase.auth.updateUser({ email }) → "Verification sent to new email."
+Danger zone: "Delete account" — confirmation modal with typed confirmation (type "DELETE" to confirm). Server action: delete profile data then supabase.auth.admin.deleteUser(userId) (admin client, identity already verified). Redirect to / on success.
+Connected accounts: placeholder section for future OAuth (Google, etc.) — show "Coming soon" if no OAuth configured.
+
+
+Acceptance criteria:
+
+
+Password change works; re-login required after.
+Email change sends verification to new address.
+Account deletion works with typed confirmation; user data removed; redirected to /.
+Danger zone is visually distinct (red border/section).
+Commit: feat(dashboard): account settings — password, email, delete account.
+
+
+Watch for: delete account uses admin client — requires getAuthenticatedUser() + typed confirmation before admin call; never trust client for this.
+
+
+3.6 — Notifications ⬜
+
+Scope:
+app/(app)/dashboard/notifications/page.tsx — server component:
+
+
+Fetch user's notifications (own rows, RLS), newest first, paginated.
+Render as a list: icon (by type), title, body, timestamp (relative, e.g. "2 hours ago"), unread indicator (bold/dot).
+Mark as read: clicking a notification marks it read (notifications.read_at = now()). "Mark all read" button.
+Empty state: "You're all caught up."
+Unread count badge on the sidebar nav link (read from a count query server-side).
+
+
+Acceptance criteria:
+
+
+Notifications list shows real data, newest first.
+Mark read / mark all read work (server action, own-rows RLS).
+Unread badge on sidebar link reflects real count.
+Empty state works.
+Commit: feat(dashboard): notifications list with mark-read.
+
+
+
+3.7 — Notification preferences ⬜
+
+Scope:
+app/(app)/dashboard/notifications/preferences/page.tsx — client component:
+
+
+Read notification_preferences row for the user.
+Toggles for each preference (from the schema — e.g. new_resources, download_receipts, marketing, digest_frequency).
+Save via server action — upsert notification_preferences row.
+Link from notifications page: "Manage preferences →".
+
+
+Acceptance criteria:
+
+
+Preferences load from DB and save correctly.
+Toggles reflect real DB state on load.
+Save shows success toast.
+Commit: feat(dashboard): notification preferences.
+
+
+
+3.8 — Help & support ⬜
+
+Scope:
+app/(app)/dashboard/help/page.tsx:
+
+
+FAQ accordion: 6-8 common questions (subscription, downloads, licensing, creator signup, refunds, contact). On-brand accordion component (reuse from pricing page if exists, or build one).
+Contact support: a simple form — subject (dropdown: Billing, Downloads, Technical, Other), message textarea. On submit: send via Resend to support@joincreatly.com (or hello@joincreatly.com from config). Server action, Zod-validated, rate-limited (simple: one submission per user per 10 min using a timestamp in the session/cookie).
+Quick links: link to /pricing, /billing, email hello@joincreatly.com.
+
+
+Acceptance criteria:
+
+
+FAQ accordion works, on-brand.
+Contact form sends email via Resend to the support address from config; success toast shown; Zod-validated.
+Quick links correct.
+Basic rate limiting on form submission.
+Commit: feat(dashboard): help page with FAQ and contact form.
 
 ## PHASE 4 — Admin Seed Tool ⬜
 4.1 Admin route group + role guard · 4.2 Creator CRUD · 4.3 Category mgmt · 4.4 Resource upload (files + previews) · 4.5 Resource mgmt · 4.6 Analytics. *(Expanded later.)*
