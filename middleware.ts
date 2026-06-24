@@ -10,7 +10,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PROTECTED_PREFIXES = ["/dashboard", "/admin", "/onboarding", "/creator"];
+// /creators is a public marketing/storefront namespace; only /creators/apply requires auth.
+// /creator (no s) is the private creator dashboard prefix.
+const PROTECTED_PREFIXES = ["/dashboard", "/admin", "/onboarding", "/creator/", "/creators/apply"];
 const AUTH_ONLY_PATHS = ["/login", "/signup"];
 
 function safeNextParam(raw: string | null): string | null {
