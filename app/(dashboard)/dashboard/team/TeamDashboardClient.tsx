@@ -46,7 +46,6 @@ export function TeamDashboardClient({
       if (data.ok) {
         setInviteSuccess(true);
         setEmail("");
-        // Optimistically add to pending invites list
         setInvites((prev) => [
           { id: "pending", email, expires_at: "", created_at: new Date().toISOString() },
           ...prev,
@@ -88,7 +87,7 @@ export function TeamDashboardClient({
         <div className="divide-y divide-border rounded-xl border border-border">
           {members.map((m) => {
             const name = m.profiles?.full_name ?? m.profiles?.email ?? "Unknown";
-            const email = m.profiles?.email ?? "";
+            const memberEmail = m.profiles?.email ?? "";
             const isOwner = m.role === "owner" || m.profile_id === currentUserId;
 
             return (
@@ -99,7 +98,7 @@ export function TeamDashboardClient({
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">{name}</p>
-                    <p className="text-xs text-muted-foreground">{email}</p>
+                    <p className="text-xs text-muted-foreground">{memberEmail}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">

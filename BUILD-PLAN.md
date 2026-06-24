@@ -1795,7 +1795,7 @@ feat(payments): step 2.8 — E2E smoke test + webhook unit tests
 
 Run `/clear` in Claude Code between steps. Review before committing. Money is in kobo.
 
-PHASE 3 — User Dashboard ⬜
+PHASE 3 — User Dashboard ✅
 
 
 ⚙️ AUTONOMOUS RUN MODE — Phase 3 only
@@ -1813,7 +1813,7 @@ Guardrails: reuse existing components/patterns; never weaken 1.8 download guaran
 Phase context: The dashboard is the logged-in user's home base — downloads, profile, account, notifications. The creator studio (/creator/*) already exists from Phase 1.10; do NOT duplicate or merge it here. The dashboard is for consumers (and creators who want to manage their account/subscription). Reuse ResourceCard, ResourceGrid, brand tokens, motion primitives throughout.
 
 
-3.1 — Dashboard layout + shell ⬜
+3.1 — Dashboard layout + shell ✅
 
 Scope:
 
@@ -1844,7 +1844,7 @@ Commit: feat(dashboard): add persistent dashboard shell layout.
 
 
 
-3.2 — Dashboard overview (home tab) ⬜
+3.2 — Dashboard overview (home tab) ✅
 
 Scope:
 app/(app)/dashboard/overview/page.tsx — server component:
@@ -1870,7 +1870,7 @@ Commit: feat(dashboard): overview page with greeting, subscription, recent activ
 
 
 
-3.3 — Downloads history ⬜
+3.3 — Downloads history ✅
 
 Scope:
 app/(app)/dashboard/downloads/page.tsx — server component:
@@ -1893,7 +1893,7 @@ Commit: feat(dashboard): downloads history with re-download.
 
 
 
-3.4 — Profile page ⬜
+3.4 — Profile page ✅
 
 Scope:
 app/(app)/dashboard/profile/page.tsx — client component (form):
@@ -1917,7 +1917,7 @@ Commit: feat(dashboard): profile editor with avatar upload.
 
 
 
-3.5 — Account settings ⬜
+3.5 — Account settings ✅
 
 Scope:
 app/(app)/dashboard/account/page.tsx:
@@ -1942,7 +1942,7 @@ Commit: feat(dashboard): account settings — password, email, delete account.
 Watch for: delete account uses admin client — requires getAuthenticatedUser() + typed confirmation before admin call; never trust client for this.
 
 
-3.6 — Notifications ⬜
+3.6 — Notifications ✅
 
 Scope:
 app/(app)/dashboard/notifications/page.tsx — server component:
@@ -1966,7 +1966,7 @@ Commit: feat(dashboard): notifications list with mark-read.
 
 
 
-3.7 — Notification preferences ⬜
+3.7 — Notification preferences ✅
 
 Scope:
 app/(app)/dashboard/notifications/preferences/page.tsx — client component:
@@ -1988,7 +1988,7 @@ Commit: feat(dashboard): notification preferences.
 
 
 
-3.8 — Help & support ⬜
+3.8 — Help & support ✅
 
 Scope:
 app/(app)/dashboard/help/page.tsx:

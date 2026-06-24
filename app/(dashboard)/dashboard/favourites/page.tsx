@@ -18,7 +18,6 @@ export default async function FavouritesPage() {
 
   const supabase = await createClient();
 
-  // Step 1: Get the ordered list of favourited resource IDs (newest-saved first).
   const { data: favouriteRows } = await supabase
     .from("favourites")
     .select("resource_id")
@@ -27,7 +26,6 @@ export default async function FavouritesPage() {
 
   const orderedIds = (favouriteRows ?? []).map((f) => f.resource_id);
 
-  // Step 2: Fetch resource details for those IDs (published only — RLS filters the rest).
   let resources: ResourceCardData[] = [];
   if (orderedIds.length > 0) {
     const { data } = await supabase
@@ -36,7 +34,6 @@ export default async function FavouritesPage() {
       .eq("status", "published")
       .in("id", orderedIds);
 
-    // Re-order to match the favourites creation order (newest-saved first).
     const byId = new Map((data ?? []).map((r) => [r.id, r]));
     resources = orderedIds
       .map((id) => byId.get(id))

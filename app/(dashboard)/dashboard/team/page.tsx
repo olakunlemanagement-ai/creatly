@@ -15,7 +15,6 @@ export default async function TeamDashboardPage() {
 
   const supabase = await createClient();
 
-  // Get the user's team subscription (owner only)
   const { data: sub } = await supabase
     .from("subscriptions")
     .select("id, max_seats, plan_id, team_id")
@@ -40,14 +39,12 @@ export default async function TeamDashboardPage() {
     );
   }
 
-  // Fetch team info
   const { data: team } = await supabase
     .from("teams")
     .select("id, name")
     .eq("id", sub.team_id)
     .single();
 
-  // Fetch accepted members with profile info
   const { data: members } = await supabase
     .from("team_members")
     .select("id, profile_id, role, accepted_at, profiles(full_name, email, avatar_path)")
@@ -55,7 +52,6 @@ export default async function TeamDashboardPage() {
     .eq("invite_accepted", true)
     .order("accepted_at", { ascending: true });
 
-  // Fetch pending invites
   const { data: invites } = await supabase
     .from("team_invites")
     .select("id, email, expires_at, created_at")
@@ -64,13 +60,14 @@ export default async function TeamDashboardPage() {
     .gt("expires_at", new Date().toISOString())
     .order("created_at", { ascending: false });
 
-  // Supabase returns profiles as an array for one-to-many joins; normalize to single object.
   const normalizedMembers: TeamMemberRow[] = (members ?? []).map((m) => ({
-    id:         m.id,
-    profile_id: m.profile_id,
-    role:       m.role,
+    id:          m.id,
+    profile_id:  m.profile_id,
+    role:        m.role,
     accepted_at: m.accepted_at,
-    profiles: Array.isArray(m.profiles) ? (m.profiles[0] ?? null) : (m.profiles as { full_name: string | null; email: string; avatar_path: string | null } | null),
+    profiles: Array.isArray(m.profiles)
+      ? (m.profiles[0] ?? null)
+      : (m.profiles as { full_name: string | null; email: string; avatar_path: string | null } | null),
   }));
 
   return (
