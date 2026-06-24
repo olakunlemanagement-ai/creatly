@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { Check, ChevronRight } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { completeOnboarding } from "@/lib/actions/onboarding";
-import type { OnboardingRole } from "@/types/database";
 import type { Category } from "@/types/database";
 
 interface OnboardingWizardProps {
@@ -46,7 +45,6 @@ function StepIndicator({ current }: { current: number }) {
 
 export function OnboardingWizard({ categories }: OnboardingWizardProps) {
   const [step, setStep] = useState(1);
-  const [role, setRole] = useState<OnboardingRole>("consumer");
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [displayName, setDisplayName] = useState("");
   const [serverError, setServerError] = useState<string | null>(null);
@@ -62,7 +60,6 @@ export function OnboardingWizard({ categories }: OnboardingWizardProps) {
     setServerError(null);
     startTransition(async () => {
       const result = await completeOnboarding({
-        role,
         interest_ids: selectedInterests,
         display_name: displayName || undefined,
       });
@@ -92,75 +89,8 @@ export function OnboardingWizard({ categories }: OnboardingWizardProps) {
             </span>
           </div>
 
-          {/* ── Step 1: Intent ─────────────────────────────────── */}
+          {/* ── Step 1: Interests ──────────────────────────────── */}
           {step === 1 && (
-            <div className="space-y-6">
-              <div>
-                <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  {"// Getting started"}
-                </p>
-                <h1
-                  className="mt-2 font-heading text-3xl text-foreground"
-                  style={{ fontFamily: "var(--font-heading)" }}
-                >
-                  How will you use Creatly?
-                </h1>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  We&apos;ll personalise your experience based on your answer.
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                {(
-                  [
-                    {
-                      value: "consumer" as const,
-                      label: "I'm here to download",
-                      desc: "Find and use creative resources for your projects.",
-                    },
-                    {
-                      value: "creator" as const,
-                      label: "I want to sell my work",
-                      desc: "Upload your templates, fonts, and mockups to earn from downloads.",
-                    },
-                  ] as const
-                ).map(({ value, label, desc }) => (
-                  <button
-                    key={value}
-                    onClick={() => setRole(value)}
-                    className={[
-                      "w-full rounded-xl border px-5 py-4 text-left transition-all",
-                      role === value
-                        ? "border-terracotta-500 bg-terracotta-50 ring-1 ring-terracotta-500"
-                        : "border-border bg-card hover:border-terracotta-300",
-                    ].join(" ")}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-semibold text-foreground">{label}</p>
-                        <p className="mt-0.5 text-sm text-muted-foreground">{desc}</p>
-                      </div>
-                      {role === value && (
-                        <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-terracotta-500 text-white">
-                          <Check className="h-3 w-3" />
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              <button
-                onClick={() => setStep(2)}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-terracotta-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400"
-              >
-                Continue <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-
-          {/* ── Step 2: Personalise ─────────────────────────────── */}
-          {step === 2 && (
             <div className="space-y-6">
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -177,7 +107,6 @@ export function OnboardingWizard({ categories }: OnboardingWizardProps) {
                 </p>
               </div>
 
-              {/* Interest chips */}
               {categories.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {categories.map((cat) => {
@@ -200,7 +129,33 @@ export function OnboardingWizard({ categories }: OnboardingWizardProps) {
                 </div>
               )}
 
-              {/* Optional display name */}
+              <button
+                onClick={() => setStep(2)}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-terracotta-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400"
+              >
+                Continue <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+
+          {/* ── Step 2: Display name ───────────────────────────── */}
+          {step === 2 && (
+            <div className="space-y-6">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {"// Your profile"}
+                </p>
+                <h1
+                  className="mt-2 font-heading text-3xl text-foreground"
+                  style={{ fontFamily: "var(--font-heading)" }}
+                >
+                  What should we call you?
+                </h1>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  This is how you&apos;ll appear on your profile and download history.
+                </p>
+              </div>
+
               <div className="space-y-1.5">
                 <label
                   htmlFor="display-name"
@@ -247,12 +202,10 @@ export function OnboardingWizard({ categories }: OnboardingWizardProps) {
                   className="mt-2 font-heading text-3xl text-foreground"
                   style={{ fontFamily: "var(--font-heading)" }}
                 >
-                  {role === "creator" ? "Let's build together." : "Ready to create."}
+                  Ready to create.
                 </h1>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {role === "creator"
-                    ? "Your creator profile is waiting. Upload your first asset and start earning from every download."
-                    : "Thousands of templates, fonts, mockups, and motion assets — curated for African creatives. Start exploring."}
+                  Thousands of templates, fonts, mockups, and motion assets — curated for African creatives. Start exploring.
                 </p>
               </div>
 
@@ -262,14 +215,16 @@ export function OnboardingWizard({ categories }: OnboardingWizardProps) {
                   Your setup
                 </p>
                 <div className="mt-3 space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Account type</span>
-                    <span className="font-medium capitalize text-foreground">{role}</span>
-                  </div>
                   {selectedInterests.length > 0 && (
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Interests</span>
                       <span className="font-medium text-foreground">{selectedInterests.length} selected</span>
+                    </div>
+                  )}
+                  {displayName && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Display name</span>
+                      <span className="font-medium text-foreground">{displayName}</span>
                     </div>
                   )}
                 </div>
@@ -294,11 +249,7 @@ export function OnboardingWizard({ categories }: OnboardingWizardProps) {
                   disabled={isPending}
                   className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-terracotta-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400"
                 >
-                  {isPending
-                    ? "Saving…"
-                    : role === "creator"
-                      ? "Start creator profile →"
-                      : "Browse resources →"}
+                  {isPending ? "Saving…" : "Browse resources →"}
                 </button>
               </div>
             </div>
