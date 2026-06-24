@@ -101,7 +101,7 @@ export default async function BillingPage() {
             </>
           ) : (
             <div className="text-center">
-              <p className="text-sm text-muted-foreground">You don't have an active subscription.</p>
+              <p className="text-sm text-muted-foreground">You don&apos;t have an active subscription.</p>
               <a
                 href="/pricing"
                 className="mt-4 inline-block rounded-xl bg-brand-green-700 px-6 py-2.5 text-sm font-semibold text-cream-100 hover:bg-brand-green-800"

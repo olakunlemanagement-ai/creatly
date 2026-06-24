@@ -52,7 +52,7 @@ export function BillingCancelButton({ periodEnd }: Props) {
       <div className="w-full max-w-sm rounded-2xl bg-background p-6 shadow-xl">
         <h3 className="font-display text-lg font-bold text-foreground">Cancel subscription?</h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          You'll keep full access until <strong>{endDate}</strong>. After that, downloads will be
+          You&apos;ll keep full access until <strong>{endDate}</strong>. After that, downloads will be
           paused until you resubscribe.
         </p>
 

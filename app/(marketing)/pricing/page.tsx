@@ -32,7 +32,7 @@ export default async function PricingPage() {
       {/* Hero */}
       <div className="mb-14 text-center">
         <span className="font-mono text-xs font-semibold uppercase tracking-widest text-accent">
-          // PRICING
+          {"// PRICING"}
         </span>
         <h1 className="mt-4 font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
           Unlimited downloads.

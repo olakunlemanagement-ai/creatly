@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { APP_NAME } from "@/lib/config";
 
@@ -39,14 +40,14 @@ export function TeamAcceptClient({ token, userEmail }: Props) {
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4 text-center">
       <div>
         <span className="font-mono text-xs font-semibold uppercase tracking-widest text-accent">
-          // TEAM INVITE
+          {"// TEAM INVITE"}
         </span>
         <h1 className="mt-4 font-display text-2xl font-bold text-foreground">
-          You've been invited to join a team on {APP_NAME}
+          You&apos;ve been invited to join a team on {APP_NAME}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Accepting as <strong>{userEmail}</strong>. You'll get full download access as part of
-          the team's subscription.
+          Accepting as <strong>{userEmail}</strong>. You&apos;ll get full download access as part of
+          the team&apos;s subscription.
         </p>
       </div>
 
@@ -57,12 +58,12 @@ export function TeamAcceptClient({ token, userEmail }: Props) {
       )}
 
       <div className="flex gap-3">
-        <a
+        <Link
           href="/"
           className="rounded-xl border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
         >
           Decline
-        </a>
+        </Link>
         <button
           onClick={handleAccept}
           disabled={loading}

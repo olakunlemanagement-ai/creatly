@@ -1,9 +1,8 @@
-import { NextRequest } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { ok, fail } from "@/lib/api-response";
 import { createClient } from "@/lib/supabase/server";
 
-export async function POST(_req: NextRequest) {
+export async function POST() {
   try {
     // 1. AUTH
     const auth = await getAuthenticatedUser();

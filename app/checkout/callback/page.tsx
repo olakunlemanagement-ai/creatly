@@ -80,7 +80,7 @@ export default function CheckoutCallbackPage() {
               Verifying your payment…
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              This only takes a moment. Please don't close this page.
+              This only takes a moment. Please don&apos;t close this page.
             </p>
           </div>
         </>
