@@ -9,7 +9,7 @@ import { Eye, EyeOff, CheckCircle2, ArrowRight, Loader2 } from "lucide-react";
 
 import { signupSchema, type SignupInput } from "@/lib/validations/auth";
 import { createClient } from "@/lib/supabase/client";
-import { APP_NAME } from "@/lib/config";
+import { APP_NAME, APP_URL } from "@/lib/config";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -51,12 +51,16 @@ export function SignupForm({ next }: { next?: string }) {
     const supabase = createClient();
 
     const confirmNext = isCreatorFlow ? "/creators/apply" : "/onboarding";
+    const emailRedirectTo = `${APP_URL}/auth/callback?next=${confirmNext}`;
+    if (process.env.NODE_ENV !== "production") {
+      console.log("[SignupForm] emailRedirectTo:", emailRedirectTo);
+    }
     const { data, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
         data: { full_name: values.full_name ?? "" },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${confirmNext}`,
+        emailRedirectTo,
       },
     });
 
