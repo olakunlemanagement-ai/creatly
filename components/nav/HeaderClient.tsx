@@ -132,8 +132,8 @@ export function HeaderClient({ auth, categories }: HeaderClientProps) {
   const prefersReduced = useReducedMotion();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Hide only on the home page until past the hero; always visible everywhere else.
-  const hidden = isHomePage && !pastHero;
+  // Hide only on the home page for guests until past the hero; always visible for logged-in users.
+  const hidden = isHomePage && !pastHero && !auth;
 
   return (
     <>
