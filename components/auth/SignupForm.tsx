@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
@@ -26,9 +27,9 @@ import { PasswordStrengthMeter } from "@/components/auth/PasswordStrengthMeter";
 const labelClass = "font-mono text-[10px] uppercase tracking-widest text-muted-foreground";
 
 export function SignupForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  // Always show "check email" state after submit — no enumeration of existing emails.
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -50,7 +51,7 @@ export function SignupForm() {
 
     // emailRedirectTo points at the confirm route which exchanges the token
     // and redirects to /browse after verification.
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
@@ -62,6 +63,12 @@ export function SignupForm() {
     // Treat "User already registered" the same as success — no enumeration.
     if (error && error.message !== "User already registered") {
       setServerError("Something went wrong. Please try again.");
+      return;
+    }
+
+    // When email confirmation is disabled Supabase returns a session immediately.
+    if (data.session) {
+      router.push("/onboarding");
       return;
     }
 
