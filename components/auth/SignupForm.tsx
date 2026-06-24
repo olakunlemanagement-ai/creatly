@@ -56,7 +56,7 @@ export function SignupForm({ next }: { next?: string }) {
       password: values.password,
       options: {
         data: { full_name: values.full_name ?? "" },
-        emailRedirectTo: `${window.location.origin}/auth/confirm?next=${confirmNext}`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=${confirmNext}`,
       },
     });
 
