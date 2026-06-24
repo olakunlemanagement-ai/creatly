@@ -46,7 +46,7 @@ export function AppNavbar({ auth }: AppNavbarProps) {
                 <Link href="/login">Log in</Link>
               </Button>
               <Button size="sm" asChild>
-                <Link href="/signup">Sign up</Link>
+                <Link href="/signup/start">Sign up</Link>
               </Button>
             </>
           )}

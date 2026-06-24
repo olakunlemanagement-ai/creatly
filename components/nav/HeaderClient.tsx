@@ -209,7 +209,7 @@ export function HeaderClient({ auth, categories }: HeaderClientProps) {
                       className="rounded-full"
                       asChild
                     >
-                      <Link href="/signup">Sign Up</Link>
+                      <Link href="/signup/start">Sign Up</Link>
                     </Button>
                   </>
                 )}

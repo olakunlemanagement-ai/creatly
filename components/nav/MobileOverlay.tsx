@@ -161,7 +161,7 @@ export function MobileOverlay({ open, onClose, auth, categories }: MobileOverlay
                   <Link href="/login" onClick={onClose}>Sign In</Link>
                 </Button>
                 <Button variant="terracotta" size="cta" className="flex-1 justify-center" asChild>
-                  <Link href="/signup" onClick={onClose}>Sign Up</Link>
+                  <Link href="/signup/start" onClick={onClose}>Sign Up</Link>
                 </Button>
               </div>
             )}
