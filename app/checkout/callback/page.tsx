@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { APP_NAME } from "@/lib/config";
@@ -10,7 +10,7 @@ type VerifyState = "polling" | "success" | "failed" | "timeout";
 const MAX_ATTEMPTS = 10;
 const POLL_INTERVAL_MS = 2000;
 
-export default function CheckoutCallbackPage() {
+function CheckoutCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const reference = searchParams.get("reference");
@@ -136,5 +136,13 @@ export default function CheckoutCallbackPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function CheckoutCallbackPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CheckoutCallbackContent />
+    </Suspense>
   );
 }
