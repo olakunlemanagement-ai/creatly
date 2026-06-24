@@ -116,7 +116,7 @@ export function LandingHero() {
                 className="cta-shimmer"
                 asChild
               >
-                <Link href="/creators/apply">
+                <Link href="/creators">
                   Start creating
                   <ArrowRight className="size-4 transition-transform duration-150 group-hover/button:translate-x-1 motion-reduce:transition-none" />
                 </Link>

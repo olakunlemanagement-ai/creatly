@@ -207,7 +207,7 @@ export function LoginForm({
       <p className="text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{" "}
         <Link
-          href="/signup"
+          href={next && next.startsWith("/") && !next.startsWith("//") ? `/signup?next=${encodeURIComponent(next)}` : "/signup"}
           className="font-medium text-terracotta-600 underline-offset-4 hover:underline"
         >
           Create one free

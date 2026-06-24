@@ -26,8 +26,9 @@ import { PasswordStrengthMeter } from "@/components/auth/PasswordStrengthMeter";
 // Shared label style: mono eyebrow
 const labelClass = "font-mono text-[10px] uppercase tracking-widest text-muted-foreground";
 
-export function SignupForm() {
+export function SignupForm({ next }: { next?: string }) {
   const router = useRouter();
+  const isCreatorFlow = next === "/creators/apply";
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -49,14 +50,13 @@ export function SignupForm() {
     setServerError(null);
     const supabase = createClient();
 
-    // emailRedirectTo points at the confirm route which exchanges the token
-    // and redirects to /browse after verification.
+    const confirmNext = isCreatorFlow ? "/creators/apply" : "/browse";
     const { data, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
         data: { full_name: values.full_name ?? "" },
-        emailRedirectTo: `${window.location.origin}/auth/confirm?next=/browse`,
+        emailRedirectTo: `${window.location.origin}/auth/confirm?next=${confirmNext}`,
       },
     });
 
@@ -68,7 +68,8 @@ export function SignupForm() {
 
     // When email confirmation is disabled Supabase returns a session immediately.
     if (data.session) {
-      router.push("/onboarding");
+      // Creator flow: skip onboarding wizard, go straight to creator profile setup.
+      router.push(isCreatorFlow ? "/creators/apply" : "/onboarding");
       return;
     }
 

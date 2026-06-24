@@ -156,14 +156,14 @@ export default async function StudioAssetsPage({
                       Edit
                     </Link>
                   )}
-                  {asset.review_status === "approved" && (
-                    <Link
-                      href={`/resources/${asset.slug}`}
-                      className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground/80 transition-colors hover:border-foreground/40"
-                    >
-                      View live
-                    </Link>
-                  )}
+                  <Link
+                    href={`/resources/${asset.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground/80 transition-colors hover:border-foreground/40"
+                  >
+                    {asset.review_status === "approved" ? "View live ↗" : "Preview ↗"}
+                  </Link>
                 </div>
               </li>
             );
