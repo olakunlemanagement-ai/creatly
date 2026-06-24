@@ -83,16 +83,16 @@ export function useSubscription(userId: string | null | undefined): Subscription
     void fetch();
 
     // Realtime: re-fetch when subscription row changes (webhook fires → banner hides immediately)
-    const channel = supabase
-      .channel("subscription-state")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "subscriptions", filter: `owner_id=eq.${userId}` },
-        () => { void fetch(); }
-      )
-      .subscribe();
+    // All .on() listeners must be registered before .subscribe() is called.
+    const channel = supabase.channel("subscription-state");
+    channel.on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "subscriptions", filter: `owner_id=eq.${userId}` },
+      () => { void fetch(); }
+    );
+    channel.subscribe();
 
-    return () => { void supabase.removeChannel(channel); };
+    return () => { supabase.removeChannel(channel); };
   }, [userId]);
 
   return state;
