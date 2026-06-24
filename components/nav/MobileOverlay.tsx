@@ -19,9 +19,10 @@ interface MobileOverlayProps {
 }
 
 const NAV_LINKS = [
-  { label: "Browse",   href: "/browse" },
-  { label: "Pricing",  href: "/pricing" },
-  { label: "License",  href: "/license" },
+  { label: "Browse",            href: "/browse" },
+  { label: "Become a creator",  href: "/creators" },
+  { label: "Pricing",           href: "/pricing" },
+  { label: "License",           href: "/license" },
 ] as const;
 
 const EXPO_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1];

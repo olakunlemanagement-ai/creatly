@@ -20,7 +20,7 @@ export default async function OnboardingPage() {
 
   // Creators skip consumer onboarding entirely
   if (auth.profile.role === "creator") {
-    redirect("/creator/dashboard");
+    redirect("/creator");
   }
 
   // Already onboarded — transparent pass-through
@@ -38,7 +38,7 @@ export default async function OnboardingPage() {
     .maybeSingle();
 
   if (creatorProfile) {
-    redirect("/creator/dashboard");
+    redirect("/creator");
   }
 
   // Fetch active categories for the interest chips in step 2

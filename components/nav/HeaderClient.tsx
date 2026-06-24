@@ -184,6 +184,12 @@ export function HeaderClient({ auth, categories }: HeaderClientProps) {
                 >
                   License
                 </Link>
+                <Link
+                  href="/creators"
+                  className="rounded-md px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 hover:text-stone-900"
+                >
+                  Become a creator
+                </Link>
               </nav>
 
               {/* Desktop auth */}

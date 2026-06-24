@@ -14,9 +14,9 @@ export const metadata: Metadata = {
 export default async function ApplyPage() {
   const auth = await getAuthenticatedUser();
 
-  // Guest → login, return here after
+  // Guest → signup in creator context, return here after email verify
   if (!auth) {
-    redirect("/login?next=/creators/apply");
+    redirect("/signup?next=/creators/apply");
   }
 
   // Already a creator → send to studio
