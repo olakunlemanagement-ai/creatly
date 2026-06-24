@@ -3,6 +3,7 @@ import { DM_Sans, DM_Serif_Display, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { APP_NAME, APP_TAGLINE } from "@/lib/config";
 import { PageTransition } from "@/components/shared/PageTransition";
+import { GlobalErrorBoundary } from "@/components/shared/GlobalErrorBoundary";
 
 const dmSans = DM_Sans({
   variable: "--font-sans",
@@ -35,7 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${dmSans.variable} ${dmSerifDisplay.variable} ${geistMono.variable}`}>
-      <body className="antialiased" suppressHydrationWarning><PageTransition>{children}</PageTransition></body>
+      <body className="antialiased" suppressHydrationWarning><GlobalErrorBoundary><PageTransition>{children}</PageTransition></GlobalErrorBoundary></body>
     </html>
   );
 }

@@ -84,16 +84,27 @@ export function useSubscription(userId: string | null | undefined): Subscription
 
     // Realtime: re-fetch when subscription row changes (webhook fires → banner hides immediately).
     // .on() must be chained before .subscribe() — Supabase Realtime v2 rejects listeners added after subscribe().
-    const channel = supabase
-      .channel(`subscription-state:${userId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "subscriptions", filter: `owner_id=eq.${userId}` },
-        () => { void fetch(); },
-      )
-      .subscribe();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    try {
+      channel = supabase
+        .channel(`subscription-state:${userId}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "subscriptions", filter: `owner_id=eq.${userId}` },
+          () => { void fetch(); },
+        )
+        .subscribe((status) => {
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            console.warn("[useSubscription] Realtime channel error:", status);
+          }
+        });
+    } catch (err) {
+      console.warn("[useSubscription] Failed to open Realtime channel:", err);
+    }
 
-    return () => { void supabase.removeChannel(channel); };
+    return () => {
+      if (channel) void supabase.removeChannel(channel);
+    };
   }, [userId]);
 
   return state;
