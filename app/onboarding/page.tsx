@@ -18,13 +18,30 @@ export default async function OnboardingPage() {
     redirect("/login?next=/onboarding");
   }
 
+  // Creators skip consumer onboarding entirely
+  if (auth.profile.role === "creator") {
+    redirect("/creator/dashboard");
+  }
+
   // Already onboarded — transparent pass-through
   if (auth.profile.onboarded) {
     redirect("/browse");
   }
 
-  // Fetch active categories for the interest chips in step 2
   const supabase = await createClient();
+
+  // Check for creator_profile in case role wasn't updated yet
+  const { data: creatorProfile } = await supabase
+    .from("creator_profiles")
+    .select("user_id")
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+
+  if (creatorProfile) {
+    redirect("/creator/dashboard");
+  }
+
+  // Fetch active categories for the interest chips in step 2
   const { data: categories } = await supabase
     .from("categories")
     .select("id, name")

@@ -28,7 +28,7 @@ export default async function ApplyPage() {
     .maybeSingle();
 
   if (profile) {
-    redirect("/creator");
+    redirect("/creator/dashboard");
   }
 
   return (

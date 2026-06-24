@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Zap } from "lucide-react";
+import { Crown } from "lucide-react";
 import { useSubscription } from "@/hooks/use-subscription";
 
 interface Props {
@@ -18,9 +18,9 @@ export function UpgradeNudge({ userId }: Props) {
   return (
     <Link
       href="/pricing"
-      className="flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent transition-colors hover:bg-accent/20"
+      className="flex items-center gap-1.5 rounded-full border border-terracotta-500/40 bg-terracotta-500/10 px-3 py-1 text-xs font-semibold text-terracotta-500 transition-colors hover:bg-terracotta-500/20"
     >
-      <Zap className="h-3 w-3" />
+      <Crown className="h-3.5 w-3.5" />
       Free plan · Upgrade →
     </Link>
   );
