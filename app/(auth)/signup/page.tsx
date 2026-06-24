@@ -9,14 +9,9 @@ export const metadata: Metadata = {
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; intent?: string }>;
+  searchParams: Promise<{ next?: string }>;
 }) {
-  const { next, intent } = await searchParams;
-  let safeNext: string | undefined;
-  if (intent === "creator") {
-    safeNext = "/creators/apply";
-  } else if (next && next.startsWith("/") && !next.startsWith("//")) {
-    safeNext = next;
-  }
+  const { next } = await searchParams;
+  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : undefined;
   return <SignupForm next={safeNext} />;
 }
