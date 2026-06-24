@@ -85,7 +85,7 @@ export function useSubscription(userId: string | null | undefined): Subscription
     // Realtime: re-fetch when subscription row changes (webhook fires → banner hides immediately).
     // .on() must be chained before .subscribe() — Supabase Realtime v2 rejects listeners added after subscribe().
     const channel = supabase
-      .channel("subscription-state")
+      .channel(`subscription-state:${userId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "subscriptions", filter: `owner_id=eq.${userId}` },
