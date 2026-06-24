@@ -1266,7 +1266,7 @@ Commit: feat(creator): public creator storefront /creators/[handle].
 
 Watch for: only approved creators + approved/published assets are public; reuse existing grid/card.
 
-# Phase 2 — Payments (Creatly)
+# Phase 2 — Payments (Creatly) ✅
 
 > **Ground rules (repeat them in every PR description)**
 > - All money is stored and transmitted as **integer kobo** (₦1 = 100 kobo). Zero floats near financial logic.
@@ -1277,12 +1277,7 @@ Watch for: only approved creators + approved/published assets are public; reuse 
 
 ---
 
-## Step 2.1 — Pricing constants + DB schema
-
-**One-liner**
-```
-pnpm claude "Add pricing constants and Supabase migration for Phase 2 payments per BUILD-PLAN step 2.1, commit when done"
-```
+## Step 2.1 — Pricing constants + DB schema ✅
 
 ### What to build
 
@@ -1385,7 +1380,7 @@ on conflict do nothing;
 
 ---
 
-## Step 2.2 — Pricing page `/pricing`
+## Step 2.2 — Pricing page `/pricing` ✅
 
 **One-liner**
 ```
@@ -1419,7 +1414,7 @@ export const formatNaira = (kobo: number) =>
 
 ---
 
-## Step 2.3 — Checkout server action + Paystack initialisation
+## Step 2.3 — Checkout server action + Paystack initialisation ✅
 
 **One-liner**
 ```
@@ -1480,7 +1475,7 @@ NEXT_PUBLIC_APP_URL=https://joincreatly.com
 
 ---
 
-## Step 2.4 — Webhook handler (idempotent, signature-verified)
+## Step 2.4 — Webhook handler (idempotent, signature-verified) ✅
 
 **One-liner**
 ```
@@ -1591,7 +1586,7 @@ export const config = { api: { bodyParser: false } }
 
 ---
 
-## Step 2.5 — Team workspace: invites + member management
+## Step 2.5 — Team workspace: invites + member management ✅
 
 **One-liner**
 ```
@@ -1640,7 +1635,7 @@ pnpm claude "Build team invite flow per BUILD-PLAN step 2.5 — invite API, acce
 
 ---
 
-## Step 2.6 — Billing + subscription status pages
+## Step 2.6 — Billing + subscription status pages ✅
 
 **One-liner**
 ```
@@ -1692,7 +1687,7 @@ pnpm claude "Build /billing page per BUILD-PLAN step 2.6 — current plan, renew
 
 ---
 
-## Step 2.7 — Subscription status UI + nav integration
+## Step 2.7 — Subscription status UI + nav integration ✅
 
 **One-liner**
 ```
@@ -1722,7 +1717,7 @@ pnpm claude "Wire subscription status into nav/dashboard per BUILD-PLAN step 2.7
 
 ---
 
-## Step 2.8 — E2E smoke test + Paystack webhook simulation
+## Step 2.8 — E2E smoke test + Paystack webhook simulation ✅
 
 **One-liner**
 ```

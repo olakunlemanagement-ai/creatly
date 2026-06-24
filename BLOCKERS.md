@@ -101,4 +101,46 @@ WHERE email = 'your-admin@example.com';
 
 ---
 
+## Phase 2 — Paystack API Keys (BLOCKER)
+
+The following environment variables are required for live payment processing. Until they are set, Paystack API calls are stubbed with mock responses. Everything else in Phase 2 (DB schema, pricing page, billing UI, webhook structure, team invites) is fully wired and testable without these keys.
+
+### Required env vars
+
+| Var | Where used | How to get |
+|-----|-----------|------------|
+| `PAYSTACK_SECRET_KEY` | Server only — checkout route, webhook HMAC verification, subscription cancel | Paystack Dashboard → Settings → API Keys → Secret key |
+| `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | Client — Paystack Inline.js (if used for card forms) | Paystack Dashboard → Settings → API Keys → Public key |
+
+### Steps to activate
+
+1. **Get keys:** Paystack Dashboard → Settings → API Keys
+   - Use `sk_test_...` / `pk_test_...` for development
+   - Use `sk_live_...` / `pk_live_...` for production
+
+2. **Add to `.env.local`:**
+   ```
+   PAYSTACK_SECRET_KEY=sk_test_...
+   NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_...
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   ```
+
+3. **Add to Vercel (production):**
+   Vercel → Project → Settings → Environment Variables
+   ```
+   PAYSTACK_SECRET_KEY         = sk_live_...   (Production, Preview)
+   NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY = pk_live_...   (Production, Preview)
+   NEXT_PUBLIC_APP_URL         = https://joincreatly.com  (Production)
+   ```
+
+4. **Register webhook in Paystack Dashboard:**
+   - Webhook URL: `https://joincreatly.com/api/webhooks/paystack`
+   - Events: `charge.success`, `subscription.disable`, `invoice.payment_failed`, `invoice.create`
+
+5. **Remove stubs:** Search codebase for `TODO: replace with real Paystack call` and swap in the real implementations.
+
+> ⚠️ The `PAYSTACK_SECRET_KEY` is used for HMAC-SHA512 webhook signature verification. Without it, the webhook handler accepts all payloads (stub mode). This MUST be set before going live.
+
+---
+
 *Log resolutions here as: `✅ Resolved YYYY-MM-DD — <note>`*

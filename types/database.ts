@@ -36,6 +36,9 @@ export type CreatorProfileStatus = (typeof CREATOR_PROFILE_STATUS)[number];
 export const ONBOARDING_ROLES = ["consumer", "creator"] as const;
 export type OnboardingRole = (typeof ONBOARDING_ROLES)[number];
 
+export const PAYMENT_REFERENCE_STATUS = ["pending", "success", "failed"] as const;
+export type PaymentReferenceStatus = (typeof PAYMENT_REFERENCE_STATUS)[number];
+
 // ============================================================
 // SUPABASE GENERATED TYPES (below — do not edit by hand)
 // ============================================================
@@ -868,3 +871,46 @@ export type NotificationPreference = DBRow<"notification_preferences">;
 export type CategoryFollow = DBRow<"category_follows">;
 export type Creator = DBRow<"creators">;
 export type CreatorProfile = DBRow<"creator_profiles">;
+
+// ============================================================
+// PHASE 2 HAND-WRITTEN TYPES
+// These tables were added in migration 20260624000000_payments.sql.
+// Run `pnpm gen:types` after pushing that migration to replace with generated types.
+// ============================================================
+
+export type Plan = {
+  id: string;       // 'solo_monthly' | 'solo_annual' | 'team_monthly' | 'team_annual'
+  kobo: number;     // integer kobo — never float
+  interval: "monthly" | "annual";
+  seats: number;
+  label: string;
+  active: boolean;
+};
+
+export type PaymentReference = {
+  reference: string;   // Paystack reference; primary key
+  user_id: string;
+  plan_id: string;
+  kobo: number;        // integer kobo; verified vs plan.kobo in webhook
+  status: PaymentReferenceStatus;
+  created_at: string;
+  settled_at: string | null;
+};
+
+export type Team = {
+  id: string;
+  name: string;
+  owner_id: string;
+  created_at: string;
+};
+
+export type TeamInvite = {
+  id: string;
+  team_id: string;
+  email: string;
+  token: string;
+  invited_by: string;
+  accepted_at: string | null;
+  expires_at: string;
+  created_at: string;
+};

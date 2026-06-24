@@ -14,12 +14,14 @@ const envSchema = z.object({
   SUPABASE_SECRET_KEY: z.string().min(1),
 
   // ── Paystack ────────────────────────────────────────────────────────────────
-  // TODO(step-2.1): uncomment when adding payment integration
-  // PAYSTACK_SECRET_KEY: z.string().min(1),
-  // PAYSTACK_PLAN_PERSONAL_MONTHLY: z.string().min(1),
-  // PAYSTACK_PLAN_PERSONAL_ANNUAL: z.string().min(1),
-  // PAYSTACK_PLAN_TEAM_MONTHLY: z.string().min(1),
-  // PAYSTACK_PLAN_TEAM_ANNUAL: z.string().min(1),
+  // Optional until keys are provisioned. Stubs are used when these are absent.
+  // BLOCKER: obtain from Paystack dashboard and set in .env.local + Vercel.
+  // TODO(paystack-keys): make required once PAYSTACK_SECRET_KEY is provisioned.
+  PAYSTACK_SECRET_KEY: z.string().min(1).optional(),
+  NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: z.string().min(1).optional(),
+
+  // ── App URL ─────────────────────────────────────────────────────────────────
+  NEXT_PUBLIC_APP_URL: z.string().url().optional().default("http://localhost:3000"),
 
   // ── Resend ──────────────────────────────────────────────────────────────────
   RESEND_API_KEY: z.string().min(1),

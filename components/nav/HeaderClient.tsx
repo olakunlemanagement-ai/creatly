@@ -11,6 +11,7 @@ import { MobileOverlay } from "@/components/nav/MobileOverlay";
 import { useScrollPosition } from "@/hooks/useScrollPosition";
 import { useReducedMotion } from "framer-motion";
 import { CONTACT_EMAIL } from "@/lib/config";
+import { UpgradeNudge } from "@/components/shared/UpgradeNudge";
 import type { AuthenticatedUser } from "@/lib/auth";
 import type { Category } from "@/types/database";
 
@@ -188,7 +189,10 @@ export function HeaderClient({ auth, categories }: HeaderClientProps) {
               {/* Desktop auth */}
               <div className="hidden items-center gap-2 lg:flex">
                 {auth ? (
-                  <UserDropdown auth={auth} />
+                  <>
+                    <UpgradeNudge userId={auth.user.id} />
+                    <UserDropdown auth={auth} />
+                  </>
                 ) : (
                   <>
                     <Button

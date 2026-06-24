@@ -16,7 +16,7 @@ If anything in a prompt conflicts with these documents, stop and flag it.
 | Phase | Steps | Status |
 |-------|-------|--------|
 | Phase 1 — Buyer Foundation | 1.1 Scaffold · 1.2 Supabase/DB · 1.3 Auth · 1.4 Catalogue · 1.5 Search · 1.6 Resource detail · 1.7 Favourites · 1.8 Downloads | **Step 1.1 complete** |
-| Phase 2 — Payments | 2.1 Paystack plans · 2.2 Pricing page · 2.3 Checkout · 2.4 Webhooks · 2.5 Team plans | Not started |
+| Phase 2 — Payments | 2.1 Paystack plans · 2.2 Pricing page · 2.3 Checkout · 2.4 Webhooks · 2.5 Team plans · 2.6 Billing · 2.7 Sub status UI · 2.8 Tests | **Complete (Paystack keys stubbed — see BLOCKERS.md)** |
 | Phase 3 — User Dashboard | 3.1–3.8 Dashboard pages | Not started |
 | Phase 4 — Admin Seed Tool | 4.1–4.6 Admin CRUD | Not started |
 | Phase 5 — Creator Dashboard | Phase 2 public | Not started |
