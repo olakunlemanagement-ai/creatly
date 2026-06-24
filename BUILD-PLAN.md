@@ -1266,8 +1266,539 @@ Commit: feat(creator): public creator storefront /creators/[handle].
 
 Watch for: only approved creators + approved/published assets are public; reuse existing grid/card.
 
-## PHASE 2 — Payments & Entitlements ⬜
-2.1 Paystack plans (annual = monthly ×10) + env · 2.2 Pricing page · 2.3 Checkout · 2.4 Webhook handler (idempotent, signature-verified) · 2.5 Team plans + invites · 2.6 Subscription status page · 2.7 Payment history. *(Expanded when Phase 1 completes.)*
+# Phase 2 — Payments (Creatly)
+
+> **Ground rules (repeat them in every PR description)**
+> - All money is stored and transmitted as **integer kobo** (₦1 = 100 kobo). Zero floats near financial logic.
+> - Annual price = **10 × monthly** kobo (2 months free).
+> - **Webhooks are the only writer of subscription state.** No client-side trust, ever.
+> - Paystack `reference` is your idempotency key — store it in `payment_references` before redirecting; reject duplicate webhook deliveries.
+> - Signed URLs on downloads are already gated on real subscription rows — no entitlement rework needed.
+
+---
+
+## Step 2.1 — Pricing constants + DB schema
+
+**One-liner**
+```
+pnpm claude "Add pricing constants and Supabase migration for Phase 2 payments per BUILD-PLAN step 2.1, commit when done"
+```
+
+### What to build
+
+**`lib/pricing.ts`** — single source of truth, never computed at runtime
+```ts
+export const PLANS = {
+  solo_monthly:  { id: 'solo_monthly',  kobo: 150000, interval: 'monthly', seats: 1 },
+  solo_annual:   { id: 'solo_annual',   kobo: 1500000, interval: 'annual',  seats: 1 },
+  team_monthly:  { id: 'team_monthly',  kobo: 400000, interval: 'monthly', seats: 5 },
+  team_annual:   { id: 'team_annual',   kobo: 4000000, interval: 'annual',  seats: 5 },
+} as const
+export type PlanId = keyof typeof PLANS
+export const toNaira = (kobo: number) => (kobo / 100).toFixed(2)
+```
+
+**Supabase migration `20240001_payments.sql`**
+```sql
+-- Plans reference table (seed from pricing.ts)
+create table public.plans (
+  id          text primary key,           -- 'solo_monthly' etc.
+  kobo        integer not null check (kobo > 0),
+  interval    text not null check (interval in ('monthly','annual')),
+  seats       integer not null default 1,
+  label       text not null,
+  active      boolean not null default true
+);
+
+-- Idempotency / audit log — insert BEFORE redirect, never update
+create table public.payment_references (
+  reference   text primary key,           -- Paystack reference (uuid v4 generated client-side)
+  user_id     uuid not null references auth.users,
+  plan_id     text not null references public.plans,
+  kobo        integer not null,
+  status      text not null default 'pending'  -- pending | success | failed
+              check (status in ('pending','success','failed')),
+  created_at  timestamptz not null default now(),
+  settled_at  timestamptz
+);
+
+-- Subscriptions (already read by entitlement logic)
+-- Ensure correct shape; add columns if Phase 1 migration differs:
+alter table public.subscriptions
+  add column if not exists plan_id     text references public.plans,
+  add column if not exists team_id     uuid,
+  add column if not exists paystack_sub_code text,   -- for managed recurring
+  add column if not exists cancel_at   timestamptz;
+
+-- Team workspaces
+create table public.teams (
+  id          uuid primary key default gen_random_uuid(),
+  name        text not null,
+  owner_id    uuid not null references auth.users,
+  created_at  timestamptz not null default now()
+);
+
+-- Team membership
+create table public.team_members (
+  team_id     uuid not null references public.teams on delete cascade,
+  user_id     uuid not null references auth.users  on delete cascade,
+  role        text not null default 'member' check (role in ('owner','member')),
+  joined_at   timestamptz not null default now(),
+  primary key (team_id, user_id)
+);
+
+-- Pending invites
+create table public.team_invites (
+  id          uuid primary key default gen_random_uuid(),
+  team_id     uuid not null references public.teams on delete cascade,
+  email       text not null,
+  token       text not null unique default encode(gen_random_bytes(32),'hex'),
+  invited_by  uuid not null references auth.users,
+  accepted_at timestamptz,
+  expires_at  timestamptz not null default now() + interval '7 days',
+  created_at  timestamptz not null default now()
+);
+
+-- RLS: users only see their own payment_references
+alter table public.payment_references enable row level security;
+create policy "owner" on public.payment_references
+  for select using (auth.uid() = user_id);
+
+-- RLS: subscriptions readable by member (team or self)
+-- (add to existing subscriptions RLS; adjust if policy already exists)
+```
+
+**Seed plans** (run after migration)
+```sql
+insert into public.plans (id, kobo, interval, seats, label) values
+  ('solo_monthly',  150000,  'monthly', 1, 'Solo Monthly'),
+  ('solo_annual',   1500000, 'annual',  1, 'Solo Annual'),
+  ('team_monthly',  400000,  'monthly', 5, 'Team Monthly'),
+  ('team_annual',   4000000, 'annual',  5, 'Team Annual')
+on conflict do nothing;
+```
+
+**Review checklist**
+- [ ] `kobo` column is `integer`, no `decimal`/`float` anywhere
+- [ ] `payment_references` has no `update` policy — insert-only from server
+- [ ] Migration is reversible (add `drop table` stubs in a `down` block)
+
+---
+
+## Step 2.2 — Pricing page `/pricing`
+
+**One-liner**
+```
+pnpm claude "Build /pricing page per BUILD-PLAN step 2.2 — toggle monthly/annual, plan cards, checkout CTA; commit when done"
+```
+
+### What to build
+
+**`app/pricing/page.tsx`** — server component shell + client toggle
+
+**UI spec**
+- Monthly / Annual toggle (pill switcher) — annual shows "2 months free" badge
+- 2 plan columns: **Solo** (₦1,500/mo · ₦15,000/yr) and **Team** (₦4,000/mo · ₦40,000/yr)
+- Feature comparison rows: downloads/month, seats, priority support, team workspace
+- Active plan highlighted with terracotta border + "Current plan" label (read from `useSubscription` hook)
+- CTA: "Get started" → hits `/api/checkout` server action; signed-in check first (redirect to login if not)
+- FAQ accordion at bottom (3–4 common Q&A)
+
+**Locale formatting helper** (use everywhere currency is displayed)
+```ts
+// lib/format-naira.ts
+export const formatNaira = (kobo: number) =>
+  new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 })
+    .format(kobo / 100)
+```
+
+**Review checklist**
+- [ ] Prices come from `PLANS` constant, never hardcoded in JSX
+- [ ] `formatNaira` used for every price display
+- [ ] No checkout logic in this file — just navigation to `/api/checkout`
+
+---
+
+## Step 2.3 — Checkout server action + Paystack initialisation
+
+**One-liner**
+```
+pnpm claude "Build /api/checkout server action per BUILD-PLAN step 2.3 — insert payment_reference, call Paystack initialize, redirect; commit when done"
+```
+
+### What to build
+
+**`app/api/checkout/route.ts`** — POST only
+```
+POST /api/checkout
+Body: { planId: PlanId }
+```
+
+**Logic (server-side, never trust client for price)**
+1. Auth-gate: get session from Supabase server client; 401 if missing
+2. Look up `PLANS[planId]` — if invalid, 400
+3. Generate `reference = crypto.randomUUID()`
+4. Insert into `payment_references` `{ reference, user_id, plan_id, kobo }` — if insert fails (duplicate), 409
+5. Call Paystack `/transaction/initialize`:
+   ```
+   POST https://api.paystack.co/transaction/initialize
+   Authorization: Bearer PAYSTACK_SECRET_KEY
+   {
+     email: user.email,
+     amount: plan.kobo,          // kobo
+     currency: "NGN",
+     reference,
+     callback_url: `${NEXT_PUBLIC_APP_URL}/checkout/callback`,
+     metadata: { user_id, plan_id, kobo: plan.kobo }
+   }
+   ```
+6. On success → `{ authorization_url }` → redirect 303 to Paystack hosted page
+7. On Paystack error → 502 with `{ error: 'payment_init_failed' }`
+
+**Env vars needed**
+```
+PAYSTACK_SECRET_KEY=sk_live_...      # never exposed to client
+NEXT_PUBLIC_APP_URL=https://joincreatly.com
+```
+
+**`app/checkout/callback/page.tsx`** — landing page after Paystack redirect
+- Show spinner + "Verifying your payment…"
+- Poll `/api/checkout/verify?reference=xxx` every 2 s (max 10 attempts)
+- On `status: success` → redirect to `/dashboard` with toast "Subscription activated 🎉"
+- On `status: failed` → show error + "Try again" button back to `/pricing`
+- On timeout → "Still processing — check back in a moment" + link to `/billing`
+
+**`app/api/checkout/verify/route.ts`** — GET, auth-gated
+- Read `payment_references` for this `reference` + `user_id` (RLS enforced)
+- Return `{ status }` — webhook will have updated it; this is read-only
+
+**Review checklist**
+- [ ] `PAYSTACK_SECRET_KEY` used server-side only; grep for accidental exposure
+- [ ] `amount` sent to Paystack is `PLANS[planId].kobo` from server, not client
+- [ ] `payment_references` insert happens before Paystack call (idempotency first)
+- [ ] Callback page never writes subscription state — only reads
+
+---
+
+## Step 2.4 — Webhook handler (idempotent, signature-verified)
+
+**One-liner**
+```
+pnpm claude "Build /api/webhooks/paystack per BUILD-PLAN step 2.4 — HMAC verify, idempotency guard, write subscription state; commit when done"
+```
+
+### What to build
+
+**`app/api/webhooks/paystack/route.ts`** — POST, no auth middleware (Paystack calls this)
+
+**Verification (first thing, before any DB access)**
+```ts
+import { createHmac } from 'crypto'
+
+const sig  = req.headers.get('x-paystack-signature') ?? ''
+const body = await req.text()          // raw bytes for HMAC
+const hash = createHmac('sha512', process.env.PAYSTACK_SECRET_KEY!)
+               .update(body)
+               .digest('hex')
+if (!timingSafeEqual(Buffer.from(hash), Buffer.from(sig))) {
+  return new Response('Forbidden', { status: 403 })
+}
+const event = JSON.parse(body)
+```
+
+**Idempotency guard**
+```ts
+// Use Paystack's own reference as idempotency key
+const ref = event.data?.reference
+const existing = await supabase
+  .from('payment_references')
+  .select('status')
+  .eq('reference', ref)
+  .single()
+
+if (existing.data?.status === 'success') {
+  return new Response('OK', { status: 200 })   // already processed
+}
+```
+
+**Event handling — `charge.success`**
+```ts
+if (event.event === 'charge.success') {
+  const { reference, customer, metadata } = event.data
+  const { user_id, plan_id, kobo } = metadata   // written by us at init time
+
+  // 1. Verify amount matches plan (defence-in-depth)
+  if (PLANS[plan_id]?.kobo !== event.data.amount) {
+    console.error('Amount mismatch', { plan_id, expected: PLANS[plan_id]?.kobo, got: event.data.amount })
+    return new Response('Amount mismatch', { status: 422 })
+  }
+
+  const plan      = PLANS[plan_id]
+  const now       = new Date()
+  const expiresAt = plan.interval === 'annual'
+    ? new Date(now.setFullYear(now.getFullYear() + 1))
+    : new Date(now.setMonth(now.getMonth() + 1))
+
+  // 2. Upsert subscription row (webhook is sole writer)
+  await supabase.from('subscriptions').upsert({
+    user_id,
+    plan_id,
+    status: 'active',
+    current_period_start: new Date().toISOString(),
+    current_period_end:   expiresAt.toISOString(),
+    paystack_sub_code:    event.data.subscription_code ?? null,
+    updated_at:           new Date().toISOString(),
+  }, { onConflict: 'user_id' })
+
+  // 3. Mark reference settled
+  await supabase.from('payment_references').update({
+    status: 'success',
+    settled_at: new Date().toISOString(),
+  }).eq('reference', reference)
+
+  // 4. If team plan, create/update team seat count
+  if (plan.seats > 1) {
+    await ensureTeamForUser(supabase, user_id, plan)
+  }
+}
+```
+
+**Event handling — `subscription.disable` / `invoice.payment_failed`**
+```ts
+// Mark subscription inactive; entitlement logic already reads status column
+await supabase.from('subscriptions').update({
+  status: 'inactive',
+  cancel_at: new Date().toISOString(),
+}).eq('paystack_sub_code', event.data.subscription_code)
+```
+
+**Always return 200** (even on business logic errors) to prevent Paystack retries for non-transient failures. Log errors to console/Sentry, don't surface them to Paystack.
+
+**Disable Next.js body parsing** (required for raw body HMAC)
+```ts
+export const config = { api: { bodyParser: false } }
+// In App Router, use req.text() — body is already a stream, this is fine
+```
+
+**Review checklist**
+- [ ] `timingSafeEqual` used for HMAC comparison (not `===`)
+- [ ] Raw `req.text()` captured before any `JSON.parse`
+- [ ] Idempotency check happens before any write
+- [ ] `metadata.kobo` re-validated against `PLANS` server-side
+- [ ] No client-provided price or plan leaks into subscription write
+- [ ] Returns 200 on all handled events (Paystack retries on non-2xx)
+- [ ] Webhook secret rotated separately from `PAYSTACK_SECRET_KEY` if Paystack supports it (it doesn't currently — same key)
+
+---
+
+## Step 2.5 — Team workspace: invites + member management
+
+**One-liner**
+```
+pnpm claude "Build team invite flow per BUILD-PLAN step 2.5 — invite API, accept page, member list UI; commit when done"
+```
+
+### What to build
+
+**`app/api/teams/invite/route.ts`** — POST, auth-gated
+- Verify caller owns a team plan subscription (`status: active`, `seats > 1`)
+- Count existing `team_members` — reject if at seat limit
+- Insert `team_invites { team_id, email, invited_by }` (token auto-generated by DB default)
+- Send email via Supabase `auth.admin.inviteUserByEmail` or Resend with the accept link: `{APP_URL}/teams/accept?token=xxx`
+- Return 201 `{ token }` (for dev preview in response)
+
+**`app/teams/accept/page.tsx`** — server component
+- Read `?token` from search params
+- Query `team_invites` where `token = ? AND accepted_at IS NULL AND expires_at > now()`
+- If expired/used → show error with "Request a new invite" CTA
+- If user not signed in → redirect to `/login?next=/teams/accept?token=xxx`
+- On valid token + signed-in user: call `/api/teams/accept` server action
+
+**`app/api/teams/accept/route.ts`** — POST, auth-gated
+- Validate token (same checks as above)
+- Insert `team_members { team_id, user_id, role: 'member' }`
+- Mark `team_invites.accepted_at = now()`
+- Upsert `subscriptions` for the new member pointing at the team's plan (so entitlement passes)
+- Redirect to `/dashboard` with toast "Welcome to the team!"
+
+**`app/dashboard/team/page.tsx`** — team settings page (owner only)
+- Member list: avatar, email, role badge, "Remove" button (owner can remove members)
+- "Invite member" form: email input + send button → calls `/api/teams/invite`
+- Seat usage indicator: "3 / 5 seats used"
+- Link to billing page
+
+**`app/api/teams/remove-member/route.ts`** — DELETE, auth-gated (owner only)
+- Verify caller is team owner
+- Delete from `team_members`
+- Set that user's subscription `status = 'inactive'`
+
+**Review checklist**
+- [ ] Seat limit enforced server-side before inserting invite
+- [ ] Token expiry checked server-side, not client-side
+- [ ] New team member subscription written server-side (not self-granted)
+- [ ] Removing a member immediately deactivates their subscription row
+
+---
+
+## Step 2.6 — Billing + subscription status pages
+
+**One-liner**
+```
+pnpm claude "Build /billing page per BUILD-PLAN step 2.6 — current plan, renewal date, invoice history, cancel flow; commit when done"
+```
+
+### What to build
+
+**`app/billing/page.tsx`** — server component (SSR, no stale data)
+```
+┌─────────────────────────────────────────────────┐
+│  Current plan                                    │
+│  Solo Annual  ·  ₦15,000/year  ·  Renews Jan 22 │
+│  [Upgrade]  [Cancel subscription]               │
+├─────────────────────────────────────────────────┤
+│  Payment history                                 │
+│  Jan 22, 2025  ·  Solo Annual  ·  ₦15,000  ✓   │
+│  ...                                             │
+└─────────────────────────────────────────────────┘
+```
+
+**Data sources**
+- `subscriptions` join `plans` — current plan, period end, status
+- `payment_references` where `status = 'success'` — invoice history (no Paystack API call needed)
+
+**Cancel flow** (soft cancel — access until period end)
+- "Cancel subscription" → confirmation modal with period-end date
+- On confirm → `POST /api/billing/cancel`
+- Server action calls Paystack `DELETE /subscription/:code/disable` (for recurring) then sets `subscriptions.cancel_at = current_period_end` (does NOT set `status = inactive` — entitlement still passes until period end)
+- Webhook `subscription.disable` fires later and sets `status = inactive`
+- Page re-renders showing "Cancels on Jan 22, 2026" banner
+
+**`app/api/billing/cancel/route.ts`**
+- Auth-gate
+- Fetch subscription for user
+- Call Paystack disable if `paystack_sub_code` present
+- Set `cancel_at` on subscription row
+- Return 200
+
+**`app/billing/upgrade/page.tsx`** (or modal on `/billing`)
+- Show plan comparison (reuse pricing page components)
+- CTA hits `/api/checkout` with new plan — Paystack handles proration (or explain no proration for first version)
+
+**Review checklist**
+- [ ] Billing page is server-rendered (no stale subscription data)
+- [ ] Cancel sets `cancel_at`, NOT `status = inactive` (entitlement still works until period end)
+- [ ] Payment history reads from `payment_references` (our table), not Paystack API
+- [ ] Upgrade CTA reuses existing `/api/checkout` — no new payment logic
+
+---
+
+## Step 2.7 — Subscription status UI + nav integration
+
+**One-liner**
+```
+pnpm claude "Wire subscription status into nav/dashboard per BUILD-PLAN step 2.7 — upgrade nudge, active badge, expired banner; commit when done"
+```
+
+### What to build
+
+**`hooks/use-subscription.ts`** (client hook, already stub from Phase 1 — fill it in)
+```ts
+// Reads from Supabase realtime or SWR poll
+// Returns: { plan, status, periodEnd, isActive, isTeam, seatsUsed, seatsTotal }
+```
+
+**Upgrade nudge** — show in nav and dashboard if `status !== 'active'`
+- Small pill: "Free plan · Upgrade →" linking to `/pricing`
+- Downloads blocked by entitlement show inline gate: "Subscribe to download" + CTA
+
+**Active badge** — in nav avatar dropdown: plan name + period end
+
+**Expired banner** — full-width banner if `status === 'inactive'` and user had a prior subscription: "Your subscription expired on {date}. Renew to restore downloads."
+
+**Review checklist**
+- [ ] `isActive` derived from DB `status`, never from client payment state
+- [ ] Nudge/banner dismissal is UI-only (sessionStorage) — DB is source of truth
+- [ ] Realtime subscription on `subscriptions` table so banner hides immediately after webhook fires
+
+---
+
+## Step 2.8 — E2E smoke test + Paystack webhook simulation
+
+**One-liner**
+```
+pnpm claude "Write E2E payment smoke test per BUILD-PLAN step 2.8 using Paystack test keys + local webhook simulation; commit when done"
+```
+
+### What to build
+
+**Manual smoke test checklist** (document in `docs/payment-testing.md`)
+```
+1. Set PAYSTACK_SECRET_KEY to test key (sk_test_...)
+2. Go to /pricing → click Solo Monthly → complete with test card 4084084084084081
+3. Paystack redirects to /checkout/callback
+4. Forward webhook locally: npx paystack-webhook-forwarder (or use Paystack Dashboard → Simulate)
+5. Check Supabase subscriptions table — status should be 'active'
+6. Download a resource — should succeed
+7. Go to /billing — plan + renewal date visible
+8. Simulate subscription.disable webhook → status should flip to inactive
+9. Download attempt → should be blocked
+```
+
+**Automated test `tests/webhook.test.ts`**
+```ts
+// Unit test the webhook handler with a real HMAC-signed payload
+// Mock Supabase client
+// Test: valid charge.success → subscription upserted
+// Test: duplicate reference → 200 with no second write
+// Test: invalid signature → 403
+// Test: amount mismatch → 422
+// Test: subscription.disable → status set inactive
+```
+
+**Review checklist**
+- [ ] All four webhook unit tests pass
+- [ ] Test card flow completes end-to-end in test mode before going live
+- [ ] `PAYSTACK_SECRET_KEY` in `.env.local` is test key until prod deploy
+- [ ] Vercel env vars set for both test (preview) and live (production) environments
+
+---
+
+## Env var summary for Phase 2
+
+```bash
+# .env.local (never commit)
+PAYSTACK_SECRET_KEY=sk_test_...          # test; swap to sk_live_ in Vercel prod
+NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_...  # safe to expose
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Vercel production
+PAYSTACK_SECRET_KEY=sk_live_...
+NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_live_...
+NEXT_PUBLIC_APP_URL=https://joincreatly.com
+```
+
+**Paystack Dashboard setup**
+- Webhook URL: `https://joincreatly.com/api/webhooks/paystack`
+- Events to subscribe: `charge.success`, `subscription.disable`, `invoice.payment_failed`, `invoice.create`
+- No IP allowlist needed (Paystack doesn't publish stable IPs) — HMAC is the guard
+
+---
+
+## Commit discipline (same as Phase 1)
+
+Each step gets exactly one commit:
+```
+feat(payments): step 2.1 — pricing constants + DB schema
+feat(payments): step 2.2 — /pricing page
+feat(payments): step 2.3 — checkout server action + Paystack init
+feat(payments): step 2.4 — webhook handler (idempotent, HMAC-verified)
+feat(payments): step 2.5 — team invites + member management
+feat(payments): step 2.6 — /billing page + cancel flow
+feat(payments): step 2.7 — subscription status UI + nav wiring
+feat(payments): step 2.8 — E2E smoke test + webhook unit tests
+```
+
+Run `/clear` in Claude Code between steps. Review before committing. Money is in kobo.
 
 ## PHASE 3 — User Dashboard ⬜
 3.1 Layout/nav · 3.2 Home · 3.3 Downloads · 3.4 Profile · 3.5 Account · 3.6 Notifications · 3.7 Notification prefs · 3.8 Help/support. *(Expanded later.)*
