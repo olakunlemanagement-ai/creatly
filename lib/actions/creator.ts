@@ -113,11 +113,11 @@ export async function applyAsCreator(
       .eq("id", existingCreator.id);
   }
 
-  // Update profiles.role to 'creator'.
-  // Using admin client — identity verified above; RLS blocks non-admin role change.
+  // Update profiles: set role to 'creator' and mark onboarded so the creator
+  // layout's !onboarded guard doesn't bounce back to the consumer wizard.
   const { error: roleError } = await admin
     .from("profiles")
-    .update({ role: "creator" })
+    .update({ role: "creator", onboarded: true })
     .eq("id", auth.user.id);
 
   if (roleError) {
