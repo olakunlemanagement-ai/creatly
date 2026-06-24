@@ -53,10 +53,13 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Logged-in users hitting /login or /signup go to /browse.
+  // Logged-in users hitting /login or /signup go to /browse (or /creators/apply for creator intent).
   if (user && AUTH_ONLY_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     const url = request.nextUrl.clone();
-    url.pathname = "/browse";
+    const intent = request.nextUrl.searchParams.get("intent");
+    url.pathname = pathname === "/signup" && intent === "creator" ? "/creators/apply" : "/browse";
+    url.searchParams.delete("intent");
+    url.searchParams.delete("next");
     return NextResponse.redirect(url);
   }
 

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
   const code = searchParams.get("code");
-  const next = safeRedirectPath(searchParams.get("next"), "/browse");
+  const next = safeRedirectPath(searchParams.get("next"), "/onboarding");
 
   const cookieStore = await cookies();
 

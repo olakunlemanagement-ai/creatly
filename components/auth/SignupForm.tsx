@@ -50,7 +50,7 @@ export function SignupForm({ next }: { next?: string }) {
     setServerError(null);
     const supabase = createClient();
 
-    const confirmNext = isCreatorFlow ? "/creators/apply" : "/browse";
+    const confirmNext = isCreatorFlow ? "/creators/apply" : "/onboarding";
     const { data, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
