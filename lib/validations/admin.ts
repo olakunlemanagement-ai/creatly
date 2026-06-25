@@ -42,8 +42,8 @@ export const createCategorySchema = z.object({
     .max(80)
     .regex(slugPattern, "Slug may only contain lowercase letters, numbers, and hyphens"),
   description: z.string().max(300).optional(),
-  is_active: z.boolean().optional().default(true),
-  sort_order: z.number().int().min(0).optional().default(0),
+  is_active: z.boolean(),
+  sort_order: z.number().int().min(0),
 });
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 

@@ -270,8 +270,8 @@ export async function createCategory(
       name: parsed.data.name,
       slug: parsed.data.slug,
       description: parsed.data.description ?? null,
-      is_active: parsed.data.is_active,
-      sort_order: parsed.data.sort_order,
+      is_active: parsed.data.is_active ?? true,
+      sort_order: parsed.data.sort_order ?? 0,
     })
     .select("id")
     .single();
