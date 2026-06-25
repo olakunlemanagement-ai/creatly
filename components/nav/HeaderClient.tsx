@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef, Suspense } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search, Menu, ChevronDown } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,9 @@ interface HeaderClientProps {
   auth: AuthenticatedUser | null;
   navCategories: NavCategory[];
 }
+
+// Number of categories shown before the "More +" overflow button
+const CATEGORY_VISIBLE_COUNT = 8;
 
 // ── Search form (needs Suspense for useSearchParams) ──────────────────────────
 function SearchForm({ navCategories }: { navCategories: NavCategory[] }) {
@@ -89,11 +92,32 @@ function SearchForm({ navCategories }: { navCategories: NavCategory[] }) {
 function CategoryStrip({ navCategories }: { navCategories: NavCategory[] }) {
   const searchParams = useSearchParams();
   const activeSlug = searchParams.get("category");
+
+  // Mega-menu open/close for individual categories (hover)
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // "More +" overflow dropdown
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
+
+  const visibleCats = navCategories.slice(0, CATEGORY_VISIBLE_COUNT);
+  const hiddenCats = navCategories.slice(CATEGORY_VISIBLE_COUNT);
+
+  useEffect(() => {
+    if (!moreOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setMoreOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [moreOpen]);
+
   function open(slug: string) {
     if (closeTimer.current) clearTimeout(closeTimer.current);
+    setMoreOpen(false);
     setOpenSlug(slug);
   }
 
@@ -102,8 +126,8 @@ function CategoryStrip({ navCategories }: { navCategories: NavCategory[] }) {
   }
 
   return (
-    <div className="flex flex-1 items-center gap-1 overflow-x-auto">
-      {navCategories.map((cat) => {
+    <div className="flex flex-1 items-center gap-1 overflow-hidden">
+      {visibleCats.map((cat) => {
         const hasChildren = cat.children.length > 0;
         const isActive = activeSlug === cat.slug || cat.children.some((c) => c.slug === activeSlug);
         const isOpen = openSlug === cat.slug;
@@ -111,7 +135,7 @@ function CategoryStrip({ navCategories }: { navCategories: NavCategory[] }) {
         return (
           <div
             key={cat.id}
-            className="relative flex-shrink-0"
+            className="relative shrink-0"
             onMouseEnter={() => hasChildren && open(cat.slug)}
             onMouseLeave={scheduleClose}
           >
@@ -133,7 +157,7 @@ function CategoryStrip({ navCategories }: { navCategories: NavCategory[] }) {
               )}
             </Link>
 
-            {/* Dropdown panel */}
+            {/* Sub-category dropdown panel */}
             {hasChildren && isOpen && (
               <div
                 className="absolute left-0 top-full z-50 mt-1 min-w-[220px] rounded-lg border border-white/10 bg-brand-green-900 p-3 shadow-xl"
@@ -166,12 +190,80 @@ function CategoryStrip({ navCategories }: { navCategories: NavCategory[] }) {
           </div>
         );
       })}
+
+      {/* More + overflow button */}
+      {hiddenCats.length > 0 && (
+        <div ref={moreRef} className="relative ml-1 shrink-0">
+          <button
+            onClick={() => {
+              setOpenSlug(null);
+              setMoreOpen((o) => !o);
+            }}
+            aria-expanded={moreOpen}
+            aria-haspopup="true"
+            className="inline-flex items-center whitespace-nowrap rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-white/25"
+          >
+            More +
+          </button>
+
+          {moreOpen && (
+            <div className="absolute left-0 top-full z-50 mt-1 w-80 rounded-lg border border-white/10 bg-brand-green-900 p-4 shadow-xl">
+              <p className="mb-3 font-mono text-[10px] uppercase tracking-widest text-white/40">
+                More categories
+              </p>
+              <div className="grid grid-cols-2 gap-0.5">
+                {hiddenCats.map((cat) => {
+                  const isActive =
+                    activeSlug === cat.slug ||
+                    cat.children.some((c) => c.slug === activeSlug);
+                  return (
+                    <Link
+                      key={cat.id}
+                      href={`/browse?category=${cat.slug}`}
+                      onClick={() => setMoreOpen(false)}
+                      className={[
+                        "rounded px-2 py-1.5 text-xs transition-colors",
+                        isActive
+                          ? "text-terracotta-300"
+                          : "text-white/75 hover:bg-white/10 hover:text-white",
+                      ].join(" ")}
+                    >
+                      {cat.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
 export function HeaderClient({ auth, navCategories }: HeaderClientProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+
+  // On home page: hidden until scrolled past the hero; on all other pages: always visible.
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    if (!isHome) return;
+
+    function onScroll() {
+      const hero = document.getElementById("landing-hero");
+      const threshold = hero ? hero.offsetHeight : window.innerHeight * 0.75;
+      setScrolled(window.scrollY >= threshold);
+    }
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isHome]);
+
+  const headerVisible = !isHome || scrolled;
 
   return (
     <>
@@ -182,7 +274,12 @@ export function HeaderClient({ auth, navCategories }: HeaderClientProps) {
         Skip to content
       </a>
 
-      <header className="fixed inset-x-0 top-0 z-50">
+      <header
+        className={[
+          "fixed inset-x-0 top-0 z-50 transition-transform duration-300",
+          headerVisible ? "translate-y-0" : "-translate-y-full",
+        ].join(" ")}
+      >
         {/* ── TOP BAR ── */}
         <div className="border-b border-stone-200 bg-[#FAF4E9]">
           <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-6">
@@ -270,8 +367,8 @@ export function HeaderClient({ auth, navCategories }: HeaderClientProps) {
             {navCategories.length > 0 && (
               <Suspense
                 fallback={
-                  <div className="flex flex-1 items-center gap-4">
-                    {navCategories.map((cat) => (
+                  <div className="flex flex-1 items-center gap-4 overflow-hidden">
+                    {navCategories.slice(0, CATEGORY_VISIBLE_COUNT).map((cat) => (
                       <span key={cat.id} className="shrink-0 whitespace-nowrap text-xs font-medium text-white/50">
                         {cat.name}
                       </span>
