@@ -124,9 +124,14 @@ export function CreatorHeaderClient({ auth }: CreatorHeaderClientProps) {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button variant="terracotta" size="sm" className="rounded-full" asChild>
-                <Link href="/creators/apply">Join as Creator</Link>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/creator/login">Sign in</Link>
+                </Button>
+                <Button variant="terracotta" size="sm" className="rounded-full" asChild>
+                  <Link href="/creator/signup">Sign up</Link>
+                </Button>
+              </div>
             )}
           </div>
         </div>

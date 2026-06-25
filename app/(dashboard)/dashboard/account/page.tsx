@@ -22,7 +22,14 @@ export default async function AccountPage() {
         </h1>
       </div>
 
-      <AccountSettings currentEmail={auth.user.email} />
+      <AccountSettings
+        currentEmail={auth.user.email}
+        fullName={auth.profile.full_name}
+        avatarPath={auth.profile.avatar_path}
+        gender={auth.profile.gender}
+        dateOfBirth={auth.profile.date_of_birth}
+        phoneNumber={auth.profile.phone_number}
+      />
     </div>
   );
 }

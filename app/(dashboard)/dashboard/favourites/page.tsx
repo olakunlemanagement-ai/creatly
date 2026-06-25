@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import { Star } from "lucide-react";
 import { APP_NAME } from "@/lib/config";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -9,7 +9,7 @@ import { ResourceGrid } from "@/components/resource/ResourceGrid";
 import { ResourceCard, type ResourceCardData } from "@/components/resource/ResourceCard";
 
 export const metadata: Metadata = {
-  title: `Favourites — ${APP_NAME}`,
+  title: `Starred Items — ${APP_NAME}`,
 };
 
 export default async function FavouritesPage() {
@@ -45,12 +45,12 @@ export default async function FavouritesPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-12">
       <h1 className="mb-8 font-heading text-2xl font-semibold text-foreground sm:text-3xl">
-        Favourites
+        Starred Items
       </h1>
 
       {resources.length === 0 ? (
         <div className="flex flex-col items-center gap-4 py-20 text-center">
-          <Heart className="size-10 text-muted-foreground/40" strokeWidth={1} />
+          <Star className="size-10 text-muted-foreground/40" strokeWidth={1} />
           <p className="text-base text-muted-foreground">Nothing saved yet.</p>
           <Link
             href="/browse"

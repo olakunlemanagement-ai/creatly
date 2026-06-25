@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: `Downloads — ${APP_NAME}`,
 };
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 24;
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-NG", {
@@ -68,7 +68,7 @@ export default async function DownloadsPage({
   const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:py-12">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-12">
       <div className="mb-8 flex items-center gap-3">
         <Download className="h-5 w-5 text-muted-foreground" />
         <h1 className="font-heading text-2xl font-semibold text-foreground sm:text-3xl">
@@ -94,7 +94,8 @@ export default async function DownloadsPage({
         </div>
       ) : (
         <>
-          <div className="divide-y divide-border rounded-2xl border border-border">
+          {/* Grid layout matching Figma "My Downloads" */}
+          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6">
             {downloads.map((dl) => {
               const resource = Array.isArray(dl.resources)
                 ? dl.resources[0]
@@ -108,58 +109,48 @@ export default async function DownloadsPage({
               const previewUrl = getPreviewImageUrl(resource.preview_image_path);
 
               return (
-                <div
-                  key={dl.id}
-                  className="flex items-center gap-4 px-4 py-4 sm:px-5"
-                >
+                <li key={dl.id} className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card">
                   {/* Thumbnail */}
                   <Link
                     href={`/resources/${resource.slug}`}
-                    className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-muted"
-                    tabIndex={-1}
+                    className="relative block aspect-square overflow-hidden bg-muted"
                   >
                     <Image
                       src={previewUrl}
                       alt={resource.title}
                       fill
-                      className="object-cover"
-                      sizes="56px"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1280px) 25vw, 16vw"
                     />
                   </Link>
 
                   {/* Info */}
-                  <div className="min-w-0 flex-1">
+                  <div className="flex flex-1 flex-col gap-1 p-2.5">
                     <Link
                       href={`/resources/${resource.slug}`}
-                      className="block truncate text-sm font-semibold text-foreground hover:text-brand-green-700"
+                      className="line-clamp-2 text-xs font-semibold text-foreground hover:text-brand-green-700 leading-snug"
                     >
                       {resource.title}
                     </Link>
-                    <div className="mt-0.5 flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-1 mt-0.5">
                       {categoryName && (
-                        <span className="text-xs text-muted-foreground">{categoryName}</span>
+                        <span className="text-[10px] text-muted-foreground truncate">{categoryName}</span>
                       )}
-                      <span className="text-xs text-muted-foreground">·</span>
-                      <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                        {resource.file_type?.split("/")[1]?.toUpperCase() ?? "FILE"}
-                      </span>
-                      <span className="hidden text-xs text-muted-foreground sm:inline">
-                        · {formatDate(dl.downloaded_at)}
-                      </span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-auto">
+                      {formatDate(dl.downloaded_at)}
+                    </p>
+                    <div className="mt-1.5">
+                      <ReDownloadButton
+                        resourceId={resource.id}
+                        fileName={resource.file_name}
+                      />
                     </div>
                   </div>
-
-                  {/* Re-download */}
-                  <div className="shrink-0">
-                    <ReDownloadButton
-                      resourceId={resource.id}
-                      fileName={resource.file_name}
-                    />
-                  </div>
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
 
           {/* Pagination */}
           {totalPages > 1 && (

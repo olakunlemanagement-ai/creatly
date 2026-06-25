@@ -108,13 +108,13 @@ export function LandingHero() {
                 className="cta-shimmer"
                 asChild
               >
-                <Link href="/creators">
-                  Start creating
+                <Link href="/browse">
+                  Browse the library
                   <ArrowRight className="size-4 transition-transform duration-150 group-hover/button:translate-x-1 motion-reduce:transition-none" />
                 </Link>
               </Button>
               <Button variant="ghost-cream" size="cta" asChild>
-                <Link href="/browse">Browse the library</Link>
+                <Link href="/pricing">View pricing</Link>
               </Button>
             </div>
           </Reveal>

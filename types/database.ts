@@ -439,30 +439,42 @@ export type Database = {
         Row: {
           avatar_path: string | null
           created_at: string
+          date_of_birth: string | null
           email: string
           full_name: string | null
+          gender: string | null
           id: string
+          language: string
           onboarded: boolean
+          phone_number: string | null
           role: string
           updated_at: string
         }
         Insert: {
           avatar_path?: string | null
           created_at?: string
+          date_of_birth?: string | null
           email: string
           full_name?: string | null
+          gender?: string | null
           id: string
+          language?: string
           onboarded?: boolean
+          phone_number?: string | null
           role?: string
           updated_at?: string
         }
         Update: {
           avatar_path?: string | null
           created_at?: string
+          date_of_birth?: string | null
           email?: string
           full_name?: string | null
+          gender?: string | null
           id?: string
+          language?: string
           onboarded?: boolean
+          phone_number?: string | null
           role?: string
           updated_at?: string
         }

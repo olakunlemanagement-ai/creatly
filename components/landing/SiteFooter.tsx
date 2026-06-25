@@ -8,7 +8,6 @@ const LINKS = [
     items: [
       { label: "Browse resources", href: "/browse" },
       { label: "Pricing", href: "/pricing" },
-      { label: "For creators", href: "/creators" },
     ],
   },
   {
@@ -17,6 +16,13 @@ const LINKS = [
       { label: "Sign up", href: "/signup" },
       { label: "Log in", href: "/login" },
       { label: "Dashboard", href: "/dashboard" },
+    ],
+  },
+  {
+    heading: "For Creators",
+    items: [
+      { label: "Become a creator", href: "/creators" },
+      { label: "Creator sign in", href: "/creator/login" },
     ],
   },
   {
@@ -44,7 +50,7 @@ export function SiteFooter() {
         </div>
 
         {/* Link columns */}
-        <div className="grid grid-cols-2 gap-8 py-12 sm:grid-cols-3 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-8 py-12 sm:grid-cols-2 lg:grid-cols-4">
           {LINKS.map((col) => (
             <div key={col.heading}>
               <p className="font-mono text-[10px] uppercase tracking-widest text-cream-300/50">

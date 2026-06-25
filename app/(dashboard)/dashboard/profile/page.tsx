@@ -33,6 +33,9 @@ export default async function ProfilePage() {
         email={auth.user.email}
         avatarPath={auth.profile.avatar_path}
         memberSince={memberSince}
+        gender={auth.profile.gender}
+        dateOfBirth={auth.profile.date_of_birth}
+        phoneNumber={auth.profile.phone_number}
       />
     </div>
   );

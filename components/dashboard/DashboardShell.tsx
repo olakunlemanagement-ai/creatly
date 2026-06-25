@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Download,
-  Heart,
+  Star,
   User,
   Settings,
   Bell,
@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   Crown,
+  CreditCard,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { LogoutButton } from "@/components/shared/LogoutButton";
@@ -29,9 +30,10 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/overview", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/downloads", label: "Downloads", icon: Download },
-  { href: "/dashboard/favourites", label: "Favourites", icon: Heart },
+  { href: "/dashboard/favourites", label: "Starred Items", icon: Star },
   { href: "/dashboard/profile", label: "Profile", icon: User },
   { href: "/dashboard/account", label: "Account", icon: Settings },
+  { href: "/billing", label: "Manage Subscription", icon: CreditCard },
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
   { href: "/dashboard/help", label: "Help", icon: HelpCircle },
 ];
