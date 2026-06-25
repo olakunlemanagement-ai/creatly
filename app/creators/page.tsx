@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { APP_NAME } from "@/lib/config";
-import { SiteHeader } from "@/components/nav/SiteHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 
 export const metadata: Metadata = {
@@ -49,8 +48,6 @@ const FAQS = [
 export default function CreatorsLandingPage() {
   return (
     <>
-      <SiteHeader />
-
       <main id="main-content">
         {/* Hero */}
         <section className="bg-brand-green-900 px-5 pb-24 pt-32">
