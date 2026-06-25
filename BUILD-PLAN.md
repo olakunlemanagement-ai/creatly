@@ -2008,8 +2008,213 @@ Quick links correct.
 Basic rate limiting on form submission.
 Commit: feat(dashboard): help page with FAQ and contact form.
 
-## PHASE 4 — Admin Seed Tool ⬜
-4.1 Admin route group + role guard · 4.2 Creator CRUD · 4.3 Category mgmt · 4.4 Resource upload (files + previews) · 4.5 Resource mgmt · 4.6 Analytics. *(Expanded later.)*
+PHASE 4 — Admin Seed Tool ⬜
+
+
+⚙️ AUTONOMOUS RUN MODE — Phase 4 only
+
+Overrides the global "one step then STOP" rule for this phase only. Execute every step in order (4.1 → 4.6), build + self-review against acceptance criteria + one clean commit + /clear between steps, without stopping for prompts.
+
+Log blockers to BLOCKERS.md and continue. STOP at end of Phase 4.
+
+Guardrails: admin routes are ALWAYS double-gated — middleware AND server-side role check on every route/action. Never trust the client for role. All file uploads server-validated (type + size). Reuse existing catalogue components. TS strict, no any. Money in kobo.
+
+
+
+Phase context: The admin tool lets the Creatly team seed and manage the catalogue — creators, categories, resources — and view basic analytics. The creator upload flow (Phase 1.10) handles creator-submitted assets; this phase handles internal/admin content management. The existing /admin/review queue (1.10.5) already exists — do not duplicate it, link to it from the admin nav.
+
+
+4.1 — Admin route group + role guard ⬜
+
+Scope:
+
+
+Confirm /admin/* is already gated in middleware (it should be from 1.3 — verify). If only auth-gated (not role-gated), add role check: profiles.role = 'admin' required, otherwise redirect to /dashboard.
+app/(admin)/layout.tsx — admin shell layout:
+
+Sidebar: Creatly logo mark + "Admin" badge, nav links (Overview, Creators, Categories, Resources, Review Queue → links to existing /admin/review, Analytics).
+Dark forest sidebar (#14342B), cream text, terracotta active link.
+No SiteHeader inside admin routes.
+Server-side role check in layout (getAuthenticatedUser() → verify role === 'admin' → redirect if not).
+
+
+
+app/(admin)/admin/page.tsx → redirect to /admin/overview.
+Document in BLOCKERS.md: first admin must be set manually via SQL:
+
+
+sql   update public.profiles set role = 'admin' where email = 'olakunle.management@gmail.com';
+
+Acceptance criteria:
+
+
+/admin/* requires both auth AND admin role — non-admins redirected to /dashboard.
+Admin shell renders with sidebar, active link highlighting.
+No SiteHeader inside admin.
+First-admin SQL documented in BLOCKERS.md.
+Commit: feat(admin): admin route group + role guard + shell layout.
+
+
+
+4.2 — Creator CRUD ⬜
+
+Scope:
+app/(admin)/admin/creators/ — manage the creators table (the catalogue creator entity, not creator_profiles):
+
+
+List page (page.tsx): table of all creators — name, slug, avatar, resource count, is_public, created_at. Search by name. Paginated.
+Create page (new/page.tsx): form — name, slug (auto-generated from name, editable), bio, avatar upload (creator-avatars bucket), is_public toggle. Server action: validate (Zod), insert creators row, upload avatar.
+Edit page ([id]/edit/page.tsx): same form pre-populated. Server action: update row.
+Delete: soft-delete via is_public = false (don't hard-delete — resources reference creators). Confirm modal.
+All writes: admin client after server-side role check.
+
+
+Acceptance criteria:
+
+
+Creator list shows all creators with resource count.
+Create/edit/delete (soft) all work server-side with role check.
+Avatar uploads to creator-avatars bucket.
+Slug auto-generated but editable; unique constraint enforced.
+Commit: feat(admin): creator CRUD.
+
+
+
+4.3 — Category management ⬜
+
+Scope:
+app/(admin)/admin/categories/:
+
+
+List page: table — name, slug, description, is_active, resource count, sort order. Drag-to-reorder (or up/down arrows for simplicity — prefer arrows, no heavy DnD dep).
+Create/edit: name, slug (auto from name), description, is_active toggle, sort_order. Server action: validate + upsert.
+Deactivate: toggle is_active — deactivated categories hidden from public browse. Confirm if category has resources.
+
+
+Acceptance criteria:
+
+
+Category list with resource counts.
+Create/edit/deactivate work server-side.
+Sort order adjustable via up/down arrows.
+Deactivation hides from public browse (existing RLS/filter already handles is_active — verify).
+Commit: feat(admin): category management.
+
+
+
+4.4 — Resource upload (admin) ⬜
+
+Scope:
+app/(admin)/admin/resources/new/page.tsx — multi-step admin resource upload (similar to creator upload from 1.10.4 but with admin privileges — can set any creator, any status):
+
+Step 1 — Files:
+
+
+Source file upload → private resource-files/{resource_id}/ path. Server-validates type + size.
+Preview image(s) upload → public resource-previews/{resource_id}/. Multiple allowed; admin picks primary.
+
+
+Step 2 — Details:
+
+
+Title, description, slug (auto from title, editable, unique).
+Category (dropdown from categories table).
+Creator (dropdown from creators table).
+Tags (comma-separated input → stored as array).
+File type (auto-detected from upload, editable).
+Compatible software (multi-select chips: Figma, Canva, Adobe Illustrator, After Effects, PowerPoint, Other).
+License type (Standard / Extended).
+File size (auto-populated from upload).
+is_featured toggle.
+
+
+Step 3 — Review + publish:
+
+
+Preview exactly as it appears on catalogue + detail page (reuse components).
+Status selector: Draft / Published (admin can publish directly — sets review_status='approved', status='published').
+Submit → server action: validate all fields (Zod), insert resources row, set creator_id from selected creator (server-side, never client), set review_status='approved' and status='published' if published.
+
+
+Acceptance criteria:
+
+
+Files upload to correct private/public buckets with namespaced paths.
+All metadata fields save correctly; slug unique-checked.
+creator_id set server-side from admin selection — never from client.
+Published resources immediately appear in catalogue.
+Preview step matches real catalogue/detail rendering.
+Commit: feat(admin): resource upload with file + preview + metadata.
+
+
+
+4.5 — Resource management ⬜
+
+Scope:
+app/(admin)/admin/resources/:
+
+
+List page: table — preview thumbnail, title, creator, category, status, review_status, is_featured, download_count, created_at. Filters: status, category, creator, featured. Search by title. Paginated (20/page).
+Edit page ([id]/edit/page.tsx): same form as 4.4 Step 2, pre-populated. Can change status, creator, category, featured, tags, etc.
+Quick actions (inline in table):
+
+Toggle is_featured (star icon).
+Toggle status published/draft.
+Delete (soft: set status='archived'; confirm modal).
+
+
+
+Link to review queue: "Pending Review (N)" link → existing /admin/review.
+
+
+Acceptance criteria:
+
+
+Resource list with filters + search + pagination.
+Edit works for all fields; changes reflect immediately in catalogue.
+Featured toggle, status toggle, soft-delete all work server-side.
+Link to existing review queue present.
+Commit: feat(admin): resource management list + edit + quick actions.
+
+
+
+4.6 — Analytics ⬜
+
+Scope:
+app/(admin)/admin/analytics/page.tsx — simple server-rendered analytics dashboard (no external analytics service — reads from our own DB):
+
+Metrics (all from DB, server-side):
+
+
+Total resources (published), total creators, total users, total downloads (all time).
+New users this month (count from auth.users or profiles.created_at).
+Downloads this month vs last month (from downloads table).
+Top 10 most downloaded resources (join resources + count downloads).
+Top 5 categories by download count.
+Subscription breakdown: free vs active subscribers (from subscriptions table).
+
+
+Presentation:
+
+
+Stat cards at top (4 key numbers).
+Two simple tables: top resources + top categories.
+Subscription breakdown as a simple visual (CSS bar or just numbers — no heavy charting library unless recharts is already installed).
+All server-rendered, no real-time updates needed (refresh to update).
+Date range: default "This month" with a simple month picker (prev/next month via URL param ?month=YYYY-MM).
+
+
+Acceptance criteria:
+
+
+All 6 metric types show real data from DB.
+Top resources + top categories tables correct.
+Subscription breakdown accurate.
+Month navigation works via URL param.
+No heavy new dependencies — recharts if already installed, otherwise CSS/tables.
+Commit: feat(admin): analytics dashboard.
+
+
 
 ## PHASE 5 — Creator Dashboard (Phase 2 public) ⬜
 Public onboarding, upload portal + review queue, earnings dashboard, payouts. *(Separate PRD addendum.)*
