@@ -22,7 +22,7 @@ export default async function BillingUpgradePage() {
     .maybeSingle();
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12">
+    <div className="mx-auto max-w-5xl px-4 py-12">
       <div className="mb-10 text-center">
         <a href="/billing" className="text-sm text-accent underline">
           ← Back to billing

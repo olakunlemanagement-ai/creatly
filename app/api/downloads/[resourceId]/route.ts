@@ -45,7 +45,7 @@ export async function POST(
     // (CONVENTIONS §7.1: No log, no URL.)
     const planType = PLAN_TYPES.includes(entitlement.subscription.plan_type as PlanType)
       ? (entitlement.subscription.plan_type as PlanType)
-      : "personal_monthly"; // fallback shouldn't happen — DB enforces valid values
+      : "cruise"; // fallback shouldn't happen — DB enforces valid values
 
     await logDownload({
       userId: auth.user.id,

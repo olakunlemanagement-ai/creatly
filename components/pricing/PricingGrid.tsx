@@ -2,35 +2,20 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { PricingToggle } from "./PricingToggle";
 import { PlanCard } from "./PlanCard";
 import { PLANS } from "@/lib/pricing";
-import type { Plan } from "@/types/database";
 
 interface PricingGridProps {
-  /** User's current plan_id if they have an active subscription, else null. */
   currentPlanId: string | null;
-  /** True when user is authenticated. */
   authenticated: boolean;
 }
 
 export function PricingGrid({ currentPlanId, authenticated }: PricingGridProps) {
-  const [annual, setAnnual] = useState(false);
   const [pending, startTransition] = useTransition();
   const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
   const router = useRouter();
 
-  const soloPlans: [Plan, Plan] = [
-    PLANS.solo_monthly as unknown as Plan,
-    PLANS.solo_annual   as unknown as Plan,
-  ];
-  const teamPlans: [Plan, Plan] = [
-    PLANS.team_monthly  as unknown as Plan,
-    PLANS.team_annual   as unknown as Plan,
-  ];
-
-  const displayedSolo = annual ? soloPlans[1] : soloPlans[0];
-  const displayedTeam = annual ? teamPlans[1] : teamPlans[0];
+  const plans = Object.values(PLANS);
 
   async function handleSelect(planId: string) {
     if (!authenticated) {
@@ -58,30 +43,21 @@ export function PricingGrid({ currentPlanId, authenticated }: PricingGridProps) 
         }
       }
 
-      // Non-redirect response — let the page handle error
       setLoadingPlanId(null);
     });
   }
 
   return (
-    <div className="flex flex-col gap-10">
-      <PricingToggle annual={annual} onChange={setAnnual} />
-
-      <div className="grid gap-6 sm:grid-cols-2">
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {plans.map((plan) => (
         <PlanCard
-          plan={displayedSolo}
-          isCurrentPlan={currentPlanId === displayedSolo.id}
+          key={plan.id}
+          plan={plan}
+          isCurrentPlan={currentPlanId === plan.id}
           onSelect={handleSelect}
-          loading={pending && loadingPlanId === displayedSolo.id}
+          loading={pending && loadingPlanId === plan.id}
         />
-        <PlanCard
-          plan={displayedTeam}
-          featured
-          isCurrentPlan={currentPlanId === displayedTeam.id}
-          onSelect={handleSelect}
-          loading={pending && loadingPlanId === displayedTeam.id}
-        />
-      </div>
+      ))}
     </div>
   );
 }

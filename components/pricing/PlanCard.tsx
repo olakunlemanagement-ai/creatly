@@ -2,80 +2,56 @@
 
 import { Check } from "lucide-react";
 import { formatNaira } from "@/lib/format";
-import type { Plan } from "@/types/database";
+import type { Plan } from "@/lib/pricing";
 
 interface PlanCardProps {
   plan: Plan;
-  featured?: boolean;
   isCurrentPlan?: boolean;
   onSelect: (planId: string) => void;
   loading?: boolean;
 }
 
-const FEATURES: Record<string, string[]> = {
-  solo: [
-    "Unlimited downloads",
-    "Access to all templates, fonts & mockups",
-    "New assets every week",
-    "Commercial license",
-    "1 seat",
-  ],
-  team: [
-    "Everything in Solo",
-    "5 team seats",
-    "Shared team workspace",
-    "Priority support",
-    "Team billing",
-  ],
-};
+const FEATURES = [
+  "Unlimited downloads",
+  "All templates, fonts, mockups & motion assets",
+  "New assets every week",
+  "Commercial license",
+];
 
-export function PlanCard({ plan, featured, isCurrentPlan, onSelect, loading }: PlanCardProps) {
-  const base = plan.id.startsWith("solo") ? "solo" : "team";
-  const features = FEATURES[base];
-  const intervalLabel = plan.interval === "annual" ? "/year" : "/month";
+export function PlanCard({ plan, isCurrentPlan, onSelect, loading }: PlanCardProps) {
+  const featured = "featured" in plan && plan.featured === true;
 
   return (
     <div
-      className={`relative flex flex-col rounded-2xl border p-8 ${
+      className={`relative flex flex-col rounded-2xl border p-6 ${
         featured
-          ? "border-accent bg-brand-green-700 text-cream-100"
-          : "border-border bg-card text-foreground"
+          ? "border-2 border-terracotta-600 bg-card"
+          : "border-border bg-card"
       }`}
     >
       {featured && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-4 py-1 text-xs font-bold uppercase tracking-widest text-white">
-          Most popular
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-terracotta-600 px-4 py-1 text-xs font-bold uppercase tracking-widest text-white">
+          Most Popular
         </span>
       )}
 
-      <div className="mb-6">
-        <h3 className={`font-display text-xl font-bold ${featured ? "text-cream-100" : "text-foreground"}`}>
-          {base === "solo" ? "Solo" : "Team"}
-        </h3>
-        <p className={`mt-1 text-sm ${featured ? "text-cream-300" : "text-muted-foreground"}`}>
-          {base === "solo" ? "For individual creatives" : "For creative teams up to 5"}
-        </p>
+      <div className="mb-4">
+        <h3 className="font-display text-xl font-bold text-foreground">{plan.label}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{plan.description}</p>
       </div>
 
-      <div className="mb-8">
-        <span className={`font-display text-4xl font-bold ${featured ? "text-cream-100" : "text-foreground"}`}>
+      <div className="mb-6">
+        <span className="font-display text-4xl font-bold text-foreground">
           {formatNaira(plan.kobo)}
         </span>
-        <span className={`ml-1 text-sm ${featured ? "text-cream-300" : "text-muted-foreground"}`}>
-          {intervalLabel}
-        </span>
-        {plan.interval === "annual" && (
-          <p className={`mt-1 text-xs ${featured ? "text-cream-400" : "text-muted-foreground"}`}>
-            Billed annually · save {formatNaira(plan.kobo / 10 * 2)}
-          </p>
-        )}
+        <span className="ml-1 text-sm text-muted-foreground">/ {plan.duration}</span>
       </div>
 
-      <ul className="mb-8 flex-1 space-y-3">
-        {features.map((f) => (
+      <ul className="mb-6 flex-1 space-y-3">
+        {FEATURES.map((f) => (
           <li key={f} className="flex items-start gap-3 text-sm">
-            <Check className={`mt-0.5 h-4 w-4 shrink-0 ${featured ? "text-accent" : "text-brand-green-600"}`} />
-            <span className={featured ? "text-cream-200" : "text-foreground"}>{f}</span>
+            <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-green-600" />
+            <span className="text-foreground">{f}</span>
           </li>
         ))}
       </ul>
@@ -87,11 +63,11 @@ export function PlanCard({ plan, featured, isCurrentPlan, onSelect, loading }: P
           isCurrentPlan
             ? "cursor-default border border-current opacity-60"
             : featured
-            ? "bg-accent text-white hover:bg-accent/90 focus-visible:ring-accent"
+            ? "bg-terracotta-600 text-white hover:bg-terracotta-700 focus-visible:ring-terracotta-600"
             : "bg-brand-green-700 text-cream-100 hover:bg-brand-green-800 focus-visible:ring-brand-green-700"
         }`}
       >
-        {loading ? "Processing…" : isCurrentPlan ? "Current plan" : "Get started"}
+        {loading ? "Processing…" : isCurrentPlan ? "Current plan" : "Choose this"}
       </button>
     </div>
   );

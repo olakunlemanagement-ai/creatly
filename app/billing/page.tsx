@@ -58,7 +58,7 @@ export default async function BillingPage() {
                 <div>
                   <p className="font-display text-lg font-bold text-foreground">{plan.label}</p>
                   <p className="mt-0.5 text-sm text-muted-foreground">
-                    {formatNaira(plan.kobo)}/{plan.interval === "annual" ? "year" : "month"}
+                    {formatNaira(plan.kobo)} / {plan.duration}
                     {sub.current_period_end && (
                       <>
                         {" · "}

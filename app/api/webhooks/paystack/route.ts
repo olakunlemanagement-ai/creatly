@@ -86,11 +86,7 @@ export async function POST(req: Request) {
 
     const now = new Date();
     const periodEnd = new Date(now);
-    if (plan.interval === "annual") {
-      periodEnd.setFullYear(periodEnd.getFullYear() + 1);
-    } else {
-      periodEnd.setMonth(periodEnd.getMonth() + 1);
-    }
+    periodEnd.setMonth(periodEnd.getMonth() + plan.months);
 
     // ── Upsert subscription — webhook is the sole writer ─────────────────────
     // Uses owner_id (our column) mapped from metadata.user_id.
@@ -102,7 +98,7 @@ export async function POST(req: Request) {
           plan_id:               planId,
           plan_type:             planId as string,      // keep legacy column in sync
           amount_kobo:           plan.kobo,
-          max_seats:             plan.seats,
+          max_seats:             1,
           status:                "active",
           current_period_start:  now.toISOString(),
           current_period_end:    periodEnd.toISOString(),
@@ -132,11 +128,6 @@ export async function POST(req: Request) {
       paystack_ref:    reference,
       payload:         event,
     });
-
-    // ── Team plan: ensure team workspace exists ─────────────────────────────────
-    if (plan.seats > 1) {
-      await ensureTeamForSubscription(supabase, userId, sub.id);
-    }
 
     return new Response("OK", { status: 200 });
   }
@@ -176,39 +167,3 @@ export async function POST(req: Request) {
   return new Response("OK", { status: 200 });
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-type AdminClient = ReturnType<typeof createAdminClient>;
-
-async function ensureTeamForSubscription(
-  supabase: AdminClient,
-  userId: string,
-  subscriptionId: string
-): Promise<void> {
-  // Check if this subscription already has a team linked.
-  const { data: sub } = await supabase
-    .from("subscriptions")
-    .select("team_id")
-    .eq("id", subscriptionId)
-    .single();
-
-  if (sub?.team_id) return; // already has a team
-
-  // Create a team workspace for this user.
-  const { data: team, error } = await supabase
-    .from("teams")
-    .insert({ name: "My Team", owner_id: userId })
-    .select("id")
-    .single();
-
-  if (error || !team) {
-    console.error("[webhook] failed to create team:", error);
-    return;
-  }
-
-  // Link team to subscription.
-  await supabase
-    .from("subscriptions")
-    .update({ team_id: team.id })
-    .eq("id", subscriptionId);
-}

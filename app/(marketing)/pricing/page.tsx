@@ -13,8 +13,6 @@ export const metadata: Metadata = {
 export default async function PricingPage() {
   const auth = await getAuthenticatedUser();
 
-  // Look up the user's active subscription plan_id (if any) so the page
-  // can highlight their current plan. This is server-side — no stale client state.
   let currentPlanId: string | null = null;
   if (auth) {
     const supabase = await createClient();
@@ -28,7 +26,7 @@ export default async function PricingPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-20">
+    <div className="container mx-auto max-w-6xl px-4 py-20">
       {/* Hero */}
       <div className="mb-14 text-center">
         <span className="font-mono text-xs font-semibold uppercase tracking-widest text-accent">
@@ -45,42 +43,8 @@ export default async function PricingPage() {
         </p>
       </div>
 
-      {/* Pricing grid with toggle — client component */}
-      <PricingGrid
-        currentPlanId={currentPlanId}
-        authenticated={!!auth}
-      />
-
-      {/* Feature comparison table */}
-      <div className="mt-20 overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="py-3 text-left font-medium text-muted-foreground">Features</th>
-              <th className="py-3 text-center font-medium text-foreground">Solo</th>
-              <th className="py-3 text-center font-medium text-foreground">Team</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {[
-              ["Unlimited downloads", "✓", "✓"],
-              ["All assets (templates, fonts, mockups…)", "✓", "✓"],
-              ["Weekly new releases", "✓", "✓"],
-              ["Commercial license", "✓", "✓"],
-              ["Team workspace", "—", "✓"],
-              ["Seats", "1", "5"],
-              ["Priority support", "—", "✓"],
-              ["Shared billing", "—", "✓"],
-            ].map(([feature, solo, team]) => (
-              <tr key={feature}>
-                <td className="py-3 text-muted-foreground">{feature}</td>
-                <td className="py-3 text-center text-foreground">{solo}</td>
-                <td className="py-3 text-center text-foreground">{team}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* 4-column plan grid */}
+      <PricingGrid currentPlanId={currentPlanId} authenticated={!!auth} />
 
       {/* FAQ */}
       <div className="mt-20">

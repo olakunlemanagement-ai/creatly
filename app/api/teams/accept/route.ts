@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
       {
         owner_id:     auth.user.id,
         plan_id:      sub.plan_id,
-        plan_type:    sub.plan_id ?? "team_monthly",
+        plan_type:    sub.plan_id ?? "cruise",
         amount_kobo:  0,              // member doesn't pay directly
         max_seats:    1,
         status:       "active",

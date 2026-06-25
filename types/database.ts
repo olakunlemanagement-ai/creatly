@@ -5,10 +5,10 @@
 // ============================================================
 
 export const PLAN_TYPES = [
-  "personal_monthly",
-  "personal_annual",
-  "team_monthly",
-  "team_annual",
+  "cruise",
+  "cruise_plus",
+  "cruise_pro",
+  "cruise_pro_max",
 ] as const;
 export type PlanType = (typeof PLAN_TYPES)[number];
 
@@ -905,11 +905,13 @@ export type CreatorProfile = DBRow<"creator_profiles">;
 // ============================================================
 
 export type Plan = {
-  id: string;       // 'solo_monthly' | 'solo_annual' | 'team_monthly' | 'team_annual'
-  kobo: number;     // integer kobo — never float
-  interval: "monthly" | "annual";
+  id: string;          // 'cruise' | 'cruise_plus' | 'cruise_pro' | 'cruise_pro_max'
+  kobo: number;        // integer kobo — never float
+  interval: string;    // free-form duration label stored in DB (e.g. '1_month', '3_months')
   seats: number;
   label: string;
+  description: string | null;
+  duration: string | null;
   active: boolean;
 };
 
