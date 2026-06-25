@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { applyAsCreatorSchema, type ApplyAsCreatorInput } from "@/lib/validations/creator";
 import { applyAsCreator } from "@/lib/actions/creator";
+import { AFRICAN_COUNTRIES } from "@/lib/constants/countries";
 
 const labelClass = "block font-mono text-[10px] uppercase tracking-widest text-muted-foreground";
 const inputClass =
@@ -109,13 +110,19 @@ export function ApplyForm() {
         <label htmlFor="location" className={labelClass}>
           Location <span className="text-muted-foreground/60">(optional)</span>
         </label>
-        <input
+        <select
           id="location"
-          type="text"
-          placeholder="Lagos, Nigeria"
           {...form.register("location")}
           className={inputClass}
-        />
+          defaultValue=""
+        >
+          <option value="">Select country</option>
+          {AFRICAN_COUNTRIES.map((country) => (
+            <option key={country} value={country}>
+              {country}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Website */}

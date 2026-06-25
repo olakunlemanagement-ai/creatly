@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { updateCreatorProfileSchema, type UpdateCreatorProfileInput } from "@/lib/validations/creator";
 import { updateCreatorProfile } from "@/lib/actions/creator";
 import type { CreatorProfile } from "@/types/database";
+import { AFRICAN_COUNTRIES } from "@/lib/constants/countries";
 
 const labelClass = "block font-mono text-[10px] uppercase tracking-widest text-muted-foreground";
 const inputClass =
@@ -81,13 +82,19 @@ export function ProfileEditor({ profile }: ProfileEditorProps) {
 
       <div>
         <label htmlFor="location" className={labelClass}>Location</label>
-        <input
+        <select
           id="location"
-          type="text"
-          placeholder="Lagos, Nigeria"
           {...form.register("location")}
           className={inputClass}
-        />
+          defaultValue={profile.location ?? ""}
+        >
+          <option value="">Select country</option>
+          {AFRICAN_COUNTRIES.map((country) => (
+            <option key={country} value={country}>
+              {country}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div>

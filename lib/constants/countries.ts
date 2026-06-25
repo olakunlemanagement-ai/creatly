@@ -1,0 +1,25 @@
+export const AFRICAN_COUNTRIES = [
+  "Nigeria",
+  "Ghana",
+  "Kenya",
+  "South Africa",
+  "Egypt",
+  "Ethiopia",
+  "Tanzania",
+  "Uganda",
+  "Rwanda",
+  "Senegal",
+  "Ivory Coast",
+  "Cameroon",
+  "Angola",
+  "Mozambique",
+  "Zimbabwe",
+  "Zambia",
+  "Malawi",
+  "Sierra Leone",
+  "Liberia",
+  "Gambia",
+  "Other",
+] as const;
+
+export type AfricanCountry = (typeof AFRICAN_COUNTRIES)[number];
