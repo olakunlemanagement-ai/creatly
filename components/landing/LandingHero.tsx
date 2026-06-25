@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Reveal } from "@/components/shared/Reveal";
-import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 
 // Each collage item: positioning/shadow classes + final rotate value for FM animation
@@ -50,13 +49,6 @@ export function LandingHero() {
       className="hero-gradient-mesh relative overflow-hidden"
       style={{ minHeight: "88vh" }}
     >
-      {/* Logo — shown while navbar is hidden at scrollY 0 */}
-      <div className="absolute left-5 top-5 z-10 sm:left-6 sm:top-6">
-        <Link href="/" aria-label="Home">
-          <Logo variant="full" tone="cream" size={28} />
-        </Link>
-      </div>
-
       {/* Grain texture overlay */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.03]"

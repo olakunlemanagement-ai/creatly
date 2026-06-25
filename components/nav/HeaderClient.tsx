@@ -2,14 +2,12 @@
 
 import { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Menu, ChevronDown } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { UserDropdown } from "@/components/nav/UserDropdown";
 import { MobileOverlay } from "@/components/nav/MobileOverlay";
-import { useScrollPosition } from "@/hooks/useScrollPosition";
-import { useReducedMotion } from "framer-motion";
 import { CONTACT_EMAIL } from "@/lib/config";
 import { UpgradeNudge } from "@/components/shared/UpgradeNudge";
 import type { AuthenticatedUser } from "@/lib/auth";
@@ -126,14 +124,7 @@ function SearchForm({
 }
 
 export function HeaderClient({ auth, categories }: HeaderClientProps) {
-  const pathname = usePathname();
-  const isHomePage = pathname === "/";
-  const pastHero = useScrollPosition(isHomePage ? "landing-hero" : undefined);
-  const prefersReduced = useReducedMotion();
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  // Hide only on the home page for guests until past the hero; always visible for logged-in users.
-  const hidden = isHomePage && !pastHero && !auth;
 
   return (
     <>
@@ -145,13 +136,7 @@ export function HeaderClient({ auth, categories }: HeaderClientProps) {
         Skip to content
       </a>
 
-      <header
-        className="fixed inset-x-0 top-0 z-50"
-        style={{
-          transform: hidden ? "translateY(-100%)" : "translateY(0)",
-          transition: prefersReduced ? "none" : "transform 300ms ease",
-        }}
-      >
+      <header className="fixed inset-x-0 top-0 z-50">
         {/* ── TOP BAR — cream ── */}
         <div className="border-b border-stone-200 bg-[#FAF4E9]">
           <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-6">
