@@ -143,4 +143,18 @@ The following environment variables are required for live payment processing. Un
 
 ---
 
+## Phase 4 — First Admin Bootstrap
+
+Before any admin routes are accessible, at least one user must have `role = 'admin'` in the `profiles` table. Run this SQL in the Supabase SQL Editor after signing up normally:
+
+```sql
+UPDATE public.profiles
+SET role = 'admin'
+WHERE email = 'olakunle.management@gmail.com';
+```
+
+Non-admins are redirected to `/dashboard` (not a 404 — the role check is in the admin layout, not middleware, so the URL space is not leaked).
+
+---
+
 *Log resolutions here as: `✅ Resolved YYYY-MM-DD — <note>`*
