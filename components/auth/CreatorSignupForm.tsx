@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { Eye, EyeOff, CheckCircle2, ArrowRight, Loader2 } from "lucide-react";
 
-import { signupSchema, type SignupInput } from "@/lib/validations/auth";
+import { creatorSignupSchema, type CreatorSignupInput } from "@/lib/validations/auth";
 import { createClient } from "@/lib/supabase/client";
 import { APP_NAME, APP_URL } from "@/lib/config";
 import { Button } from "@/components/ui/button";
@@ -32,8 +32,8 @@ export function CreatorSignupForm() {
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const form = useForm<SignupInput>({
-    resolver: zodResolver(signupSchema),
+  const form = useForm<CreatorSignupInput>({
+    resolver: zodResolver(creatorSignupSchema),
     defaultValues: {
       full_name: "",
       email: "",
@@ -44,7 +44,7 @@ export function CreatorSignupForm() {
 
   const passwordValue = form.watch("password");
 
-  async function onSubmit(values: SignupInput) {
+  async function onSubmit(values: CreatorSignupInput) {
     setServerError(null);
     const supabase = createClient();
 
@@ -54,7 +54,7 @@ export function CreatorSignupForm() {
       email: values.email,
       password: values.password,
       options: {
-        data: { full_name: values.full_name ?? "" },
+        data: { full_name: values.full_name },
         emailRedirectTo,
       },
     });
@@ -109,7 +109,7 @@ export function CreatorSignupForm() {
     <div className="space-y-8">
       {/* Heading */}
       <div className="space-y-1">
-        <p className={labelClass}>{"// Join as creator"}</p>
+        <p className={labelClass}>{"// JOIN AS CREATOR."}</p>
         <h1
           className="font-heading text-3xl text-foreground"
           style={{ fontFamily: "var(--font-heading)" }}
@@ -117,7 +117,7 @@ export function CreatorSignupForm() {
           Turn your creativity into revenue.
         </h1>
         <p className="text-sm text-muted-foreground">
-          Create your creator account to start uploading and earning.
+          Create your creator account and start earning from your work.
         </p>
       </div>
 
@@ -129,9 +129,9 @@ export function CreatorSignupForm() {
             name="full_name"
             render={({ field }) => (
               <FormItem className="space-y-1.5">
-                <FormLabel className={labelClass}>Full name (optional)</FormLabel>
+                <FormLabel className={labelClass}>Full name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ada Okafor" {...field} />
+                  <Input placeholder="Your full name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

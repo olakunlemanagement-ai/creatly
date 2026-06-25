@@ -19,6 +19,19 @@ export const signupSchema = z
   });
 export type SignupInput = z.infer<typeof signupSchema>;
 
+export const creatorSignupSchema = z
+  .object({
+    full_name: z.string().min(2, "Enter your full name").max(100),
+    email: z.string().email("Enter a valid email address"),
+    password: passwordSchema,
+    confirm_password: z.string(),
+  })
+  .refine((data) => data.password === data.confirm_password, {
+    message: "Passwords do not match",
+    path: ["confirm_password"],
+  });
+export type CreatorSignupInput = z.infer<typeof creatorSignupSchema>;
+
 export const loginSchema = z.object({
   email: z.string().email("Enter a valid email address"),
   password: z.string().min(1, "Enter your password"),
