@@ -16,9 +16,13 @@ import type { Resource, Creator, Category } from "@/types/database";
 
 // ─── Joined resource type for this page ───────────────────────────────────────
 
+type CategoryWithParent = Pick<Category, "name" | "slug" | "parent_id"> & {
+  parent?: Pick<Category, "name" | "slug"> | null;
+};
+
 type ResourceDetail = Resource & {
   creators: Pick<Creator, "name" | "slug" | "avatar_path" | "is_public"> | null;
-  categories: Pick<Category, "name" | "slug"> | null;
+  categories: CategoryWithParent | null;
 };
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
@@ -51,11 +55,12 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
   const { slug } = await params;
   const supabase = await createClient();
 
-  // Fetch resource + current user in parallel
+  // Fetch resource + current user in parallel.
+  // categories join includes parent_id so we can build the breadcrumb path.
   const [{ data: resource, error }, auth] = await Promise.all([
     supabase
       .from("resources")
-      .select("*, creators(name, slug, avatar_path, is_public), categories(name, slug)")
+      .select("*, creators(name, slug, avatar_path, is_public), categories(name, slug, parent_id)")
       .eq("slug", slug)
       .eq("status", "published")
       .single(),
@@ -65,8 +70,18 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
   if (error || !resource) notFound();
 
   const typedResource = resource as ResourceDetail;
-
   const userId = auth?.user.id ?? null;
+
+  // Fetch the parent category for breadcrumb (one extra query, cheap)
+  let parentCategory: Pick<Category, "name" | "slug"> | null = null;
+  if (typedResource.categories?.parent_id) {
+    const { data: parentCat } = await supabase
+      .from("categories")
+      .select("name, slug")
+      .eq("id", typedResource.categories.parent_id)
+      .single();
+    parentCategory = parentCat ?? null;
+  }
 
   // Fetch related resources, entitlement, and all favourite IDs in parallel.
   // Fetching all favourite IDs (not just one) lets both the sidebar heart and the
@@ -111,14 +126,35 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:py-10">
-      {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="mb-6">
-        <Link
-          href="/browse"
-          className="text-sm text-muted-foreground hover:text-foreground"
-        >
-          ← Back to browse
+      {/* Breadcrumb — shows full category path */}
+      <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+        <Link href="/browse" className="hover:text-foreground transition-colors">
+          Browse
         </Link>
+        {parentCategory && (
+          <>
+            <span aria-hidden>/</span>
+            <Link
+              href={`/browse?category=${parentCategory.slug}`}
+              className="hover:text-foreground transition-colors"
+            >
+              {parentCategory.name}
+            </Link>
+          </>
+        )}
+        {typedResource.categories && (
+          <>
+            <span aria-hidden>/</span>
+            <Link
+              href={`/browse?category=${typedResource.categories.slug}`}
+              className="hover:text-foreground transition-colors"
+            >
+              {typedResource.categories.name}
+            </Link>
+          </>
+        )}
+        <span aria-hidden>/</span>
+        <span className="text-foreground font-medium">{typedResource.title}</span>
       </nav>
 
       {/* Main two-column layout */}

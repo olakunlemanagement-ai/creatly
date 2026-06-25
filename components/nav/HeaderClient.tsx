@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Menu, ChevronDown } from "lucide-react";
@@ -11,54 +11,19 @@ import { MobileOverlay } from "@/components/nav/MobileOverlay";
 import { CONTACT_EMAIL } from "@/lib/config";
 import { UpgradeNudge } from "@/components/shared/UpgradeNudge";
 import type { AuthenticatedUser } from "@/lib/auth";
-import type { Category } from "@/types/database";
+import type { NavCategory } from "@/components/nav/SiteHeader";
 
 interface HeaderClientProps {
   auth: AuthenticatedUser | null;
-  categories: Pick<Category, "id" | "name" | "slug">[];
+  navCategories: NavCategory[];
 }
 
-// Needs Suspense because useSearchParams() suspends during SSR streaming.
-function CategoryLinks({
-  categories,
-}: {
-  categories: Pick<Category, "id" | "name" | "slug">[];
-}) {
-  const searchParams = useSearchParams();
-  const activeSlug = searchParams.get("category");
-
-  return (
-    <div className="flex flex-1 items-center gap-6 overflow-x-auto">
-      {categories.map((cat) => (
-        <Link
-          key={cat.id}
-          href={`/browse?category=${cat.slug}`}
-          className={[
-            "shrink-0 whitespace-nowrap text-xs font-medium transition-colors duration-150",
-            activeSlug === cat.slug
-              ? "text-terracotta-400"
-              : "text-white/80 hover:text-white",
-          ].join(" ")}
-        >
-          {cat.name}
-        </Link>
-      ))}
-    </div>
-  );
-}
-
-// Needs Suspense because useSearchParams() suspends during SSR streaming.
-function SearchForm({
-  categories,
-}: {
-  categories: Pick<Category, "id" | "name" | "slug">[];
-}) {
+// ── Search form (needs Suspense for useSearchParams) ──────────────────────────
+function SearchForm({ navCategories }: { navCategories: NavCategory[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
-  const [category, setCategory] = useState(
-    searchParams.get("category") ?? ""
-  );
+  const [category, setCategory] = useState(searchParams.get("category") ?? "");
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -77,7 +42,7 @@ function SearchForm({
       className="mx-auto hidden w-full max-w-lg lg:flex"
     >
       <div className="flex w-full items-center rounded-full border border-stone-200 bg-white shadow-sm transition-shadow focus-within:border-stone-300 focus-within:shadow-md">
-        {/* Category select */}
+        {/* Category select — shows main categories only */}
         <div className="relative flex shrink-0 items-center">
           <select
             value={category}
@@ -86,7 +51,7 @@ function SearchForm({
             className="h-10 appearance-none rounded-l-full bg-transparent py-0 pl-4 pr-6 text-sm font-medium text-stone-700 outline-none"
           >
             <option value="">All items</option>
-            {categories.map((cat) => (
+            {navCategories.map((cat) => (
               <option key={cat.id} value={cat.slug}>
                 {cat.name}
               </option>
@@ -98,10 +63,8 @@ function SearchForm({
           />
         </div>
 
-        {/* Divider */}
         <div className="h-5 w-px shrink-0 bg-stone-200" aria-hidden />
 
-        {/* Text input */}
         <input
           type="search"
           placeholder="Search templates, fonts, mockups…"
@@ -110,7 +73,6 @@ function SearchForm({
           className="h-10 min-w-0 flex-1 bg-transparent px-4 text-sm text-stone-800 placeholder:text-stone-400 outline-none"
         />
 
-        {/* Submit */}
         <button
           type="submit"
           aria-label="Search"
@@ -123,12 +85,96 @@ function SearchForm({
   );
 }
 
-export function HeaderClient({ auth, categories }: HeaderClientProps) {
+// ── Mega-menu category strip (needs Suspense for useSearchParams) ─────────────
+function CategoryStrip({ navCategories }: { navCategories: NavCategory[] }) {
+  const searchParams = useSearchParams();
+  const activeSlug = searchParams.get("category");
+  const [openSlug, setOpenSlug] = useState<string | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function open(slug: string) {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setOpenSlug(slug);
+  }
+
+  function scheduleClose() {
+    closeTimer.current = setTimeout(() => setOpenSlug(null), 120);
+  }
+
+  return (
+    <div className="flex flex-1 items-center gap-1 overflow-x-auto">
+      {navCategories.map((cat) => {
+        const hasChildren = cat.children.length > 0;
+        const isActive = activeSlug === cat.slug || cat.children.some((c) => c.slug === activeSlug);
+        const isOpen = openSlug === cat.slug;
+
+        return (
+          <div
+            key={cat.id}
+            className="relative flex-shrink-0"
+            onMouseEnter={() => hasChildren && open(cat.slug)}
+            onMouseLeave={scheduleClose}
+          >
+            <Link
+              href={`/browse?category=${cat.slug}`}
+              className={[
+                "inline-flex items-center gap-0.5 whitespace-nowrap rounded px-2.5 py-1 text-xs font-medium transition-colors duration-150",
+                isActive
+                  ? "text-terracotta-300"
+                  : "text-white/80 hover:text-white",
+              ].join(" ")}
+            >
+              {cat.name}
+              {hasChildren && (
+                <ChevronDown
+                  className={`h-3 w-3 transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`}
+                  aria-hidden
+                />
+              )}
+            </Link>
+
+            {/* Dropdown panel */}
+            {hasChildren && isOpen && (
+              <div
+                className="absolute left-0 top-full z-50 mt-1 min-w-[220px] rounded-lg border border-white/10 bg-brand-green-900 p-3 shadow-xl"
+                onMouseEnter={() => open(cat.slug)}
+                onMouseLeave={scheduleClose}
+              >
+                <p className="mb-2 px-2 font-mono text-[10px] uppercase tracking-widest text-white/40">
+                  {cat.name}
+                </p>
+                <ul className="space-y-0.5">
+                  {cat.children.map((child) => (
+                    <li key={child.id}>
+                      <Link
+                        href={`/browse?category=${child.slug}`}
+                        onClick={() => setOpenSlug(null)}
+                        className={[
+                          "block rounded px-2 py-1.5 text-xs transition-colors",
+                          activeSlug === child.slug
+                            ? "bg-white/10 text-terracotta-300"
+                            : "text-white/75 hover:bg-white/10 hover:text-white",
+                        ].join(" ")}
+                      >
+                        {child.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export function HeaderClient({ auth, navCategories }: HeaderClientProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <>
-      {/* Skip-to-content */}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-lg"
@@ -137,26 +183,19 @@ export function HeaderClient({ auth, categories }: HeaderClientProps) {
       </a>
 
       <header className="fixed inset-x-0 top-0 z-50">
-        {/* ── TOP BAR — cream ── */}
+        {/* ── TOP BAR ── */}
         <div className="border-b border-stone-200 bg-[#FAF4E9]">
           <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-6">
-            {/* Left: Logo */}
             <Link href="/" aria-label="Home" className="shrink-0">
               <Logo variant="full" tone="ink" size={30} />
             </Link>
 
-            {/* Center: category + search */}
             <Suspense fallback={null}>
-              <SearchForm categories={categories} />
+              <SearchForm navCategories={navCategories} />
             </Suspense>
 
-            {/* Right: nav links + auth */}
             <div className="flex items-center gap-1">
-              {/* Desktop text links */}
-              <nav
-                aria-label="Site links"
-                className="hidden items-center gap-1 lg:flex"
-              >
+              <nav aria-label="Site links" className="hidden items-center gap-1 lg:flex">
                 <Link
                   href="/pricing"
                   className="rounded-md px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 hover:text-stone-900"
@@ -177,7 +216,6 @@ export function HeaderClient({ auth, categories }: HeaderClientProps) {
                 </Link>
               </nav>
 
-              {/* Desktop auth */}
               <div className="hidden items-center gap-2 lg:flex">
                 {auth ? (
                   <>
@@ -206,7 +244,6 @@ export function HeaderClient({ auth, categories }: HeaderClientProps) {
                 )}
               </div>
 
-              {/* Mobile: search icon */}
               <Link
                 href="/browse"
                 aria-label="Search resources"
@@ -215,7 +252,6 @@ export function HeaderClient({ auth, categories }: HeaderClientProps) {
                 <Search className="h-4 w-4" />
               </Link>
 
-              {/* Mobile hamburger */}
               <button
                 onClick={() => setMobileOpen(true)}
                 className="flex h-9 w-9 items-center justify-center rounded-md text-stone-700 transition-colors hover:bg-stone-100 lg:hidden"
@@ -228,32 +264,25 @@ export function HeaderClient({ auth, categories }: HeaderClientProps) {
           </div>
         </div>
 
-        {/* ── BOTTOM BAR — category strip, desktop only ── */}
-        <nav
-          aria-label="Category navigation"
-          className="hidden bg-[#14342B] lg:block"
-        >
-          <div className="mx-auto flex h-10 max-w-7xl items-center gap-6 px-4 sm:px-6">
-            {categories.length > 0 && (
+        {/* ── CATEGORY BAR — desktop mega-menu strip ── */}
+        <nav aria-label="Category navigation" className="hidden bg-[#14342B] lg:block">
+          <div className="mx-auto flex h-10 max-w-7xl items-center gap-1 px-4 sm:px-6">
+            {navCategories.length > 0 && (
               <Suspense
                 fallback={
-                  <div className="flex flex-1 items-center gap-6">
-                    {categories.map((cat) => (
-                      <span
-                        key={cat.id}
-                        className="shrink-0 whitespace-nowrap text-xs font-medium text-white/50"
-                      >
+                  <div className="flex flex-1 items-center gap-4">
+                    {navCategories.map((cat) => (
+                      <span key={cat.id} className="shrink-0 whitespace-nowrap text-xs font-medium text-white/50">
                         {cat.name}
                       </span>
                     ))}
                   </div>
                 }
               >
-                <CategoryLinks categories={categories} />
+                <CategoryStrip navCategories={navCategories} />
               </Suspense>
             )}
 
-            {/* Contact Us — far right */}
             <a
               href={`mailto:${CONTACT_EMAIL}`}
               className="ml-auto shrink-0 whitespace-nowrap text-xs font-medium text-white/70 transition-colors hover:text-terracotta-400"
@@ -268,7 +297,7 @@ export function HeaderClient({ auth, categories }: HeaderClientProps) {
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         auth={auth}
-        categories={categories}
+        navCategories={navCategories}
       />
     </>
   );

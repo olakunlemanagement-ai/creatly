@@ -8,12 +8,17 @@ import { Check, ChevronRight, Upload, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { submitAsset, saveDraft } from "@/lib/actions/upload";
 import { uploadDetailsSchema, type UploadDetailsInput, MAX_FILE_SIZE_BYTES, MAX_PREVIEW_SIZE_BYTES } from "@/lib/validations/upload";
-import type { Category } from "@/types/database";
 
 type FormValues = UploadDetailsInput;
 
+interface UploadCategory {
+  id: string;
+  name: string;
+  children: { id: string; name: string }[];
+}
+
 interface UploadWizardProps {
-  categories: Pick<Category, "id" | "name">[];
+  categories: UploadCategory[];
   userId: string;
   existingDraftId?: string;
 }
@@ -57,6 +62,79 @@ interface FileState {
   name: string;
   size: number;
   type: string;
+}
+
+// Cascading two-level category selector: main → sub-category
+function CascadingCategorySelect({
+  categories,
+  value,
+  onChange,
+  error,
+}: {
+  categories: UploadCategory[];
+  value: string;
+  onChange: (id: string) => void;
+  error?: string;
+}) {
+  // Determine if the current value is a main or sub-category
+  const selectedMain = categories.find(
+    (c) => c.id === value || c.children.some((ch) => ch.id === value),
+  );
+  const selectedMainId = selectedMain?.id ?? "";
+  const subCategories = selectedMain?.children ?? [];
+
+  function handleMainChange(mainId: string) {
+    const main = categories.find((c) => c.id === mainId);
+    if (!main) { onChange(""); return; }
+    // If no children, the main category itself is the selection
+    if (main.children.length === 0) {
+      onChange(main.id);
+    } else {
+      // Require sub-category selection — clear for now
+      onChange("");
+    }
+  }
+
+  function handleSubChange(subId: string) {
+    onChange(subId);
+  }
+
+  return (
+    <div className="space-y-2">
+      <label className="block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        Category <span className="text-terracotta-500">*</span>
+      </label>
+
+      {/* Main category */}
+      <select
+        value={selectedMainId}
+        onChange={(e) => handleMainChange(e.target.value)}
+        className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <option value="">Select a category…</option>
+        {categories.map((cat) => (
+          <option key={cat.id} value={cat.id}>{cat.name}</option>
+        ))}
+      </select>
+
+      {/* Sub-category — shown only when the selected main has children */}
+      {subCategories.length > 0 && (
+        <select
+          value={subCategories.some((c) => c.id === value) ? value : ""}
+          onChange={(e) => handleSubChange(e.target.value)}
+          className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label="Sub-category"
+        >
+          <option value="">Select a sub-category…</option>
+          {subCategories.map((sub) => (
+            <option key={sub.id} value={sub.id}>{sub.name}</option>
+          ))}
+        </select>
+      )}
+
+      {error && <p className="text-xs text-destructive">{error}</p>}
+    </div>
+  );
 }
 
 export function UploadWizard({ categories, userId, existingDraftId }: UploadWizardProps) {
@@ -348,23 +426,12 @@ export function UploadWizard({ categories, userId, existingDraftId }: UploadWiza
             />
           </div>
 
-          <div>
-            <label className="block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              Category <span className="text-terracotta-500">*</span>
-            </label>
-            <select
-              {...form.register("category_id")}
-              className="mt-1.5 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <option value="">Select a category…</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
-            {form.formState.errors.category_id && (
-              <p className="mt-1 text-xs text-destructive">{form.formState.errors.category_id.message}</p>
-            )}
-          </div>
+          <CascadingCategorySelect
+            categories={categories}
+            value={watchedValues.category_id}
+            onChange={(id) => form.setValue("category_id", id, { shouldValidate: true })}
+            error={form.formState.errors.category_id?.message}
+          />
 
           <div>
             <label className="block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -446,7 +513,15 @@ export function UploadWizard({ categories, userId, existingDraftId }: UploadWiza
             )}
             <div className="p-4 space-y-1">
               <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                {categories.find((c) => c.id === watchedValues.category_id)?.name ?? "Uncategorised"}
+                {(() => {
+                  const id = watchedValues.category_id;
+                  for (const cat of categories) {
+                    if (cat.id === id) return cat.name;
+                    const sub = cat.children.find((c) => c.id === id);
+                    if (sub) return `${cat.name} › ${sub.name}`;
+                  }
+                  return "Uncategorised";
+                })()}
               </p>
               <p className="font-semibold text-foreground">{watchedValues.title || "Untitled"}</p>
               {watchedValues.description && (

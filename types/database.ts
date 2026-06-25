@@ -91,7 +91,9 @@ export type Database = {
           icon_name: string | null
           id: string
           is_active: boolean
+          level: number
           name: string
+          parent_id: string | null
           slug: string
           sort_order: number
         }
@@ -101,7 +103,9 @@ export type Database = {
           icon_name?: string | null
           id?: string
           is_active?: boolean
+          level?: number
           name: string
+          parent_id?: string | null
           slug: string
           sort_order?: number
         }
@@ -111,11 +115,21 @@ export type Database = {
           icon_name?: string | null
           id?: string
           is_active?: boolean
+          level?: number
           name?: string
+          parent_id?: string | null
           slug?: string
           sort_order?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       category_follows: {
         Row: {

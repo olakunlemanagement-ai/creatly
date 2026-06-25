@@ -27,6 +27,7 @@ export default async function LandingPage() {
       .from("categories")
       .select("id, name, slug")
       .eq("is_active", true)
+      .eq("level", 1)
       .order("sort_order")
       .returns<Pick<Category, "id" | "name" | "slug">[]>(),
 

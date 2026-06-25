@@ -19,12 +19,24 @@ export default async function UploadPage({
   const supabase = await createClient();
   const { edit: editId } = await searchParams;
 
-  const { data: categories } = await supabase
+  const { data: rawCats } = await supabase
     .from("categories")
-    .select("id, name")
+    .select("id, name, parent_id, level")
     .eq("is_active", true)
+    .in("level", [1, 2])
     .order("sort_order")
-    .returns<Pick<Category, "id" | "name">[]>();
+    .returns<Pick<Category, "id" | "name" | "parent_id" | "level">[]>();
+
+  // Build a structured list: level-1 roots with their level-2 children.
+  const catList = rawCats ?? [];
+  const rootMap = new Map<string, { id: string; name: string; children: { id: string; name: string }[] }>();
+  for (const c of catList) {
+    if (c.level === 1) rootMap.set(c.id, { id: c.id, name: c.name, children: [] });
+  }
+  for (const c of catList) {
+    if (c.level === 2 && c.parent_id) rootMap.get(c.parent_id)?.children.push({ id: c.id, name: c.name });
+  }
+  const categories = Array.from(rootMap.values());
 
   let draftId: string | undefined;
   if (editId) {
