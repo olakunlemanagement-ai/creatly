@@ -250,7 +250,11 @@ export function HeaderClient({ auth, navCategories }: HeaderClientProps) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    if (!isHome) return;
+    if (!isHome) {
+      // Reset so there is no visible-header flash when the user returns to /
+      setScrolled(false);
+      return;
+    }
 
     function onScroll() {
       const hero = document.getElementById("landing-hero");
