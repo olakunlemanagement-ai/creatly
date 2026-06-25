@@ -18,7 +18,7 @@ interface MobileOverlayProps {
   navCategories: NavCategory[];
 }
 
-const NAV_LINKS = [
+const ALL_NAV_LINKS = [
   { label: "Browse",           href: "/browse" },
   { label: "Become a creator", href: "/creators" },
   { label: "Pricing",          href: "/pricing" },
@@ -39,6 +39,10 @@ const itemVariants = {
 export function MobileOverlay({ open, onClose, auth, navCategories }: MobileOverlayProps) {
   const prefersReduced = useReducedMotion();
   const [expandedSlug, setExpandedSlug] = useState<string | null>(null);
+  const isCreator = auth?.profile.role === "creator";
+  const navLinks = ALL_NAV_LINKS.filter(
+    (l) => !(l.href === "/creators" && isCreator),
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -92,7 +96,7 @@ export function MobileOverlay({ open, onClose, auth, navCategories }: MobileOver
               initial={prefersReduced ? false : "hidden"}
               animate="show"
             >
-              {NAV_LINKS.map(({ label, href }) => (
+              {navLinks.map(({ label, href }) => (
                 <motion.li key={href} variants={prefersReduced ? undefined : itemVariants}>
                   <Link
                     href={href}
