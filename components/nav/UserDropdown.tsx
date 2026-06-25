@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, LayoutDashboard, Heart, CreditCard, Pencil } from "lucide-react";
+import { LogOut, LayoutDashboard, Heart, CreditCard, Pencil, LayoutGrid } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +29,7 @@ function initials(name: string | null, email: string): string {
 export function UserDropdown({ auth }: UserDropdownProps) {
   const displayName = auth.profile.full_name ?? auth.user.email;
   const avatarText = initials(auth.profile.full_name, auth.user.email);
+  const isCreator = auth.profile.role === "creator";
 
   return (
     <DropdownMenu>
@@ -53,27 +54,36 @@ export function UserDropdown({ auth }: UserDropdownProps) {
           </Link>
         </DropdownMenuItem>
 
-        <DropdownMenuItem asChild>
-          <Link href="/dashboard/favourites" className="flex items-center gap-2">
-            <Heart className="h-4 w-4" />
-            Favourites
-          </Link>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem asChild>
-          <Link href="/billing" className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4" />
-            Billing
-          </Link>
-        </DropdownMenuItem>
-
-        {auth.profile.role === "creator" && (
-          <DropdownMenuItem asChild>
-            <Link href="/creator" className="flex items-center gap-2">
-              <Pencil className="h-4 w-4" />
-              Creator Studio
-            </Link>
-          </DropdownMenuItem>
+        {isCreator ? (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/browse" className="flex items-center gap-2">
+                <LayoutGrid className="h-4 w-4" />
+                Browse
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/creator" className="flex items-center gap-2">
+                <Pencil className="h-4 w-4" />
+                Creator Studio
+              </Link>
+            </DropdownMenuItem>
+          </>
+        ) : (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/favourites" className="flex items-center gap-2">
+                <Heart className="h-4 w-4" />
+                Favourites
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/billing" className="flex items-center gap-2">
+                <CreditCard className="h-4 w-4" />
+                Billing
+              </Link>
+            </DropdownMenuItem>
+          </>
         )}
 
         <DropdownMenuSeparator />

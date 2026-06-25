@@ -11,8 +11,8 @@ export default async function AppLayout({
   const auth = await getAuthenticatedUser();
 
   // Authenticated but not yet onboarded → redirect to the wizard.
-  // getAuthenticatedUser() is already called here (zero extra queries).
-  if (auth && !auth.profile.onboarded) {
+  // Creators use a separate onboarding flow and skip the consumer wizard.
+  if (auth && !auth.profile.onboarded && auth.profile.role !== "creator") {
     redirect("/onboarding");
   }
 

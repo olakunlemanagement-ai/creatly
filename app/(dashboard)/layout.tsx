@@ -13,7 +13,7 @@ export default async function DashboardGroupLayout({
 
   if (!auth) redirect("/login?next=/dashboard");
 
-  if (!auth.profile.onboarded) redirect("/onboarding");
+  if (!auth.profile.onboarded && auth.profile.role !== "creator") redirect("/onboarding");
 
   const supabase = await createClient();
 

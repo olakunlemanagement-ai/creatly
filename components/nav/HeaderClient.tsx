@@ -320,7 +320,7 @@ export function HeaderClient({ auth, navCategories }: HeaderClientProps) {
               <div className="hidden items-center gap-2 lg:flex">
                 {auth ? (
                   <>
-                    <UpgradeNudge userId={auth.user.id} />
+                    {auth.profile.role !== "creator" && <UpgradeNudge userId={auth.user.id} />}
                     <UserDropdown auth={auth} />
                   </>
                 ) : (
