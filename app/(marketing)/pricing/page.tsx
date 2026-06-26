@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { PricingGrid } from "@/components/pricing/PricingGrid";
 import { PricingFAQ } from "@/components/pricing/PricingFAQ";
 import { APP_NAME } from "@/lib/config";
-import { Check, Zap } from "lucide-react";
+import { Check, ShieldCheck, BadgeCheck, CalendarX } from "lucide-react";
 
 export const metadata: Metadata = {
   title: `Pricing — ${APP_NAME}`,
@@ -18,6 +18,12 @@ const INCLUDED = [
   "Commercial licence included",
   "Cancel anytime",
 ];
+
+const TRUST = [
+  { icon: ShieldCheck, label: "Secure payment by Paystack" },
+  { icon: CalendarX,   label: "Cancel anytime" },
+  { icon: BadgeCheck,  label: "Licensed for commercial use" },
+] as const;
 
 export default async function PricingPage() {
   const auth = await getAuthenticatedUser();
@@ -37,7 +43,7 @@ export default async function PricingPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-b border-border bg-forest-900 px-5 py-24 sm:px-6">
+      <section className="relative overflow-hidden border-b border-border bg-forest-900 px-5 py-20 sm:px-6 sm:py-24">
         {/* Subtle grain texture */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.04]"
@@ -47,24 +53,23 @@ export default async function PricingPage() {
           }}
         />
 
-        <div className="relative mx-auto max-w-4xl text-center">
+        <div className="relative mx-auto max-w-6xl">
           <span className="inline-flex items-center gap-2 rounded-full border border-terracotta-500/30 bg-terracotta-500/10 px-4 py-1.5 font-mono text-xs font-semibold uppercase tracking-widest text-terracotta-400">
-            <Zap className="h-3 w-3" />
             Simple pricing
           </span>
 
           <h1
             className="mt-6 font-heading text-4xl font-bold leading-tight text-cream-100 sm:text-5xl lg:text-6xl"
-            style={{ fontFamily: "var(--font-heading)", letterSpacing: "-0.02em" }}
+            style={{ letterSpacing: "-0.02em" }}
           >
-            Choose your plan.
+            One subscription.
             <br />
-            <span className="text-terracotta-400">Download everything.</span>
+            <span className="text-terracotta-400">Unlimited downloads.</span>
           </h1>
 
-          <p className="mx-auto mt-6 max-w-xl text-base text-cream-200/70 sm:text-lg">
-            One subscription unlocks every template, font, mockup, and motion asset on {APP_NAME}.
-            Pay for the duration that works for you.
+          <p className="mt-5 max-w-xl text-base text-cream-200/70 sm:text-lg">
+            Every template, font, mockup, and motion asset on {APP_NAME} — unlocked.
+            Pick the duration that fits your workflow.
           </p>
         </div>
       </section>
@@ -73,6 +78,16 @@ export default async function PricingPage() {
       <section className="px-5 py-16 sm:px-6">
         <div className="mx-auto max-w-6xl">
           <PricingGrid currentPlanId={currentPlanId} authenticated={!!auth} />
+
+          {/* Trust signals */}
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
+            {TRUST.map(({ icon: Icon, label }) => (
+              <span key={label} className="flex items-center gap-2">
+                <Icon className="h-4 w-4 text-brand-green-600" />
+                {label}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 

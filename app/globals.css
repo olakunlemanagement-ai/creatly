@@ -11,6 +11,18 @@
    ============================================================ */
 
 @theme {
+  /* Forest green (H≈152°) — deep dark green for hero/card backgrounds */
+  --color-forest-50:  oklch(0.97 0.01 152);
+  --color-forest-100: oklch(0.93 0.03 152);
+  --color-forest-200: oklch(0.86 0.06 152);
+  --color-forest-300: oklch(0.74 0.10 152);
+  --color-forest-400: oklch(0.62 0.12 152);
+  --color-forest-500: oklch(0.51 0.12 152);
+  --color-forest-600: oklch(0.40 0.11 152);
+  --color-forest-700: oklch(0.30 0.09 152);
+  --color-forest-800: oklch(0.22 0.07 152);
+  --color-forest-900: #14342B;
+
   /* Brand green (H≈148°) — primary brand colour */
   --color-brand-green-50:  oklch(0.97 0.01 148);
   --color-brand-green-100: oklch(0.93 0.04 148);
