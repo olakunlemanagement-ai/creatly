@@ -2,9 +2,12 @@ import { redirect } from "next/navigation";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { AdminShell } from "@/components/admin/AdminShell";
 
+// Always render dynamically — role is fetched from the profiles table on every
+// request and must never be served from a cached layout snapshot.
+export const dynamic = "force-dynamic";
+
 // All routes under (admin) require authentication AND admin role.
-// The middleware already enforces auth; this layout adds the role check so
-// non-admin authenticated users are redirected (not leaked a 401/404).
+// The middleware enforces both; this layout is a second line of defence.
 export default async function AdminGroupLayout({
   children,
 }: {
