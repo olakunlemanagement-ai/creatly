@@ -5,6 +5,7 @@ import { APP_NAME } from "@/lib/config";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Resource, Category } from "@/types/database";
+import { DeleteAssetButton } from "@/components/creator/DeleteAssetButton";
 
 export const metadata: Metadata = { title: `My Assets — ${APP_NAME}` };
 
@@ -23,7 +24,7 @@ type AssetRow = Pick<Resource,
 export default async function StudioAssetsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; category?: string }>;
+  searchParams: Promise<{ status?: string; category?: string; updated?: string; deleted?: string }>;
 }) {
   const auth = await getAuthenticatedUser();
   if (!auth) return null;
@@ -44,7 +45,7 @@ export default async function StudioAssetsPage({
   const { data: creator } = creatorResult;
   const categories = categoriesResult.data ?? [];
 
-  const { status: filterStatus, category: filterCategory } = await searchParams;
+  const { status: filterStatus, category: filterCategory, updated, deleted } = await searchParams;
 
   if (!creator) return <EmptyState />;
 
@@ -91,6 +92,18 @@ export default async function StudioAssetsPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+      {/* Success banners */}
+      {updated === "1" && (
+        <div className="mb-4 rounded-lg border border-brand-green-200 bg-brand-green-50 px-4 py-3 text-sm text-brand-green-700">
+          Asset updated successfully.
+        </div>
+      )}
+      {deleted === "1" && (
+        <div className="mb-4 rounded-lg border border-brand-green-200 bg-brand-green-50 px-4 py-3 text-sm text-brand-green-700">
+          Draft deleted successfully.
+        </div>
+      )}
+
       {/* Page header */}
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
@@ -257,13 +270,14 @@ export default async function StudioAssetsPage({
                       </p>
 
                       <div className="flex gap-1.5">
-                        {(asset.review_status === "draft" || asset.review_status === "rejected") && (
-                          <Link
-                            href={`/creator/upload?edit=${asset.id}`}
-                            className="flex-1 rounded-lg border border-border py-1.5 text-center text-xs font-medium text-foreground/80 transition-colors hover:border-foreground/40"
-                          >
-                            Edit
-                          </Link>
+                        <Link
+                          href={`/creator/assets/${asset.id}/edit`}
+                          className="flex-1 rounded-lg border border-border py-1.5 text-center text-xs font-medium text-foreground/80 transition-colors hover:border-foreground/40"
+                        >
+                          Edit
+                        </Link>
+                        {asset.review_status === "draft" && (
+                          <DeleteAssetButton assetId={asset.id} assetTitle={asset.title} />
                         )}
                         <Link
                           href={`/resources/${asset.slug}`}

@@ -40,3 +40,13 @@ export function splitCsv(value: string | undefined | null): string[] {
   if (!value) return [];
   return value.split(",").map((t) => t.trim()).filter(Boolean);
 }
+
+export const editAssetSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters").max(120),
+  description: z.string().max(1000).optional(),
+  category_id: z.string().uuid("Please select a category"),
+  tags: z.string().max(200).optional(),
+  compatible_software: z.string().max(200).optional(),
+});
+
+export type EditAssetInput = z.infer<typeof editAssetSchema>;
