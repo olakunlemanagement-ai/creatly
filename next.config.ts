@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 // Parse the Supabase Storage hostname at build time so Next.js <Image> can
 // serve preview images from our storage bucket alongside dev seed placeholders.
@@ -32,4 +33,15 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  // Suppress the Sentry CLI banner during builds.
+  silent: !process.env.CI,
+  // Upload source maps only when SENTRY_AUTH_TOKEN is present (production CI).
+  // Without the token, source maps are omitted silently rather than erroring.
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  // Disable the Sentry overlay in development to avoid noise.
+  disableLogger: true,
+  automaticVercelMonitors: false,
+});

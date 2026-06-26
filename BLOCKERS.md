@@ -157,4 +157,30 @@ Non-admins are redirected to `/dashboard` (not a 404 — the role check is in th
 
 ---
 
+---
+
+## Sentry Error Monitoring (BLOCKER)
+
+Sentry is wired up but **not active** until the DSN and (optionally) auth token are set.
+
+### Required env vars
+
+| Var | Where | How to get |
+|-----|-------|-----------|
+| `NEXT_PUBLIC_SENTRY_DSN` | Client + Server | sentry.io → Project → Settings → Client Keys → DSN |
+| `SENTRY_AUTH_TOKEN` | CI/Build only | sentry.io → Settings → Auth Tokens → Create new token (scope: `project:releases`, `org:read`) |
+| `SENTRY_ORG` | CI/Build only | Your Sentry organisation slug (visible in the Sentry URL) |
+| `SENTRY_PROJECT` | CI/Build only | Your Sentry project slug |
+
+### Steps to activate
+
+1. Create a project at **sentry.io** (platform: Next.js).
+2. Copy the DSN and add it to `.env.local` and Vercel environment variables.
+3. For source map uploads in CI, create an auth token and add `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` to your CI/Vercel env.
+4. In development, hit `GET /api/sentry-test` to confirm errors are flowing into your Sentry dashboard.
+
+> ⚠️ Without `NEXT_PUBLIC_SENTRY_DSN`, errors are silently dropped. The app boots and runs normally — Sentry is a no-op until the DSN is set.
+
+---
+
 *Log resolutions here as: `✅ Resolved YYYY-MM-DD — <note>`*

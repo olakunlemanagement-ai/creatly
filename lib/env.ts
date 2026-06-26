@@ -34,6 +34,11 @@ const envSchema = z.object({
     .optional()
     .default("true")
     .transform((v) => v !== "false"),
+
+  // ── Sentry ──────────────────────────────────────────────────────────────────
+  // Optional in dev; required in production for error monitoring.
+  // BLOCKER: obtain DSN from sentry.io → Project → Settings → Client Keys.
+  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
 });
 
 export const env = envSchema.parse(process.env);
