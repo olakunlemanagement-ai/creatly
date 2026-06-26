@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   ShieldCheck,
+  UserCog,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { LogoutButton } from "@/components/shared/LogoutButton";
@@ -40,10 +41,11 @@ const SIDEBAR_BG = "#14342B";
 interface Props {
   fullName: string | null;
   email: string;
+  role: string;
   children: React.ReactNode;
 }
 
-export function AdminShell({ fullName, email, children }: Props) {
+export function AdminShell({ fullName, email, role, children }: Props) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -78,7 +80,12 @@ export function AdminShell({ fullName, email, children }: Props) {
 
       {/* Nav links */}
       <ul className="flex flex-1 flex-col gap-0.5 px-2">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {[
+          ...NAV_ITEMS,
+          ...(role === "super_admin"
+            ? [{ href: "/admin/team", label: "Team", icon: UserCog }]
+            : []),
+        ].map(({ href, label, icon: Icon }) => {
           const active = isActive(href);
           return (
             <li key={href}>

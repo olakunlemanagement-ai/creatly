@@ -78,9 +78,19 @@ export async function middleware(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role !== "admin") {
+    const role = profile?.role;
+
+    // Both 'admin' and 'super_admin' can access /admin/*.
+    if (role !== "admin" && role !== "super_admin") {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+
+    // /admin/team is restricted to super_admin only.
+    if (pathname.startsWith("/admin/team") && role !== "super_admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/overview";
       return NextResponse.redirect(url);
     }
   }

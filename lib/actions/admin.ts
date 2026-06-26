@@ -1,8 +1,11 @@
 "use server";
 
+import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { APP_NAME, APP_URL } from "@/lib/config";
 import {
   approveResourceSchema,
   rejectResourceSchema,
@@ -16,13 +19,22 @@ import {
   type UpdateCategoryInput,
 } from "@/lib/validations/admin";
 
-// Shared guard: confirms the caller is authenticated and has the 'admin' role.
-// Returns the admin user ID or an error string.
+// Shared guard: confirms the caller is authenticated and has admin-level access.
+// Both 'admin' and 'super_admin' pass this check.
 async function requireAdmin(): Promise<{ adminId: string } | { error: string }> {
   const auth = await getAuthenticatedUser();
   if (!auth) return { error: "Not authenticated." };
-  if (auth.profile.role !== "admin") return { error: "Forbidden." };
+  const { role } = auth.profile;
+  if (role !== "admin" && role !== "super_admin") return { error: "Forbidden." };
   return { adminId: auth.user.id };
+}
+
+// Stricter guard: only super_admin passes.
+async function requireSuperAdmin(): Promise<{ adminId: string; adminEmail: string } | { error: string }> {
+  const auth = await getAuthenticatedUser();
+  if (!auth) return { error: "Not authenticated." };
+  if (auth.profile.role !== "super_admin") return { error: "Forbidden." };
+  return { adminId: auth.user.id, adminEmail: auth.user.email };
 }
 
 // approveResource — sets review_status='approved', status='published'.
@@ -356,5 +368,182 @@ export async function moveCategoryOrder(
 
   revalidatePath("/admin/categories");
   revalidatePath("/browse");
+  return {};
+}
+
+// ─── Admin team management (super_admin only) ──────────────────────────────
+
+const inviteAdminSchema = z.object({
+  email: z.string().email("Enter a valid email address."),
+});
+
+export async function inviteAdmin(email: string): Promise<{ error?: string }> {
+  const guard = await requireSuperAdmin();
+  if ("error" in guard) return { error: guard.error };
+
+  const parsed = inviteAdminSchema.safeParse({ email });
+  if (!parsed.success) return { error: parsed.error.errors[0]?.message ?? "Invalid email." };
+
+  const admin = createAdminClient();
+
+  // Reject if this email already has an admin-level role
+  const { data: existing } = await admin
+    .from("profiles")
+    .select("role")
+    .eq("email", parsed.data.email)
+    .maybeSingle();
+
+  if (existing && (existing.role === "admin" || existing.role === "super_admin")) {
+    return { error: "That user is already an admin." };
+  }
+
+  const token = randomBytes(32).toString("hex");
+
+  const { error: insertError } = await admin
+    .from("admin_invites")
+    .insert({
+      email: parsed.data.email,
+      token,
+      invited_by: guard.adminId,
+    });
+
+  if (insertError) {
+    console.error("[inviteAdmin] insert error:", insertError);
+    return { error: "Could not create invite. Please try again." };
+  }
+
+  const acceptUrl = `${APP_URL}/accept-admin-invite?token=${token}`;
+  await sendAdminInviteEmail({
+    to: parsed.data.email,
+    fromEmail: guard.adminEmail,
+    acceptUrl,
+  });
+
+  revalidatePath("/admin/team");
+  return {};
+}
+
+async function sendAdminInviteEmail(opts: {
+  to: string;
+  fromEmail: string;
+  acceptUrl: string;
+}): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn("[inviteAdmin] RESEND_API_KEY not set — invite URL:", opts.acceptUrl);
+    return;
+  }
+  try {
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: `${APP_NAME} <noreply@joincreatly.com>`,
+        to: opts.to,
+        subject: `You've been invited to join ${APP_NAME} as an admin`,
+        html: `
+          <p>${opts.fromEmail} has invited you to become an admin on ${APP_NAME}.</p>
+          <p>
+            <a href="${opts.acceptUrl}"
+               style="background:#1a3d2f;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;">
+              Accept admin invite
+            </a>
+          </p>
+          <p style="color:#888;font-size:12px;">
+            This invite expires in 7 days. If you didn't expect this, ignore it safely.
+          </p>
+        `,
+      }),
+    });
+  } catch (err) {
+    console.error("[inviteAdmin] email error:", err);
+  }
+}
+
+const removeAdminSchema = z.object({
+  userId: z.string().uuid("Invalid user ID."),
+});
+
+export async function removeAdmin(userId: string): Promise<{ error?: string }> {
+  const guard = await requireSuperAdmin();
+  if ("error" in guard) return { error: guard.error };
+
+  const parsed = removeAdminSchema.safeParse({ userId });
+  if (!parsed.success) return { error: "Invalid user ID." };
+
+  const admin = createAdminClient();
+
+  // Only demote 'admin' — never allow removing another super_admin
+  const { data: target } = await admin
+    .from("profiles")
+    .select("role")
+    .eq("id", parsed.data.userId)
+    .maybeSingle();
+
+  if (!target) return { error: "User not found." };
+  if (target.role === "super_admin") return { error: "Cannot remove a super admin." };
+  if (target.role !== "admin") return { error: "User is not an admin." };
+
+  const { error } = await admin
+    .from("profiles")
+    .update({ role: "user", updated_at: new Date().toISOString() })
+    .eq("id", parsed.data.userId);
+
+  if (error) {
+    console.error("[removeAdmin] update error:", error);
+    return { error: "Could not remove admin. Please try again." };
+  }
+
+  revalidatePath("/admin/team");
+  return {};
+}
+
+const acceptInviteSchema = z.object({
+  token: z.string().min(1),
+});
+
+// Called from the accept-invite page after the user is authenticated.
+// Uses admin client because the caller is not yet an admin.
+export async function acceptAdminInvite(token: string): Promise<{ error?: string }> {
+  const auth = await getAuthenticatedUser();
+  if (!auth) return { error: "You must be signed in to accept this invite." };
+
+  const parsed = acceptInviteSchema.safeParse({ token });
+  if (!parsed.success) return { error: "Invalid invite token." };
+
+  const adminDb = createAdminClient();
+
+  const { data: invite } = await adminDb
+    .from("admin_invites")
+    .select("id, email, expires_at, used_at")
+    .eq("token", parsed.data.token)
+    .maybeSingle();
+
+  if (!invite) return { error: "Invite not found or already used." };
+  if (invite.used_at) return { error: "This invite has already been used." };
+  if (new Date(invite.expires_at) < new Date()) return { error: "This invite has expired." };
+  if (invite.email.toLowerCase() !== auth.user.email.toLowerCase()) {
+    return { error: `This invite was sent to ${invite.email}. Sign in with that address.` };
+  }
+
+  // Mark token consumed before changing role (prevents double-use on retry)
+  await adminDb
+    .from("admin_invites")
+    .update({ used_at: new Date().toISOString() })
+    .eq("id", invite.id);
+
+  const { error: roleError } = await adminDb
+    .from("profiles")
+    .update({ role: "admin", updated_at: new Date().toISOString() })
+    .eq("id", auth.user.id);
+
+  if (roleError) {
+    console.error("[acceptAdminInvite] role update error:", roleError);
+    return { error: "Could not activate your admin account. Contact the team." };
+  }
+
   return {};
 }

@@ -17,10 +17,11 @@ export default async function AdminGroupLayout({
 
   if (!auth) redirect("/login?next=/admin");
 
-  if (auth.profile.role !== "admin") redirect("/dashboard");
+  const { role } = auth.profile;
+  if (role !== "admin" && role !== "super_admin") redirect("/dashboard");
 
   return (
-    <AdminShell fullName={auth.profile.full_name} email={auth.user.email}>
+    <AdminShell fullName={auth.profile.full_name} email={auth.user.email} role={role}>
       {children}
     </AdminShell>
   );

@@ -27,7 +27,7 @@ export type ResourceStatus = (typeof RESOURCE_STATUS)[number];
 export const REVIEW_STATUS = ["draft", "submitted", "approved", "rejected"] as const;
 export type ReviewStatus = (typeof REVIEW_STATUS)[number];
 
-export const USER_ROLE = ["user", "admin", "creator"] as const;
+export const USER_ROLE = ["user", "creator", "admin", "super_admin"] as const;
 export type UserRole = (typeof USER_ROLE)[number];
 
 export const CREATOR_PROFILE_STATUS = ["pending", "approved", "suspended"] as const;

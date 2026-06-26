@@ -9,6 +9,16 @@
 --   Four Cruise-tier plans inserted.
 -- =====================================================================
 
+-- Ensure the plans table exists in case 20260624000000 did not fully commit.
+CREATE TABLE IF NOT EXISTS public.plans (
+  id       text    primary key,
+  kobo     integer not null check (kobo > 0),
+  interval text    not null,
+  seats    integer not null default 1,
+  label    text    not null,
+  active   boolean not null default true
+);
+
 -- The auto-generated constraint name in PostgreSQL is plans_interval_check.
 ALTER TABLE public.plans DROP CONSTRAINT IF EXISTS plans_interval_check;
 
