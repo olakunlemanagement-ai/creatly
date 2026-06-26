@@ -244,32 +244,26 @@ function CategoryStrip({ navCategories }: { navCategories: NavCategory[] }) {
 export function HeaderClient({ auth, navCategories }: HeaderClientProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
-  const isHome = pathname === "/";
 
-  // On home page: hidden until scrolled past the hero; on all other pages: always visible.
-  const [scrolled, setScrolled] = useState(false);
+  const [visible, setVisible] = useState(pathname !== '/');
 
   useEffect(() => {
-    if (!isHome) {
-      // Reset so there is no visible-header flash when the user returns to /
-      setScrolled(false);
+    if (pathname !== '/') {
+      setVisible(true);
       return;
     }
 
-    function getHeroHeight() {
-      return document.getElementById("landing-hero")?.offsetHeight ?? 0;
-    }
+    const hero = document.getElementById('hero-section');
+    if (!hero) return;
 
-    function onScroll() {
-      setScrolled(window.scrollY >= getHeroHeight());
-    }
+    const handleScroll = () => {
+      const heroBottom = hero.getBoundingClientRect().bottom;
+      setVisible(heroBottom <= 0);
+    };
 
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [isHome]);
-
-  const headerVisible = !isHome || scrolled;
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [pathname]);
 
   return (
     <>
@@ -283,7 +277,7 @@ export function HeaderClient({ auth, navCategories }: HeaderClientProps) {
       <header
         className={[
           "fixed inset-x-0 top-0 z-50 transition-transform duration-300",
-          headerVisible ? "translate-y-0" : "-translate-y-full",
+          visible ? "translate-y-0" : "-translate-y-full",
         ].join(" ")}
       >
         {/* ── TOP BAR ── */}
