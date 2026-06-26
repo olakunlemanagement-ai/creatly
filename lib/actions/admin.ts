@@ -4,6 +4,7 @@ import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { hasPermission } from "@/lib/permissions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { APP_NAME, APP_URL } from "@/lib/config";
 import {
@@ -19,31 +20,44 @@ import {
   type UpdateCategoryInput,
 } from "@/lib/validations/admin";
 
-// Shared guard: confirms the caller is authenticated and has admin-level access.
-// Both 'admin' and 'super_admin' pass this check.
-async function requireAdmin(): Promise<{ adminId: string } | { error: string }> {
+// ─── Permission guards ─────────────────────────────────────────────────────
+//
+// requirePermission(p) — caller must be authenticated AND hold permission p
+//   in their admin_team role (or the wildcard '*').
+//
+// requireSuperAdmin() — caller must hold '*' (only super_admin role has this).
+
+async function requirePermission(
+  permission: string,
+): Promise<{ adminId: string } | { error: string }> {
   const auth = await getAuthenticatedUser();
   if (!auth) return { error: "Not authenticated." };
-  const { role } = auth.profile;
-  if (role !== "admin" && role !== "super_admin") return { error: "Forbidden." };
+
+  const allowed = await hasPermission(auth.user.id, permission);
+  if (!allowed) return { error: "Forbidden." };
+
   return { adminId: auth.user.id };
 }
 
-// Stricter guard: only super_admin passes.
-async function requireSuperAdmin(): Promise<{ adminId: string; adminEmail: string } | { error: string }> {
+async function requireSuperAdmin(): Promise<
+  { adminId: string; adminEmail: string } | { error: string }
+> {
   const auth = await getAuthenticatedUser();
   if (!auth) return { error: "Not authenticated." };
-  if (auth.profile.role !== "super_admin") return { error: "Forbidden." };
+
+  // super_admin is the only role with wildcard permission '*'
+  const allowed = await hasPermission(auth.user.id, "*");
+  if (!allowed) return { error: "Forbidden." };
+
   return { adminId: auth.user.id, adminEmail: auth.user.email };
 }
 
-// approveResource — sets review_status='approved', status='published'.
-// Uses admin client: RLS blocks non-admin resource updates.
-// Identity is verified above before admin client touches the DB.
+// ─── Review queue ──────────────────────────────────────────────────────────
+
 export async function approveResource(
   resourceId: string,
 ): Promise<{ error?: string }> {
-  const guard = await requireAdmin();
+  const guard = await requirePermission("review_queue.write");
   if ("error" in guard) return { error: guard.error };
 
   const parsed = approveResourceSchema.safeParse({ resourceId });
@@ -60,7 +74,7 @@ export async function approveResource(
       rejection_reason: null,
     })
     .eq("id", parsed.data.resourceId)
-    .eq("review_status", "submitted"); // guard: only submitted assets can be approved
+    .eq("review_status", "submitted");
 
   if (error) {
     console.error("[approveResource] failed", { message: error.message, resourceId });
@@ -71,15 +85,11 @@ export async function approveResource(
   return {};
 }
 
-// rejectResource — sets review_status='rejected' with a mandatory reason.
-// Creator will see the reason in Studio and can resubmit after addressing it.
-// Uses admin client: RLS blocks non-admin resource updates.
-// Identity is verified above before admin client touches the DB.
 export async function rejectResource(
   resourceId: string,
   reason: string,
 ): Promise<{ error?: string }> {
-  const guard = await requireAdmin();
+  const guard = await requirePermission("review_queue.write");
   if ("error" in guard) return { error: guard.error };
 
   const parsed = rejectResourceSchema.safeParse({ resourceId, reason });
@@ -98,7 +108,7 @@ export async function rejectResource(
       rejection_reason: parsed.data.reason,
     })
     .eq("id", parsed.data.resourceId)
-    .eq("review_status", "submitted"); // guard: only submitted assets can be rejected
+    .eq("review_status", "submitted");
 
   if (error) {
     console.error("[rejectResource] failed", { message: error.message, resourceId });
@@ -124,7 +134,7 @@ export async function createCreator(
   data: CreateCreatorInput,
   avatarFormData?: FormData,
 ): Promise<{ error?: string; id?: string }> {
-  const guard = await requireAdmin();
+  const guard = await requirePermission("creators.write");
   if ("error" in guard) return { error: guard.error };
 
   const parsed = createCreatorSchema.safeParse(data);
@@ -179,7 +189,7 @@ export async function updateCreator(
   data: UpdateCreatorInput,
   avatarFormData?: FormData,
 ): Promise<{ error?: string }> {
-  const guard = await requireAdmin();
+  const guard = await requirePermission("creators.write");
   if ("error" in guard) return { error: guard.error };
 
   const parsed = updateCreatorSchema.safeParse(data);
@@ -236,7 +246,7 @@ export async function updateCreator(
 
 // Soft-delete: set is_public = false so creator is hidden but resources still reference them.
 export async function softDeleteCreator(id: string): Promise<{ error?: string }> {
-  const guard = await requireAdmin();
+  const guard = await requirePermission("creators.write");
   if ("error" in guard) return { error: guard.error };
 
   if (!id) return { error: "Invalid ID." };
@@ -261,7 +271,7 @@ export async function softDeleteCreator(id: string): Promise<{ error?: string }>
 export async function createCategory(
   data: CreateCategoryInput,
 ): Promise<{ error?: string; id?: string }> {
-  const guard = await requireAdmin();
+  const guard = await requirePermission("categories.write");
   if ("error" in guard) return { error: guard.error };
 
   const parsed = createCategorySchema.safeParse(data);
@@ -301,7 +311,7 @@ export async function createCategory(
 export async function updateCategory(
   data: UpdateCategoryInput,
 ): Promise<{ error?: string }> {
-  const guard = await requireAdmin();
+  const guard = await requirePermission("categories.write");
   if ("error" in guard) return { error: guard.error };
 
   const parsed = updateCategorySchema.safeParse(data);
@@ -339,7 +349,7 @@ export async function moveCategoryOrder(
   id: string,
   direction: "up" | "down",
 ): Promise<{ error?: string }> {
-  const guard = await requireAdmin();
+  const guard = await requirePermission("categories.write");
   if ("error" in guard) return { error: guard.error };
 
   const admin = createAdminClient();
@@ -374,19 +384,23 @@ export async function moveCategoryOrder(
 // ─── Admin team management (super_admin only) ──────────────────────────────
 
 const inviteAdminSchema = z.object({
-  email: z.string().email("Enter a valid email address."),
+  email:  z.string().email("Enter a valid email address."),
+  roleId: z.string().uuid("Invalid role ID."),
 });
 
-export async function inviteAdmin(email: string): Promise<{ error?: string }> {
+export async function inviteAdmin(
+  email: string,
+  roleId: string,
+): Promise<{ error?: string }> {
   const guard = await requireSuperAdmin();
   if ("error" in guard) return { error: guard.error };
 
-  const parsed = inviteAdminSchema.safeParse({ email });
-  if (!parsed.success) return { error: parsed.error.errors[0]?.message ?? "Invalid email." };
+  const parsed = inviteAdminSchema.safeParse({ email, roleId });
+  if (!parsed.success) return { error: parsed.error.errors[0]?.message ?? "Invalid input." };
 
   const admin = createAdminClient();
 
-  // Reject if this email already has an admin-level role
+  // Reject if this email already holds an admin-level role
   const { data: existing } = await admin
     .from("profiles")
     .select("role")
@@ -397,6 +411,17 @@ export async function inviteAdmin(email: string): Promise<{ error?: string }> {
     return { error: "That user is already an admin." };
   }
 
+  // Resolve the role label for the invite email
+  const { data: role } = await admin
+    .from("admin_roles")
+    .select("id, label, name")
+    .eq("id", parsed.data.roleId)
+    .maybeSingle();
+
+  if (!role) return { error: "Invalid role selected." };
+  // Protect against inviting someone directly to super_admin via the UI
+  if (role.name === "super_admin") return { error: "Cannot invite to super_admin via this form." };
+
   const token = randomBytes(32).toString("hex");
 
   const { error: insertError } = await admin
@@ -405,6 +430,7 @@ export async function inviteAdmin(email: string): Promise<{ error?: string }> {
       email: parsed.data.email,
       token,
       invited_by: guard.adminId,
+      role_id: parsed.data.roleId,
     });
 
   if (insertError) {
@@ -416,6 +442,7 @@ export async function inviteAdmin(email: string): Promise<{ error?: string }> {
   await sendAdminInviteEmail({
     to: parsed.data.email,
     fromEmail: guard.adminEmail,
+    roleLabel: role.label,
     acceptUrl,
   });
 
@@ -426,6 +453,7 @@ export async function inviteAdmin(email: string): Promise<{ error?: string }> {
 async function sendAdminInviteEmail(opts: {
   to: string;
   fromEmail: string;
+  roleLabel: string;
   acceptUrl: string;
 }): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
@@ -443,13 +471,13 @@ async function sendAdminInviteEmail(opts: {
       body: JSON.stringify({
         from: `${APP_NAME} <noreply@joincreatly.com>`,
         to: opts.to,
-        subject: `You've been invited to join ${APP_NAME} as an admin`,
+        subject: `You've been invited to join ${APP_NAME} as ${opts.roleLabel}`,
         html: `
-          <p>${opts.fromEmail} has invited you to become an admin on ${APP_NAME}.</p>
+          <p>${opts.fromEmail} has invited you to become a <strong>${opts.roleLabel}</strong> on ${APP_NAME}.</p>
           <p>
             <a href="${opts.acceptUrl}"
                style="background:#1a3d2f;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;">
-              Accept admin invite
+              Accept invite
             </a>
           </p>
           <p style="color:#888;font-size:12px;">
@@ -476,25 +504,37 @@ export async function removeAdmin(userId: string): Promise<{ error?: string }> {
 
   const admin = createAdminClient();
 
-  // Only demote 'admin' — never allow removing another super_admin
-  const { data: target } = await admin
-    .from("profiles")
-    .select("role")
-    .eq("id", parsed.data.userId)
+  // Fetch their admin_team row to check their role before removal
+  const { data: teamRow } = await admin
+    .from("admin_team")
+    .select("id, admin_roles(name)")
+    .eq("user_id", parsed.data.userId)
     .maybeSingle();
 
-  if (!target) return { error: "User not found." };
-  if (target.role === "super_admin") return { error: "Cannot remove a super admin." };
-  if (target.role !== "admin") return { error: "User is not an admin." };
+  if (!teamRow) return { error: "User is not in the admin team." };
 
-  const { error } = await admin
+  const roleName = (teamRow.admin_roles as unknown as { name: string } | null)?.name;
+  if (roleName === "super_admin") return { error: "Cannot remove a super admin." };
+
+  // Delete admin_team row, then demote profile role
+  const { error: deleteError } = await admin
+    .from("admin_team")
+    .delete()
+    .eq("user_id", parsed.data.userId);
+
+  if (deleteError) {
+    console.error("[removeAdmin] delete error:", deleteError);
+    return { error: "Could not remove admin. Please try again." };
+  }
+
+  const { error: roleError } = await admin
     .from("profiles")
     .update({ role: "user", updated_at: new Date().toISOString() })
     .eq("id", parsed.data.userId);
 
-  if (error) {
-    console.error("[removeAdmin] update error:", error);
-    return { error: "Could not remove admin. Please try again." };
+  if (roleError) {
+    console.error("[removeAdmin] role update error:", roleError);
+    return { error: "Removed from team but could not demote role. Contact support." };
   }
 
   revalidatePath("/admin/team");
@@ -518,7 +558,7 @@ export async function acceptAdminInvite(token: string): Promise<{ error?: string
 
   const { data: invite } = await adminDb
     .from("admin_invites")
-    .select("id, email, expires_at, used_at")
+    .select("id, email, expires_at, used_at, role_id")
     .eq("token", parsed.data.token)
     .maybeSingle();
 
@@ -529,20 +569,53 @@ export async function acceptAdminInvite(token: string): Promise<{ error?: string
     return { error: `This invite was sent to ${invite.email}. Sign in with that address.` };
   }
 
-  // Mark token consumed before changing role (prevents double-use on retry)
+  // Resolve the assigned role (null role_id falls back to the legacy plain 'admin' path)
+  let roleName: string | null = null;
+  let roleId: string | null = invite.role_id ?? null;
+
+  if (roleId) {
+    const { data: role } = await adminDb
+      .from("admin_roles")
+      .select("id, name")
+      .eq("id", roleId)
+      .maybeSingle();
+    if (role) roleName = role.name;
+    else roleId = null; // role deleted after invite was issued
+  }
+
+  // Mark token consumed before making any changes (prevents double-use on retry)
   await adminDb
     .from("admin_invites")
     .update({ used_at: new Date().toISOString() })
     .eq("id", invite.id);
 
+  // Set profiles.role:
+  //   super_admin role → 'super_admin' (so middleware fast-guard keeps working)
+  //   everything else  → 'admin'
+  const profileRole = roleName === "super_admin" ? "super_admin" : "admin";
+
   const { error: roleError } = await adminDb
     .from("profiles")
-    .update({ role: "admin", updated_at: new Date().toISOString() })
+    .update({ role: profileRole, updated_at: new Date().toISOString() })
     .eq("id", auth.user.id);
 
   if (roleError) {
     console.error("[acceptAdminInvite] role update error:", roleError);
     return { error: "Could not activate your admin account. Contact the team." };
+  }
+
+  // Insert into admin_team if a role is attached to the invite
+  if (roleId) {
+    const { error: teamError } = await adminDb
+      .from("admin_team")
+      .insert({ user_id: auth.user.id, role_id: roleId });
+
+    if (teamError) {
+      // Non-fatal if row already exists (idempotent re-accept guard)
+      if (!teamError.message.includes("duplicate")) {
+        console.error("[acceptAdminInvite] admin_team insert error:", teamError);
+      }
+    }
   }
 
   return {};

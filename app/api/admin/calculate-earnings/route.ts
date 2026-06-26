@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { hasPermission } from "@/lib/permissions";
 import { calculateMonthlyEarnings } from "@/lib/earnings";
 import { formatNaira } from "@/lib/format";
 
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
   if (!auth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  if (auth.profile.role !== "admin" && auth.profile.role !== "super_admin") {
+  if (!(await hasPermission(auth.user.id, "earnings.write"))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

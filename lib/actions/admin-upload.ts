@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { hasPermission } from "@/lib/permissions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   adminUploadDetailsSchema,
@@ -13,10 +14,11 @@ import {
   splitCsv,
 } from "@/lib/validations/upload";
 
-async function requireAdmin(): Promise<{ adminId: string } | { error: string }> {
+async function requireResourceWrite(): Promise<{ adminId: string } | { error: string }> {
   const auth = await getAuthenticatedUser();
   if (!auth) return { error: "Not authenticated." };
-  if (auth.profile.role !== "admin") return { error: "Forbidden." };
+  const allowed = await hasPermission(auth.user.id, "resources.write");
+  if (!allowed) return { error: "Forbidden." };
   return { adminId: auth.user.id };
 }
 
@@ -57,7 +59,7 @@ export async function adminCreateResource(
   formData: FormData,
 ): Promise<{ error?: string; slug?: string }> {
   // 1. AUTH + ROLE
-  const guard = await requireAdmin();
+  const guard = await requireResourceWrite();
   if ("error" in guard) return { error: guard.error };
 
   // 2. VALIDATE metadata
@@ -169,7 +171,7 @@ export async function adminUpdateResource(
   id: string,
   formData: FormData,
 ): Promise<{ error?: string }> {
-  const guard = await requireAdmin();
+  const guard = await requireResourceWrite();
   if ("error" in guard) return { error: guard.error };
 
   const rawDetails = {
@@ -233,7 +235,7 @@ export async function adminToggleFeatured(
   id: string,
   isFeatured: boolean,
 ): Promise<{ error?: string }> {
-  const guard = await requireAdmin();
+  const guard = await requireResourceWrite();
   if ("error" in guard) return { error: guard.error };
 
   const admin = createAdminClient();
@@ -253,7 +255,7 @@ export async function adminToggleStatus(
   id: string,
   status: "published" | "draft",
 ): Promise<{ error?: string }> {
-  const guard = await requireAdmin();
+  const guard = await requireResourceWrite();
   if ("error" in guard) return { error: guard.error };
 
   const admin = createAdminClient();
@@ -279,7 +281,7 @@ export async function adminToggleStatus(
 
 // Soft-delete: set status='archived'
 export async function adminArchiveResource(id: string): Promise<{ error?: string }> {
-  const guard = await requireAdmin();
+  const guard = await requireResourceWrite();
   if ("error" in guard) return { error: guard.error };
 
   const admin = createAdminClient();

@@ -45,6 +45,41 @@ export type CreatorEarningsStatus = (typeof CREATOR_EARNINGS_STATUS)[number];
 export const CREATOR_PAYOUT_STATUS = ["pending", "success", "failed", "reversed"] as const;
 export type CreatorPayoutStatus = (typeof CREATOR_PAYOUT_STATUS)[number];
 
+export const ADMIN_ROLE_NAMES = [
+  "super_admin",
+  "content_admin",
+  "creator_admin",
+  "support_admin",
+  "finance_admin",
+  "analytics_admin",
+] as const;
+export type AdminRoleName = (typeof ADMIN_ROLE_NAMES)[number];
+
+export const ADMIN_PERMISSIONS = [
+  "*",
+  "resources.read",
+  "resources.write",
+  "resources.delete",
+  "categories.read",
+  "categories.write",
+  "creators.read",
+  "creators.write",
+  "review_queue.read",
+  "review_queue.write",
+  "users.read",
+  "users.write",
+  "subscriptions.read",
+  "subscriptions.write",
+  "payments.read",
+  "earnings.read",
+  "earnings.write",
+  "payouts.read",
+  "payouts.write",
+  "analytics.read",
+  "notifications.write",
+] as const;
+export type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];
+
 // ============================================================
 // SUPABASE GENERATED TYPES (below — do not edit by hand)
 // ============================================================
