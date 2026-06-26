@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { APP_NAME } from "@/lib/config";
 import { env } from "@/lib/env";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { hasPermission } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { ReviewCard } from "@/components/admin/ReviewCard";
 
@@ -30,8 +29,8 @@ export default async function AdminReviewPage() {
   const auth = await getAuthenticatedUser();
   if (!auth) notFound();
 
-  const allowed = await hasPermission(auth.user.id, "review_queue.read");
-  if (!allowed) notFound();
+  const { role } = auth.profile;
+  if (role !== "admin" && role !== "super_admin") notFound();
 
   const supabase = await createClient();
 
