@@ -10,6 +10,7 @@ import {
   FileBox,
   ClipboardList,
   BarChart3,
+  Wallet,
   Menu,
   X,
   ShieldCheck,
@@ -33,6 +34,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/resources", label: "Resources", icon: FileBox },
   { href: "/admin/review", label: "Review Queue", icon: ClipboardList },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/admin/earnings", label: "Earnings", icon: Wallet },
 ];
 
 // Dark forest brand colour for the admin sidebar
