@@ -4,7 +4,7 @@ import { APP_NAME, APP_TAGLINE } from "@/lib/config";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import type { ResourceCardData } from "@/components/resource/ResourceCard";
-import type { Category } from "@/types/database";
+import type { CategoryTileData } from "@/components/resource/CategoryTiles";
 
 import { LandingHero } from "@/components/landing/LandingHero";
 import { TrustStats } from "@/components/landing/TrustStats";
@@ -35,7 +35,7 @@ export default async function LandingPage() {
       .eq("is_active", true)
       .eq("level", 1)
       .order("sort_order")
-      .returns<Pick<Category, "id" | "name" | "slug">[]>(),
+      .returns<CategoryTileData[]>(),
 
     supabase
       .from("resources")

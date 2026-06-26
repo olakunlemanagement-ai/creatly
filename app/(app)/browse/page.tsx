@@ -7,6 +7,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { browseParamsSchema } from "@/lib/validations/browse";
 import { BrowseHero } from "@/components/resource/BrowseHero";
 import { FeaturedStrip } from "@/components/resource/FeaturedStrip";
+import { CategoryTiles, type CategoryTileData } from "@/components/resource/CategoryTiles";
 import { SortControl } from "@/components/resource/SortControl";
 import { CategoryFilterSidebar } from "@/components/resource/CategoryFilterSidebar";
 import { MobileFilterClientWrapper } from "@/components/resource/MobileFilterClientWrapper";
@@ -158,6 +159,29 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     resourceQuery = resourceQuery.order("created_at", { ascending: false });
   }
 
+  // ── Fetch level-1 categories with resource counts (for tile grid) ──────────
+  const { data: level1Cats } = !isFiltered
+    ? await supabase
+        .from("categories")
+        .select("id, name, slug")
+        .eq("is_active", true)
+        .eq("level", 1)
+        .order("sort_order")
+        .returns<CategoryTileData[]>()
+    : { data: [] as CategoryTileData[] };
+
+  // Append resource counts per category
+  const level1CatTiles: CategoryTileData[] = await Promise.all(
+    (level1Cats ?? []).map(async (cat) => {
+      const { count: rc } = await supabase
+        .from("resources")
+        .select("id", { count: "exact", head: true })
+        .eq("category_id", cat.id)
+        .eq("status", "published");
+      return { ...cat, resource_count: rc ?? 0 };
+    }),
+  );
+
   const [{ data: featuredResources }, { data: resources, count }, { data: favouriteRows }] =
     await Promise.all([
       isFiltered
@@ -198,6 +222,18 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
           activeCategory={categorySlug ?? null}
         />
       </Suspense>
+
+      {/* ── Category tiles (shown only on unfiltered landing view) ── */}
+      {!isFiltered && level1CatTiles.length > 0 && (
+        <div className="border-b border-border bg-muted/30 px-4 py-8 sm:px-6">
+          <div className="mx-auto max-w-7xl">
+            <p className="mb-4 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+              {"// Browse by category"}
+            </p>
+            <CategoryTiles categories={level1CatTiles} activeCategory={null} />
+          </div>
+        </div>
+      )}
 
       {/* ── Two-column layout: sidebar + content ── */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
