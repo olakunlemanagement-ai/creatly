@@ -20,6 +20,7 @@ import {
 import { Logo } from "@/components/brand/Logo";
 import { LogoutButton } from "@/components/shared/LogoutButton";
 import { useSubscription } from "@/hooks/use-subscription";
+import { DashboardFooter } from "@/components/dashboard/DashboardFooter";
 
 interface NavItem {
   href: string;
@@ -244,6 +245,7 @@ export function DashboardShell({
         {/* Mobile spacer for top bar */}
         <div className="h-14 lg:hidden" />
         <main className="flex-1">{children}</main>
+        <DashboardFooter />
       </div>
     </div>
   );

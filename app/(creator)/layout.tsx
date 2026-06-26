@@ -1,4 +1,5 @@
 import { CreatorHeader } from "@/components/nav/CreatorHeader";
+import { CreatorFooter } from "@/components/creator/CreatorFooter";
 
 export default function CreatorGroupLayout({
   children,
@@ -11,6 +12,7 @@ export default function CreatorGroupLayout({
       <main id="main-content" className="flex-1 pt-16 lg:pt-[6.5rem]">
         {children}
       </main>
+      <CreatorFooter />
     </div>
   );
 }
