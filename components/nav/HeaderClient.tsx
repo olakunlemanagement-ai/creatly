@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Menu, ChevronDown } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
@@ -243,27 +243,6 @@ function CategoryStrip({ navCategories }: { navCategories: NavCategory[] }) {
 
 export function HeaderClient({ auth, navCategories }: HeaderClientProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const pathname = usePathname();
-
-  const [visible, setVisible] = useState(pathname !== '/');
-
-  useEffect(() => {
-    if (pathname !== '/') {
-      setVisible(true);
-      return;
-    }
-
-    const hero = document.getElementById('hero-section');
-    if (!hero) return;
-
-    const handleScroll = () => {
-      const heroBottom = hero.getBoundingClientRect().bottom;
-      setVisible(heroBottom <= 0);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [pathname]);
 
   return (
     <>
@@ -274,12 +253,7 @@ export function HeaderClient({ auth, navCategories }: HeaderClientProps) {
         Skip to content
       </a>
 
-      <header
-        className={[
-          "fixed inset-x-0 top-0 z-50 transition-transform duration-300",
-          visible ? "translate-y-0" : "-translate-y-full",
-        ].join(" ")}
-      >
+      <header className="sticky top-0 z-50 w-full">
         {/* ── TOP BAR ── */}
         <div className="border-b border-stone-200 bg-[#FAF4E9]">
           <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-6">
