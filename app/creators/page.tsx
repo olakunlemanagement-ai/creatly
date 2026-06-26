@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { APP_NAME } from "@/lib/config";
 import { SiteFooter } from "@/components/landing/SiteFooter";
+import { CreatorsNavbar } from "@/components/nav/CreatorsNavbar";
 
 export const metadata: Metadata = {
   title: `For Creators — ${APP_NAME}`,
@@ -48,6 +49,7 @@ const FAQS = [
 export default function CreatorsLandingPage() {
   return (
     <>
+      <CreatorsNavbar />
       <main id="main-content">
         {/* Hero */}
         <section className="bg-brand-green-900 px-5 pb-24 pt-32">
@@ -85,7 +87,7 @@ export default function CreatorsLandingPage() {
         </section>
 
         {/* How it works */}
-        <section className="bg-cream-50 px-5 py-20">
+        <section id="how-it-works" className="bg-cream-50 px-5 py-20">
           <div className="mx-auto max-w-4xl">
             <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
               {"// How it works"}

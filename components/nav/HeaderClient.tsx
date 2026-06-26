@@ -256,8 +256,12 @@ export function HeaderClient({ auth, navCategories }: HeaderClientProps) {
       return;
     }
 
+    function getHeroHeight() {
+      return document.getElementById("landing-hero")?.offsetHeight ?? 0;
+    }
+
     function onScroll() {
-      setScrolled(window.scrollY >= 80);
+      setScrolled(window.scrollY >= getHeroHeight());
     }
 
     onScroll();
