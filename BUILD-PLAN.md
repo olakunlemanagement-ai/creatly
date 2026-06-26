@@ -2536,4 +2536,350 @@ Payout processing is manual (admin-triggered) for now — automated scheduling (
 
 ---
 
+CORRECTION PASS 1 ⬜
+
+
+⚙️ AUTONOMOUS RUN MODE
+
+Execute every item in order. Build + self-review + one commit per item + /clear between items. Log blockers to BLOCKERS.md. STOP at end of this pass.
+
+After completing ALL items, output a checklist of every item with ✅ done or ❌ blocked + reason.
+
+
+
+
+CP1.1 — Admin role selector: show roles list ⬜
+
+The role dropdown on /admin/team invite form is not showing the seeded roles.
+
+Fix:
+
+
+Query admin_roles table server-side in the /admin/team page and pass roles as props to the invite form client component
+Confirm the native <select> renders all non-super_admin roles with label + description
+Verify admin_roles table has data: select * from public.admin_roles; — if empty, re-run the seed inserts from the RBAC migration
+Test: open invite form → dropdown shows Content Admin, Creator Admin, Support Admin, Finance Admin, Analytics Admin
+
+
+Commit: fix(admin): seed admin_roles + pass roles to invite form select
+
+
+CP1.2 — Update pricing plans ⬜
+
+New pricing (all in integer kobo):
+
+tsexport const PLANS = {
+  monthly:       { id: 'monthly',       kobo: 1000000,  label: 'Monthly',       description: 'Unlimited downloads for 1 month',   duration: '1 month'  },
+  quarterly:     { id: 'quarterly',     kobo: 2700000,  label: '3 Months',      description: 'Unlimited downloads for 3 months',  duration: '3 months', savings: 'Save ₦3,000' },
+  biannual:      { id: 'biannual',      kobo: 5000000,  label: '6 Months',      description: 'Unlimited downloads for 6 months',  duration: '6 months', savings: 'Save ₦10,000' },
+  annual:        { id: 'annual',        kobo: 10000000, label: 'Annual',         description: 'Unlimited downloads for 1 year',    duration: '1 year',   savings: 'Save ₦20,000', featured: true },
+} as const
+
+
+New migration to update plans table (deactivate old Cruise plans, insert new ones)
+Update /pricing page: 4 cards, annual highlighted, savings badges shown on 3/6/12 month plans
+Update landing page pricing teaser
+Update /billing page to reference new plan IDs
+Update use-subscription hook
+
+
+Commit: feat(pricing): update to 4-tier pricing — 10k/27k/50k/100k
+
+
+CP1.3 — Pricing page redesign ⬜ (design-led)
+
+Current pricing page feels bland. Redesign with energy and colour, referencing Envato Elements pricing page style.
+
+Design direction:
+
+
+Hero section: bold headline "Choose your plan", mono eyebrow, terracotta accent
+Plan cards: larger, more visual — featured (Annual) card is notably bigger with a forest green background + cream text + terracotta "Most Popular" badge
+Savings badges: prominent, coloured (terracotta pill)
+Feature list per plan: checkmarks in forest green, clear hierarchy
+A comparison table below cards (what's included in all plans)
+FAQ accordion at bottom
+Animated reveal on scroll (existing motion primitives)
+Mobile: cards stack, featured card first
+
+
+Commit: feat(pricing): redesign pricing page with bold editorial layout
+
+
+CP1.4 — Categories rebuild (Envato Elements reference) ⬜ (design-led)
+
+Reference: https://elements.envato.com/ for category layout and presentation.
+
+What to build:
+
+
+Browse page categories section: large visual tiles (not just text pills) — each category has a representative icon/illustration, name, and asset count
+Category tiles arranged in a responsive grid (2 cols mobile, 3-4 desktop)
+Hover: lift + terracotta accent border
+Each tile links to /browse?category=[slug]
+Pull from the real categories table (level 1 only for the main grid)
+Replace the current pill-style category row with this tile grid on the browse page and landing page category section
+Keep the sidebar filter tree for active browse filtering (that's separate)
+
+
+Commit: feat(browse): visual category tiles à la Envato Elements
+
+
+CP1.5 — Dashboard footer (users + creators) ⬜
+
+Add a minimal footer to dashboard and creator studio pages.
+
+Dashboard footer (components/dashboard/DashboardFooter.tsx):
+
+
+Slim, cream background, bottom of every /dashboard/* page
+Content: "© 2025 Creatly · joincreatly.com" | Links: Help, Privacy Policy, Terms | Support email from config
+Add to DashboardShell layout below main content
+
+
+Creator footer (components/nav/CreatorFooter.tsx):
+
+
+Same slim style, forest background, cream text
+Content: "© 2025 Creatly · joincreatly.com" | Links: Marketplace, Help, Terms
+Add to creator layout below main content
+
+
+Commit: feat(layout): add footer to dashboard and creator studio
+
+
+CP1.6 — Remove all placeholder/dummy data ⬜
+
+Audit and remove all hardcoded placeholder numbers and dummy content across the app.
+
+Specific locations to fix:
+
+
+Admin overview cards: replace any hardcoded numbers (e.g. "1,234 users", "89% growth") with real DB queries or "—" if no data
+Analytics page: replace placeholder chart data with real queries or empty states
+Creator earnings overview: replace "₦0" placeholders with real data or "No earnings yet"
+Any Math.random() or hardcoded stat in any component
+Landing page stats strip: if numbers are fake (e.g. "125M+ customers" from Bethmor), replace with real counts from DB or remove entirely
+Replace any Lorem Ipsum text anywhere in the app
+
+
+Commit: fix(data): remove all placeholder numbers and dummy content
+
+
+CP1.7 — Admin overview page complete overhaul ⬜
+
+Current issues: shows creator data instead of user data, cards not linked, missing key metrics.
+
+Rebuild /admin/overview as a proper admin command centre:
+
+Stats cards row 1 (all real DB queries, all linked):
+
+
+Total Users (consumers only, role='user') → links to /admin/users
+Total Creators (role='creator') → links to /admin/creators
+Active Subscribers (subscriptions.status='active') → links to /admin/subscriptions
+Inactive/Free Users (no active subscription) → links to /admin/users?filter=free
+
+
+Stats cards row 2:
+
+
+Total Resources Published → links to /admin/resources
+Pending Review (review_status='submitted') → links to /admin/review
+Total Downloads (all time) → links to /admin/analytics
+Total Revenue (sum of payment_references.kobo where status='success') → links to /admin/earnings
+
+
+Recent activity section:
+
+
+Last 5 signups (name, email, date, role)
+Last 5 downloads (resource, user, date)
+Last 5 payments (user, plan, amount, date)
+
+
+All cards linked to their respective pages.
+
+Commit: feat(admin): complete overview overhaul with real data and linked cards
+
+
+CP1.8 — Admin users list page ⬜
+
+New page: /admin/users — list of ALL users (not just creators):
+
+Table columns: Avatar, Name, Email, Role badge (user/creator/admin), Plan (active plan name or "Free"), Downloads count, Joined date, Status (active/inactive)
+
+Filters:
+
+
+By role: All, Consumers, Creators, Admins
+By subscription: All, Subscribed, Free
+Search by name or email
+
+
+Sort options: Date joined (newest/oldest), Downloads (highest/lowest), Name (A-Z/Z-A)
+
+Each row actions: View profile, View downloads, Deactivate account (super_admin only — see CP1.12)
+
+Commit: feat(admin): users list page with filters, sort, and subscription status
+
+
+CP1.9 — Admin creators list improvements ⬜
+
+Fix the existing /admin/creators page:
+
+
+Fetch real creator details — join creator_profiles + profiles + download counts + earnings
+Table columns: Avatar, Display name, Handle, Email (from profiles), Total uploads, Total downloads, Total earnings (kobo → ₦), Status badge, Joined date
+Contact details on edit page — add email (read-only, from profiles), phone (from profiles if set)
+Filters (right side of search bar):
+
+Sort by: Highest downloads, Highest earnings, Date joined (newest/oldest), A-Z name
+Filter by: Status (approved/suspended), Has uploads, No uploads
+
+
+
+Search by name or handle (existing)
+
+
+Commit: feat(admin): creators list with real data, contact details, earnings, and sort/filter
+
+
+CP1.10 — Admin subscriptions page ⬜
+
+New page: /admin/subscriptions — all subscription records:
+
+Table: User name/email, Plan, Status badge (active/inactive/cancelled), Start date, End/renewal date, Amount paid (₦), Paystack reference
+
+Filters: By status, By plan, Date range
+
+Summary cards at top: Active, Inactive, Cancelled, Total revenue this month
+
+Commit: feat(admin): subscriptions management page
+
+
+CP1.11 — Fix "Mark as featured" forbidden error ⬜
+
+Admin is getting a 403 when trying to toggle is_featured on resources.
+
+Fix:
+
+
+In the resource management server action that updates is_featured, check hasPermission(userId, 'resources.write') — currently may be checking the wrong permission or the admin_team row isn't being found
+Add debug: log the permission check result server-side
+Ensure the logged-in admin has resources.write permission (Content Admin or super_admin role)
+Test: toggle featured on a resource → should save without forbidden error
+
+
+Commit: fix(admin): resolve forbidden error on mark-as-featured
+
+
+CP1.12 — Deactivate account: super_admin only ⬜
+
+Account deactivation (both user and creator accounts) must be restricted to super_admin only.
+
+Fix:
+
+
+In any "Deactivate account" or "Delete user" server action in admin pages, replace hasPermission(userId, 'users.write') with a super_admin-only check
+UI: hide the deactivate button for non-super_admin admins (don't just disable — hide it)
+Show a "Deactivate" option in the users list (CP1.8) only for super_admin
+Deactivation sets profiles.role='user' and subscriptions.status='inactive' — does NOT delete the account (that's a separate nuclear option)
+
+
+Commit: fix(admin): restrict account deactivation to super_admin only
+
+
+CP1.13 — Fix /creator routing ⬜
+
+joincreatly.com/creator is redirecting to / instead of the creator dashboard.
+
+Fix:
+
+
+app/(creator)/creator/page.tsx should redirect to /creator/home (the creator dashboard home)
+Any URL starting with /creator/* should stay in the creator route group — verify middleware isn't redirecting /creator to /
+/creators (with s) = public marketing page — unaffected
+/creator (no s) = creator studio — must route to /creator/home
+Test all creator routes: /creator, /creator/home, /creator/assets, /creator/upload, /creator/earnings
+
+
+Commit: fix(creator): /creator routes to /creator/home not /
+
+
+CP1.14 — Google OAuth signup ⬜
+
+Add "Continue with Google" to signup and login pages.
+
+Scope:
+
+
+Enable Google provider in Supabase Dashboard → Authentication → Providers → Google (founder action — log in BLOCKERS.md with exact steps: create OAuth credentials in Google Cloud Console, add client ID + secret to Supabase)
+Add NEXT_PUBLIC_GOOGLE_CLIENT_ID to env schema (optional — Supabase handles OAuth, just needs the provider enabled)
+Add Google OAuth button to:
+
+/signup page (consumer): "Continue with Google" above the form divider
+/login page: "Continue with Google"
+/creator/signup page: "Continue with Google"
+/creator/login page: "Continue with Google"
+
+
+
+Server action: supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: NEXT_PUBLIC_APP_URL + '/auth/callback' } })
+After OAuth callback: check if user is new → route to /onboarding; returning user → /browse or /creator/home based on role
+Style: white button, Google logo (SVG), "Continue with Google" text — on-brand, not the default blue Google button
+
+
+BLOCKER: Requires Google Cloud Console OAuth setup + Supabase provider config. Log exact steps in BLOCKERS.md.
+
+Commit: feat(auth): Google OAuth signup and login
+
+
+CP1.15 — Fix download/upload storage cap ⬜
+
+Fix:
+
+
+In all upload flows (creator upload, admin resource upload), remove or raise the file size validation cap
+Set to 5GB (5_368_709_120 bytes) or read from env var MAX_UPLOAD_SIZE_BYTES (default 5GB)
+Update both client-side validation (error message shown to user) and server-side validation (Zod schema)
+For large files (>100MB), switch to Supabase resumable upload (TUS protocol):
+
+
+ts  // Use supabase.storage.from('resource-files').uploadToSignedUrl() with TUS
+  // or the standard upload with upsert for smaller files
+
+
+Add MAX_UPLOAD_SIZE_BYTES to lib/env.ts as optional (defaults to 5GB)
+Document in BLOCKERS.md: Supabase Pro plan required for files >50MB; free plan cap is 50MB
+
+
+Commit: fix(upload): raise file size cap to 5GB with resumable upload for large files
+
+
+Checklist output (Claude must produce this at the end)
+
+After completing all items, output:
+
+## CORRECTION PASS 1 — COMPLETION CHECKLIST
+
+CP1.1  Admin role selector shows roles          ✅/❌
+CP1.2  Pricing plans updated (10k/27k/50k/100k) ✅/❌
+CP1.3  Pricing page redesigned                  ✅/❌
+CP1.4  Category tiles (Envato style)            ✅/❌
+CP1.5  Dashboard + creator footer               ✅/❌
+CP1.6  Placeholder data removed                 ✅/❌
+CP1.7  Admin overview overhauled                ✅/❌
+CP1.8  Admin users list page                    ✅/❌
+CP1.9  Creators list improvements               ✅/❌
+CP1.10 Subscriptions page                       ✅/❌
+CP1.11 Mark as featured fixed                   ✅/❌
+CP1.12 Deactivate: super_admin only             ✅/❌
+CP1.13 /creator routing fixed                   ✅/❌
+CP1.14 Google OAuth                             ✅/❌ (may be blocked)
+CP1.15 Storage cap raised                       ✅/❌
+
+BLOCKERS:
+- List any items that need founder action
+
 *Keep this file updated: mark steps ✅ as they complete. The founder and engineering partner expand the "to be expanded" steps before they're started.*
