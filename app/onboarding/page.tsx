@@ -46,6 +46,7 @@ export default async function OnboardingPage() {
     .from("categories")
     .select("id, name")
     .eq("is_active", true)
+    .eq("level", 1)
     .order("sort_order")
     .returns<Pick<Category, "id" | "name">[]>();
 
