@@ -2024,7 +2024,7 @@ Guardrails: admin routes are ALWAYS double-gated — middleware AND server-side 
 Phase context: The admin tool lets the Creatly team seed and manage the catalogue — creators, categories, resources — and view basic analytics. The creator upload flow (Phase 1.10) handles creator-submitted assets; this phase handles internal/admin content management. The existing /admin/review queue (1.10.5) already exists — do not duplicate it, link to it from the admin nav.
 
 
-4.1 — Admin route group + role guard ⬜
+4.1 — Admin route group + role guard ✅
 
 Scope:
 
@@ -2056,7 +2056,7 @@ Commit: feat(admin): admin route group + role guard + shell layout.
 
 
 
-4.2 — Creator CRUD ⬜
+4.2 — Creator CRUD ✅
 
 Scope:
 app/(admin)/admin/creators/ — manage the creators table (the catalogue creator entity, not creator_profiles):
@@ -2080,7 +2080,7 @@ Commit: feat(admin): creator CRUD.
 
 
 
-4.3 — Category management ⬜
+4.3 — Category management ✅
 
 Scope:
 app/(admin)/admin/categories/:
@@ -2102,7 +2102,7 @@ Commit: feat(admin): category management.
 
 
 
-4.4 — Resource upload (admin) ⬜
+4.4 — Resource upload (admin) ✅
 
 Scope:
 app/(admin)/admin/resources/new/page.tsx — multi-step admin resource upload (similar to creator upload from 1.10.4 but with admin privileges — can set any creator, any status):
@@ -2148,7 +2148,7 @@ Commit: feat(admin): resource upload with file + preview + metadata.
 
 
 
-4.5 — Resource management ⬜
+4.5 — Resource management ✅
 
 Scope:
 app/(admin)/admin/resources/:
@@ -2178,7 +2178,7 @@ Commit: feat(admin): resource management list + edit + quick actions.
 
 
 
-4.6 — Analytics ⬜
+4.6 — Analytics ✅
 
 Scope:
 app/(admin)/admin/analytics/page.tsx — simple server-rendered analytics dashboard (no external analytics service — reads from our own DB):

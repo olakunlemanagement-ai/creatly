@@ -51,3 +51,27 @@ export const updateCategorySchema = createCategorySchema.partial().extend({
   id: z.string().uuid(),
 });
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
+
+// ── Admin resource upload ────────────────────────────────
+
+export const COMPATIBLE_SOFTWARE_OPTIONS = [
+  "Figma",
+  "Canva",
+  "Adobe Illustrator",
+  "After Effects",
+  "PowerPoint",
+  "Other",
+] as const;
+
+export const adminUploadDetailsSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters").max(120),
+  description: z.string().max(1000).optional(),
+  slug: z.string().min(2).max(80).regex(/^[a-z0-9-]+$/, "Slug may only contain lowercase letters, numbers, and hyphens"),
+  category_id: z.string().uuid("Please select a category"),
+  creator_id: z.string().uuid("Please select a creator"),
+  tags: z.string().max(200).optional(),
+  compatible_software: z.string().max(200).optional(),
+  is_featured: z.boolean(),
+  status: z.enum(["draft", "published"]),
+});
+export type AdminUploadDetailsInput = z.infer<typeof adminUploadDetailsSchema>;
