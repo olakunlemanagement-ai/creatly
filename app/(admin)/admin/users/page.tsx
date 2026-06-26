@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { APP_NAME } from "@/lib/config";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { hasPermission } from "@/lib/permissions";
+import { DeactivateUserButton } from "@/components/admin/DeactivateUserButton";
 import { ShieldAlert } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -43,7 +46,8 @@ export default async function AdminUsersPage({
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
   const offset = (page - 1) * PAGE_SIZE;
 
-  const supabase = await createClient();
+  const [auth, supabase] = await Promise.all([getAuthenticatedUser(), createClient()]);
+  const isSuperAdmin = auth ? await hasPermission(auth.user.id, "*") : false;
 
   // Build base query
   let query = supabase
@@ -225,12 +229,17 @@ export default async function AdminUsersPage({
                       {fmt(u.created_at)}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Link
-                        href={`/admin/users/${u.id}`}
-                        className="text-xs font-medium text-brand-green-700 hover:underline"
-                      >
-                        View →
-                      </Link>
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/admin/users/${u.id}`}
+                          className="text-xs font-medium text-brand-green-700 hover:underline"
+                        >
+                          View →
+                        </Link>
+                        {isSuperAdmin && !["admin", "super_admin", "banned"].includes(u.role) && (
+                          <DeactivateUserButton userId={u.id} userName={u.full_name ?? u.email} />
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

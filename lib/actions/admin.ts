@@ -491,6 +491,34 @@ async function sendAdminInviteEmail(opts: {
   }
 }
 
+// ─── User account management (super_admin only) ────────────────────────────
+
+const userIdSchema = z.object({ userId: z.string().uuid("Invalid user ID.") });
+
+// Deactivate a user account by setting their profile role to 'banned'.
+// Only super_admin may do this — the wildcard '*' check ensures that.
+export async function deactivateUser(userId: string): Promise<{ error?: string }> {
+  const guard = await requireSuperAdmin();
+  if ("error" in guard) return { error: guard.error };
+
+  const parsed = userIdSchema.safeParse({ userId });
+  if (!parsed.success) return { error: "Invalid user ID." };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({ role: "banned", updated_at: new Date().toISOString() })
+    .eq("id", parsed.data.userId);
+
+  if (error) {
+    console.error("[deactivateUser] failed", { message: error.message });
+    return { error: "Could not deactivate account. Please try again." };
+  }
+
+  revalidatePath("/admin/users");
+  return {};
+}
+
 const removeAdminSchema = z.object({
   userId: z.string().uuid("Invalid user ID."),
 });
