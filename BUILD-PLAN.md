@@ -2216,8 +2216,323 @@ Commit: feat(admin): analytics dashboard.
 
 
 
-## PHASE 5 — Creator Dashboard (Phase 2 public) ⬜
-Public onboarding, upload portal + review queue, earnings dashboard, payouts. *(Separate PRD addendum.)*
+PHASE 5 — Creator Earnings & Payouts ⬜
+
+
+⚙️ AUTONOMOUS RUN MODE — Phase 5 only
+
+Overrides the global "one step then STOP" rule for this phase only. Execute every step in order (5.1 → 5.5), build + self-review against acceptance criteria + one clean commit + /clear between steps, without stopping for prompts.
+
+Log blockers to BLOCKERS.md and continue. STOP at end of Phase 5.
+
+Guardrails: all money in integer kobo. Never float. Earnings calculations are server-side only — never trust client. Paystack Transfer API is the only writer of payout state. Admin client used only after getAuthenticatedUser() + role check. TS strict, no any. Zod-validate all inputs.
+
+
+
+Payout model (locked):
+
+
+70% to creators, 30% to platform per subscription revenue period
+Revenue pool = total subscription revenue collected in a period
+Each creator's share = (their download count / total downloads in period) × 70% of revenue pool
+Calculated monthly, stored in integer kobo
+Paid out via Paystack Transfer API (automated)
+Minimum payout threshold: ₦5,000 (500000 kobo) — creators below threshold carry over to next month
+
+
+
+5.1 — Earnings data model (migration) ⬜
+
+Scope:
+New timestamped migration:
+
+sql-- Creator bank accounts (for Paystack transfers)
+create table public.creator_bank_accounts (
+  id            uuid primary key default gen_random_uuid(),
+  creator_id    uuid not null references auth.users on delete cascade,
+  bank_code     text not null,        -- Paystack bank code
+  account_number text not null,
+  account_name  text not null,        -- verified account name from Paystack
+  bank_name     text not null,
+  is_default    boolean not null default true,
+  verified_at   timestamptz,
+  created_at    timestamptz not null default now(),
+  unique (creator_id, account_number, bank_code)
+);
+
+-- Monthly earnings snapshots (computed, append-only)
+create table public.creator_earnings (
+  id              uuid primary key default gen_random_uuid(),
+  creator_id      uuid not null references auth.users,
+  period_month    text not null,       -- 'YYYY-MM'
+  download_count  integer not null default 0,
+  total_downloads integer not null default 0,  -- platform total for that month
+  revenue_pool_kobo integer not null default 0, -- 70% of platform revenue for month
+  earnings_kobo   integer not null default 0,   -- creator's share (kobo)
+  status          text not null default 'pending'
+                  check (status in ('pending','paid','carried_over')),
+  created_at      timestamptz not null default now(),
+  unique (creator_id, period_month)
+);
+
+-- Payout records (Paystack Transfer API — append-only)
+create table public.creator_payouts (
+  id                  uuid primary key default gen_random_uuid(),
+  creator_id          uuid not null references auth.users,
+  bank_account_id     uuid not null references public.creator_bank_accounts,
+  amount_kobo         integer not null check (amount_kobo > 0),
+  paystack_transfer_code text,         -- from Paystack Transfer API response
+  paystack_recipient_code text,        -- Paystack transfer recipient
+  status              text not null default 'pending'
+                      check (status in ('pending','success','failed','reversed')),
+  period_months       text[] not null,  -- which earning periods this covers
+  initiated_at        timestamptz not null default now(),
+  settled_at          timestamptz,
+  failure_reason      text
+);
+
+-- RLS:
+-- creator_bank_accounts: owner read/write own; admin all
+-- creator_earnings: owner read own; admin all; no client insert/update (server only)
+-- creator_payouts: owner read own; admin all; no client insert (server only)
+alter table public.creator_bank_accounts enable row level security;
+alter table public.creator_earnings enable row level security;
+alter table public.creator_payouts enable row level security;
+
+create policy "owner" on public.creator_bank_accounts
+  for all using (auth.uid() = creator_id);
+create policy "admin" on public.creator_bank_accounts
+  for all using (public.is_admin());
+
+create policy "owner_read" on public.creator_earnings
+  for select using (auth.uid() = creator_id);
+create policy "admin" on public.creator_earnings
+  for all using (public.is_admin());
+
+create policy "owner_read" on public.creator_payouts
+  for select using (auth.uid() = creator_id);
+create policy "admin" on public.creator_payouts
+  for all using (public.is_admin());
+
+Acceptance criteria:
+
+
+Migration applies cleanly to remote.
+All 3 tables exist with correct constraints.
+RLS: creators read own rows only; no client writes to earnings/payouts.
+Types regenerated; pnpm typecheck pass.
+Commit: feat(earnings): creator earnings + payouts + bank accounts migration.
+
+
+
+5.2 — Bank account setup (creator) ⬜
+
+Scope:
+app/(creator)/creator/payouts/bank-account/page.tsx:
+
+
+Verify account via Paystack before saving:
+
+Form: bank name (dropdown from Paystack /bank endpoint — Nigerian banks list), account number (10 digits).
+On submit: call server action → POST https://api.paystack.co/bank/resolve?account_number=xxx&bank_code=xxx → returns account_name.
+Show verified account name to creator for confirmation ("Is this you? Adewale Okafor — GTBank").
+On confirm → insert creator_bank_accounts row with verified details.
+
+
+
+Show existing bank account if set; allow replacing it.
+Server action: PAYSTACK_SECRET_KEY server-side only; Zod-validate inputs; ownership-checked.
+
+
+Acceptance criteria:
+
+
+Bank account verification calls real Paystack resolve endpoint.
+Account name shown for confirmation before saving.
+Saved account appears on the page; can be updated.
+Server-side only; creator cannot set another creator's bank account.
+Commit: feat(earnings): creator bank account setup with Paystack verification.
+
+
+
+5.3 — Earnings calculation (server job) ⬜
+
+Scope:
+
+
+lib/earnings.ts — earnings calculation logic:
+
+
+ts   // calculateMonthlyEarnings(month: string) → void
+   // 1. Sum subscription revenue collected in the month from payment_references
+   //    (status='success', settled_at in month range) → revenue_pool_kobo
+   // 2. Apply 70% creator share: creator_pool = revenue_pool * 0.70 (integer kobo)
+   // 3. Count total downloads in the month from downloads table
+   // 4. For each creator with downloads that month:
+   //    - Count their downloads
+   //    - earnings = (their_downloads / total_downloads) * creator_pool
+   //    - Round down to nearest kobo (Math.floor)
+   // 5. Upsert creator_earnings rows (server only, admin client)
+   // 6. Carry over pending earnings < 500000 kobo from previous months
+
+
+app/api/admin/calculate-earnings/route.ts — POST, admin-only:
+
+Accepts { month: 'YYYY-MM' } (Zod-validated).
+Calls calculateMonthlyEarnings(month).
+Returns summary: total creators paid, total kobo distributed, platform share.
+Idempotent: re-running for the same month updates existing rows (upsert).
+
+
+
+Admin UI (/admin/earnings):
+
+Month picker, "Calculate earnings" button → calls the endpoint.
+Table: creator name, download count, earnings (kobo formatted as ₦), status.
+"Process payouts" button → triggers 5.4.
+
+
+
+
+
+Key rules:
+
+
+All arithmetic in integer kobo. Never float. Use Math.floor for division results.
+Platform keeps the remainder from rounding (never shortchange creators).
+Calculation is idempotent — safe to re-run.
+
+
+Acceptance criteria:
+
+
+calculateMonthlyEarnings correctly splits 70/30 in integer kobo.
+Per-creator share calculated proportionally from download counts.
+Minimum threshold (500000 kobo) enforced — below threshold → carried_over.
+Admin endpoint is admin-only, idempotent, Zod-validated.
+Admin UI shows earnings table + calculate button.
+Commit: feat(earnings): monthly earnings calculation + admin UI.
+
+
+
+5.4 — Paystack Transfer API (automated payouts) ⬜
+
+Scope:
+
+lib/payouts.ts — payout execution:
+
+ts// processPayouts(month: string) → PayoutSummary
+// For each creator_earnings row where status='pending' AND earnings_kobo >= 500000:
+// 1. Get creator's default bank account
+// 2. If no bank account → skip, log warning
+// 3. Create Paystack transfer recipient (POST /transferrecipient):
+//    { type: 'nuban', name, account_number, bank_code, currency: 'NGN' }
+//    → returns recipient_code
+// 4. Initiate transfer (POST /transfer):
+//    { source: 'balance', amount: earnings_kobo, recipient: recipient_code,
+//      reason: `Creatly earnings ${month}`, reference: uuid }
+//    → returns transfer_code, status
+// 5. Insert creator_payouts row
+// 6. Update creator_earnings status → 'paid'
+// Return summary: { processed, skipped, total_kobo }
+
+app/api/admin/process-payouts/route.ts — POST, admin-only:
+
+
+Accepts { month: 'YYYY-MM' }.
+Calls processPayouts(month).
+Returns summary.
+Idempotent: skip already-paid earnings.
+
+
+Paystack Transfer webhook — add to existing webhook handler (app/api/webhooks/paystack/route.ts):
+
+ts// transfer.success → update creator_payouts status='success', settled_at=now()
+// transfer.failed → update status='failed', failure_reason
+// transfer.reversed → update status='reversed'
+
+Env vars needed:
+
+PAYSTACK_SECRET_KEY=  # already exists
+# Paystack transfers require the secret key — no new vars needed
+# BUT: Paystack transfer feature must be enabled on the account
+# Log in BLOCKERS.md: enable transfers in Paystack Dashboard → Settings → Transfers
+
+Acceptance criteria:
+
+
+processPayouts creates real Paystack transfer recipients and initiates transfers.
+creator_payouts row inserted before transfer initiated (idempotency).
+Webhook handler updates payout status on transfer.success/failed/reversed.
+Already-paid earnings are skipped (idempotent).
+Creators without bank accounts are skipped with a logged warning.
+Admin endpoint is admin-only; all money in kobo.
+Commit: feat(earnings): Paystack Transfer API automated payouts.
+
+
+Watch for: Paystack Transfers must be enabled on the account (separate from regular payments). Log this in BLOCKERS.md as a founder action.
+
+
+5.5 — Creator earnings dashboard ⬜ (design-led)
+
+Scope:
+app/(creator)/creator/earnings/page.tsx — creator's earnings overview:
+
+
+Summary cards:
+
+Total earnings all time (sum of paid creator_earnings)
+This month's earnings (current period, pending)
+Pending payout (sum of carried_over + current pending above threshold)
+Total downloads all time
+
+
+
+Earnings history table:
+
+Month, download count, earnings (₦), status badge (Pending/Paid/Carried over), payout date if paid.
+Paginated, newest first.
+
+
+
+Bank account section:
+
+Shows current bank account (name, bank, masked account number).
+"Update bank account" → /creator/payouts/bank-account.
+Warning if no bank account set: "Add a bank account to receive payouts."
+
+
+
+Payout schedule info:
+
+"Payouts are processed on the 1st of each month for the previous month's earnings."
+"Minimum payout: ₦5,000. Earnings below this carry over to the next month."
+
+
+
+Add to creator navbar: "Earnings" link → /creator/earnings.
+
+
+Acceptance criteria:
+
+
+All summary cards show real data from creator_earnings + creator_payouts.
+Earnings history table correct, paginated.
+Bank account section shows current account or prompts to add one.
+Payout schedule info displayed.
+Earnings link in creator navbar.
+On-brand, mobile-first, Creatly design tokens.
+Commit: feat(earnings): creator earnings dashboard.
+
+
+
+BLOCKERS for Phase 5 (log in BLOCKERS.md)
+
+
+Enable Paystack Transfers: Paystack Dashboard → Settings → Transfers → Enable
+Paystack transfer feature requires a verified business account with sufficient balance
+First earnings calculation must be run manually by admin via /admin/earnings
+Payout processing is manual (admin-triggered) for now — automated scheduling (cron) is a future enhancement
 
 ---
 
