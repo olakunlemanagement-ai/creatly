@@ -10,6 +10,7 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { GoogleOAuthButton } from "@/components/auth/GoogleOAuthButton";
 
 import {
   Form,
@@ -202,6 +203,9 @@ export function LoginForm({
           </Button>
         </form>
       </Form>
+
+      {/* Google OAuth */}
+      <GoogleOAuthButton next={safeNext(next)} />
 
       {/* Footer link */}
       <p className="text-center text-sm text-muted-foreground">

@@ -11,6 +11,7 @@ import { signupSchema, type SignupInput } from "@/lib/validations/auth";
 import { createClient } from "@/lib/supabase/client";
 import { APP_NAME, APP_URL } from "@/lib/config";
 import { Button } from "@/components/ui/button";
+import { GoogleOAuthButton } from "@/components/auth/GoogleOAuthButton";
 
 import {
   Form,
@@ -252,6 +253,9 @@ export function SignupForm({ next }: { next?: string }) {
           </Button>
         </form>
       </Form>
+
+      {/* Google OAuth */}
+      <GoogleOAuthButton next="/browse" />
 
       {/* Footer link */}
       <p className="text-center text-sm text-muted-foreground">

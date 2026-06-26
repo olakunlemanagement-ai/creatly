@@ -214,4 +214,35 @@ Add these to the existing webhook subscription at:
 
 ---
 
+---
+
+## CP1.14 — Google OAuth Provider (BLOCKER)
+
+The `GoogleOAuthButton` component is wired up on `/login` and `/signup` and calls
+`supabase.auth.signInWithOAuth({ provider: "google" })`. The button is ready — but
+Google OAuth **will not work** until the following two steps are completed by the founder:
+
+### Step 1 — Create a Google Cloud OAuth 2.0 client
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials.
+2. Click **Create Credentials** → **OAuth 2.0 Client IDs**.
+3. Application type: **Web application**.
+4. Name: `Creatly`.
+5. Add Authorised JavaScript origins:
+   - `https://joincreatly.com`
+   - `http://localhost:3000`
+6. Add Authorised redirect URIs (copy from Supabase — step 2 below):
+   - `https://<your-supabase-project-ref>.supabase.co/auth/v1/callback`
+7. Click **Create**. Copy the **Client ID** and **Client Secret**.
+
+### Step 2 — Enable Google provider in Supabase
+
+1. Go to Supabase Dashboard → Authentication → Providers → Google.
+2. Toggle **Enabled** on.
+3. Paste the **Client ID** and **Client Secret** from Step 1.
+4. Copy the **Callback URL** shown by Supabase and paste it into Google Cloud Console (Step 1, item 6).
+5. Save.
+
+**No code change needed** — the button is already deployed. OAuth will activate as soon as the provider is enabled in Supabase.
+
 *Log resolutions here as: `✅ Resolved YYYY-MM-DD — <note>`*
