@@ -1,6 +1,7 @@
 import { getAuthenticatedUser } from "@/lib/auth";
 import { ok, fail } from "@/lib/api-response";
 import { createClient } from "@/lib/supabase/server";
+import { env } from "@/lib/env";
 
 export async function POST() {
   try {
@@ -21,24 +22,35 @@ export async function POST() {
     if (sub.cancel_at) return fail("conflict", "Subscription is already scheduled for cancellation.", 409);
 
     // 3. Paystack subscription disable (soft cancel — access continues to period end)
-    // TODO: replace stub once PAYSTACK_SECRET_KEY is available
-    // if (sub.paystack_sub_code && process.env.PAYSTACK_SECRET_KEY) {
-    //   const res = await fetch(
-    //     `https://api.paystack.co/subscription/disable`,
-    //     {
-    //       method: "POST",
-    //       headers: {
-    //         Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-    //         "Content-Type": "application/json",
-    //       },
-    //       body: JSON.stringify({ code: sub.paystack_sub_code, token: "<email_token>" }),
-    //     }
-    //   );
-    //   if (!res.ok) {
-    //     console.error("[billing/cancel] Paystack disable failed:", await res.text());
-    //     return fail("internal_error", "Could not cancel with Paystack. Please try again.", 502);
-    //   }
-    // }
+    // Only needed when there is a Paystack recurring subscription attached.
+    // One-time purchases (no sub code) are cancelled locally only.
+    if (sub.paystack_sub_code) {
+      // Fetch the subscription from Paystack to obtain the email_token required for disable.
+      const fetchRes = await fetch(
+        `https://api.paystack.co/subscription/${sub.paystack_sub_code}`,
+        { headers: { Authorization: `Bearer ${env.PAYSTACK_SECRET_KEY}` } }
+      );
+      const fetchData = (await fetchRes.json()) as { status: boolean; data?: { email_token?: string } };
+
+      if (!fetchData.status || !fetchData.data?.email_token) {
+        console.error("[billing/cancel] Could not fetch Paystack subscription:", fetchData);
+        return fail("internal_error", "Could not cancel with Paystack. Please try again.", 502);
+      }
+
+      const disableRes = await fetch("https://api.paystack.co/subscription/disable", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${env.PAYSTACK_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ code: sub.paystack_sub_code, token: fetchData.data.email_token }),
+      });
+
+      if (!disableRes.ok) {
+        console.error("[billing/cancel] Paystack disable failed:", await disableRes.text());
+        return fail("internal_error", "Could not cancel with Paystack. Please try again.", 502);
+      }
+    }
 
     // 4. Set cancel_at = current_period_end (access until period end — status stays 'active')
     // The webhook subscription.disable will set status='cancelled' when the period actually ends.

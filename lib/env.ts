@@ -14,11 +14,10 @@ const envSchema = z.object({
   SUPABASE_SECRET_KEY: z.string().min(1),
 
   // ── Paystack ────────────────────────────────────────────────────────────────
-  // Optional until keys are provisioned. Stubs are used when these are absent.
-  // BLOCKER: obtain from Paystack dashboard and set in .env.local + Vercel.
-  // TODO(paystack-keys): make required once PAYSTACK_SECRET_KEY is provisioned.
-  PAYSTACK_SECRET_KEY: z.string().min(1).optional(),
-  NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: z.string().min(1).optional(),
+  // SERVER ONLY — never expose PAYSTACK_SECRET_KEY to the client.
+  PAYSTACK_SECRET_KEY: z.string().min(1),
+  // Client-safe publishable key — used by Paystack Inline.js for card forms.
+  NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: z.string().min(1),
 
   // ── App URL ─────────────────────────────────────────────────────────────────
   NEXT_PUBLIC_APP_URL: z.string().url().optional().default("http://localhost:3000"),

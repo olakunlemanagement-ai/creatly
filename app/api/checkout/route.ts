@@ -4,6 +4,7 @@ import { ok, fail } from "@/lib/api-response";
 import { checkoutSchema } from "@/lib/validations/checkout";
 import { PLANS } from "@/lib/pricing";
 import { createClient } from "@/lib/supabase/server";
+import { env } from "@/lib/env";
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,29 +43,29 @@ export async function POST(req: NextRequest) {
     }
 
     // 5. Paystack transaction initialisation
-    // TODO: replace with real Paystack call when PAYSTACK_SECRET_KEY is available
-    // const response = await fetch("https://api.paystack.co/transaction/initialize", {
-    //   method: "POST",
-    //   headers: {
-    //     Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     email: auth.user.email,
-    //     amount: plan.kobo,
-    //     currency: "NGN",
-    //     reference,
-    //     callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/callback`,
-    //     metadata: { user_id: auth.user.id, plan_id: planId, kobo: plan.kobo },
-    //   }),
-    // });
-    // const data = await response.json();
-    // if (!data.status) return fail("payment_init_failed", "Could not initialise payment.", 502);
-    // return ok({ authorization_url: data.data.authorization_url });
+    const paystackRes = await fetch("https://api.paystack.co/transaction/initialize", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.PAYSTACK_SECRET_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: auth.user.email,
+        amount: plan.kobo,
+        currency: "NGN",
+        reference,
+        callback_url: `${env.NEXT_PUBLIC_APP_URL}/checkout/callback`,
+        metadata: { user_id: auth.user.id, plan_id: planId, kobo: plan.kobo },
+      }),
+    });
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    const authorization_url = `${appUrl}/checkout/callback?reference=${reference}&stub=true`;
-    return ok({ authorization_url });
+    const paystackData = (await paystackRes.json()) as { status: boolean; data?: { authorization_url: string } };
+    if (!paystackData.status || !paystackData.data?.authorization_url) {
+      console.error("[checkout] Paystack init failed:", paystackData);
+      return fail("payment_init_failed", "Could not initialise payment.", 502);
+    }
+
+    return ok({ authorization_url: paystackData.data.authorization_url });
   } catch (err) {
     console.error("[checkout] unexpected error:", err);
     return fail("internal_error", "Something went wrong. Please try again.", 500);

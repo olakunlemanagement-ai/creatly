@@ -11,27 +11,24 @@ export async function POST(req: Request) {
 
   // ── HMAC signature verification ──────────────────────────────────────────────
   const paystackKey = process.env.PAYSTACK_SECRET_KEY;
+  if (!paystackKey) {
+    console.error("[webhook] PAYSTACK_SECRET_KEY not set — rejecting request");
+    return new Response("Forbidden", { status: 403 });
+  }
 
-  if (paystackKey) {
-    const sig = req.headers.get("x-paystack-signature") ?? "";
-    const hash = createHmac("sha512", paystackKey).update(body).digest("hex");
+  const sig = req.headers.get("x-paystack-signature") ?? "";
+  const hash = createHmac("sha512", paystackKey).update(body).digest("hex");
 
-    let hashBuf: Buffer, sigBuf: Buffer;
-    try {
-      hashBuf = Buffer.from(hash, "hex");
-      sigBuf = Buffer.from(sig,  "hex");
-    } catch {
-      return new Response("Forbidden", { status: 403 });
-    }
+  let hashBuf: Buffer, sigBuf: Buffer;
+  try {
+    hashBuf = Buffer.from(hash, "hex");
+    sigBuf = Buffer.from(sig, "hex");
+  } catch {
+    return new Response("Forbidden", { status: 403 });
+  }
 
-    if (hashBuf.length !== sigBuf.length || !timingSafeEqual(hashBuf, sigBuf)) {
-      return new Response("Forbidden", { status: 403 });
-    }
-  } else {
-    // TODO: replace stub once PAYSTACK_SECRET_KEY is available.
-    // In stub mode the webhook accepts all payloads without verifying the signature.
-    // This MUST NOT be deployed to production without a real key set.
-    console.warn("[webhook] PAYSTACK_SECRET_KEY not set — running in stub mode, skipping HMAC verification");
+  if (hashBuf.length !== sigBuf.length || !timingSafeEqual(hashBuf, sigBuf)) {
+    return new Response("Forbidden", { status: 403 });
   }
 
   // ── Parse event ──────────────────────────────────────────────────────────────
