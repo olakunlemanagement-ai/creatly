@@ -33,6 +33,7 @@ const NAV_LINKS = [
   { href: "/creator", label: "Dashboard", exact: true },
   { href: "/creator/assets", label: "My Assets", exact: false },
   { href: "/creator/upload", label: "Upload", exact: false },
+  { href: "/creator/earnings", label: "Earnings", exact: false },
   { href: "/creator/profile", label: "Profile", exact: false },
 ] as const;
 

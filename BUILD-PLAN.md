@@ -2216,7 +2216,7 @@ Commit: feat(admin): analytics dashboard.
 
 
 
-PHASE 5 — Creator Earnings & Payouts ⬜
+PHASE 5 — Creator Earnings & Payouts ✅
 
 
 ⚙️ AUTONOMOUS RUN MODE — Phase 5 only
@@ -2241,7 +2241,7 @@ Minimum payout threshold: ₦5,000 (500000 kobo) — creators below threshold ca
 
 
 
-5.1 — Earnings data model (migration) ⬜
+5.1 — Earnings data model (migration) ✅
 
 Scope:
 New timestamped migration:
@@ -2325,7 +2325,7 @@ Commit: feat(earnings): creator earnings + payouts + bank accounts migration.
 
 
 
-5.2 — Bank account setup (creator) ⬜
+5.2 — Bank account setup (creator) ✅
 
 Scope:
 app/(creator)/creator/payouts/bank-account/page.tsx:
@@ -2355,7 +2355,7 @@ Commit: feat(earnings): creator bank account setup with Paystack verification.
 
 
 
-5.3 — Earnings calculation (server job) ⬜
+5.3 — Earnings calculation (server job) ✅
 
 Scope:
 
@@ -2415,7 +2415,7 @@ Commit: feat(earnings): monthly earnings calculation + admin UI.
 
 
 
-5.4 — Paystack Transfer API (automated payouts) ⬜
+5.4 — Paystack Transfer API (automated payouts) ✅
 
 Scope:
 
@@ -2473,7 +2473,7 @@ Commit: feat(earnings): Paystack Transfer API automated payouts.
 Watch for: Paystack Transfers must be enabled on the account (separate from regular payments). Log this in BLOCKERS.md as a founder action.
 
 
-5.5 — Creator earnings dashboard ⬜ (design-led)
+5.5 — Creator earnings dashboard ✅ (design-led)
 
 Scope:
 app/(creator)/creator/earnings/page.tsx — creator's earnings overview:
