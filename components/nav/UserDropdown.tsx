@@ -1,7 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, LayoutDashboard, Heart, CreditCard, Pencil, LayoutGrid } from "lucide-react";
+import {
+  LogOut,
+  LayoutDashboard,
+  Heart,
+  CreditCard,
+  Pencil,
+  LayoutGrid,
+  ShieldCheck,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,7 +37,7 @@ function initials(name: string | null, email: string): string {
 export function UserDropdown({ auth }: UserDropdownProps) {
   const displayName = auth.profile.full_name ?? auth.user.email;
   const avatarText = initials(auth.profile.full_name, auth.user.email);
-  const isCreator = auth.profile.role === "creator";
+  const role = auth.profile.role;
 
   return (
     <DropdownMenu>
@@ -47,30 +55,15 @@ export function UserDropdown({ auth }: UserDropdownProps) {
         </div>
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem asChild>
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <LayoutDashboard className="h-4 w-4" />
-            Dashboard
-          </Link>
-        </DropdownMenuItem>
-
-        {isCreator ? (
+        {/* role='user' — consumer links only */}
+        {role === "user" && (
           <>
             <DropdownMenuItem asChild>
-              <Link href="/browse" className="flex items-center gap-2">
-                <LayoutGrid className="h-4 w-4" />
-                Browse
+              <Link href="/dashboard" className="flex items-center gap-2">
+                <LayoutDashboard className="h-4 w-4" />
+                Dashboard
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/creator" className="flex items-center gap-2">
-                <Pencil className="h-4 w-4" />
-                Creator Studio
-              </Link>
-            </DropdownMenuItem>
-          </>
-        ) : (
-          <>
             <DropdownMenuItem asChild>
               <Link href="/dashboard/favourites" className="flex items-center gap-2">
                 <Heart className="h-4 w-4" />
@@ -84,6 +77,34 @@ export function UserDropdown({ auth }: UserDropdownProps) {
               </Link>
             </DropdownMenuItem>
           </>
+        )}
+
+        {/* role='creator' — creator studio links, can browse marketplace */}
+        {role === "creator" && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/creator/home" className="flex items-center gap-2">
+                <Pencil className="h-4 w-4" />
+                Creator Studio
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/browse" className="flex items-center gap-2">
+                <LayoutGrid className="h-4 w-4" />
+                Browse
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
+
+        {/* role='admin' | 'super_admin' — admin panel only */}
+        {(role === "admin" || role === "super_admin") && (
+          <DropdownMenuItem asChild>
+            <Link href="/admin" className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4" />
+              Admin Panel
+            </Link>
+          </DropdownMenuItem>
         )}
 
         <DropdownMenuSeparator />

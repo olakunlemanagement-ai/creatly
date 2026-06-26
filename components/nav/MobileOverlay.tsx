@@ -182,14 +182,36 @@ export function MobileOverlay({ open, onClose, auth, navCategories }: MobileOver
                 <p className="text-sm text-cream-300">
                   Signed in as <span className="font-medium text-cream-100">{auth.user.email}</span>
                 </p>
-                <Link
-                  href="/dashboard"
-                  onClick={onClose}
-                  className="group inline-flex items-center gap-1.5 text-sm font-medium text-cream-100 transition-colors hover:text-terracotta-400"
-                >
-                  Dashboard
-                  <ArrowRight className="size-3.5 transition-transform duration-150 group-hover:translate-x-1 motion-reduce:transition-none" />
-                </Link>
+                {auth.profile.role === "user" && (
+                  <Link
+                    href="/dashboard"
+                    onClick={onClose}
+                    className="group inline-flex items-center gap-1.5 text-sm font-medium text-cream-100 transition-colors hover:text-terracotta-400"
+                  >
+                    Dashboard
+                    <ArrowRight className="size-3.5 transition-transform duration-150 group-hover:translate-x-1 motion-reduce:transition-none" />
+                  </Link>
+                )}
+                {auth.profile.role === "creator" && (
+                  <Link
+                    href="/creator/home"
+                    onClick={onClose}
+                    className="group inline-flex items-center gap-1.5 text-sm font-medium text-cream-100 transition-colors hover:text-terracotta-400"
+                  >
+                    Creator Studio
+                    <ArrowRight className="size-3.5 transition-transform duration-150 group-hover:translate-x-1 motion-reduce:transition-none" />
+                  </Link>
+                )}
+                {(auth.profile.role === "admin" || auth.profile.role === "super_admin") && (
+                  <Link
+                    href="/admin"
+                    onClick={onClose}
+                    className="group inline-flex items-center gap-1.5 text-sm font-medium text-cream-100 transition-colors hover:text-terracotta-400"
+                  >
+                    Admin Panel
+                    <ArrowRight className="size-3.5 transition-transform duration-150 group-hover:translate-x-1 motion-reduce:transition-none" />
+                  </Link>
+                )}
                 <form action={signOut}>
                   <button type="submit" className="text-sm text-cream-300 hover:text-cream-100">
                     Log out

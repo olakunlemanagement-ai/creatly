@@ -60,6 +60,26 @@ export function LoginForm({
     });
 
     if (!error) {
+      // Fetch role so we redirect to the correct home, not just /browse.
+      const { data: { user: authedUser } } = await supabase.auth.getUser();
+      if (authedUser) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", authedUser.id)
+          .single();
+        const role = profile?.role;
+        if (role === "creator") {
+          router.push("/creator/home");
+          router.refresh();
+          return;
+        }
+        if (role === "admin" || role === "super_admin") {
+          router.push("/admin");
+          router.refresh();
+          return;
+        }
+      }
       router.push(safeNext(next));
       router.refresh();
       return;

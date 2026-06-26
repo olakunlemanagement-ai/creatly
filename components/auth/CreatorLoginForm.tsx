@@ -48,8 +48,7 @@ export function CreatorLoginForm() {
     });
 
     if (!error && data.user) {
-      // After login, redirect to creator studio
-      router.push("/creator");
+      router.push("/creator/home");
       router.refresh();
       return;
     }
@@ -68,7 +67,7 @@ export function CreatorLoginForm() {
       type: "signup",
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/confirm?next=/creator`,
+        emailRedirectTo: `${window.location.origin}/auth/confirm?next=/creator/home`,
       },
     });
     setResendSent(true);
