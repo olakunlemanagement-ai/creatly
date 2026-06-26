@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { Check, ChevronRight } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { completeOnboarding } from "@/lib/actions/onboarding";
@@ -8,6 +9,7 @@ import type { Category } from "@/types/database";
 
 interface OnboardingWizardProps {
   categories: Pick<Category, "id" | "name">[];
+  isCreator?: boolean;
 }
 
 const TOTAL_STEPS = 3;
@@ -43,7 +45,7 @@ function StepIndicator({ current }: { current: number }) {
   );
 }
 
-export function OnboardingWizard({ categories }: OnboardingWizardProps) {
+export function OnboardingWizard({ categories, isCreator = false }: OnboardingWizardProps) {
   const [step, setStep] = useState(1);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [displayName, setDisplayName] = useState("");
@@ -202,35 +204,39 @@ export function OnboardingWizard({ categories }: OnboardingWizardProps) {
                   className="mt-2 font-heading text-3xl text-foreground"
                   style={{ fontFamily: "var(--font-heading)" }}
                 >
-                  Ready to create.
+                  {isCreator ? "You're all set." : "Ready to create."}
                 </h1>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Thousands of templates, fonts, mockups, and motion assets — curated for African creatives. Start exploring.
+                  {isCreator
+                    ? "Your creator profile is ready. Start uploading your work and earning from downloads."
+                    : "Thousands of templates, fonts, mockups, and motion assets — curated for African creatives. Start exploring."}
                 </p>
               </div>
 
-              {/* Summary card */}
-              <div className="rounded-xl border border-border bg-card p-4 text-sm">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Your setup
-                </p>
-                <div className="mt-3 space-y-2">
-                  {selectedInterests.length > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Interests</span>
-                      <span className="font-medium text-foreground">{selectedInterests.length} selected</span>
-                    </div>
-                  )}
-                  {displayName && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Display name</span>
-                      <span className="font-medium text-foreground">{displayName}</span>
-                    </div>
-                  )}
+              {/* Summary card — buyers only */}
+              {!isCreator && (
+                <div className="rounded-xl border border-border bg-card p-4 text-sm">
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    Your setup
+                  </p>
+                  <div className="mt-3 space-y-2">
+                    {selectedInterests.length > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Interests</span>
+                        <span className="font-medium text-foreground">{selectedInterests.length} selected</span>
+                      </div>
+                    )}
+                    {displayName && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Display name</span>
+                        <span className="font-medium text-foreground">{displayName}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {serverError && (
+              {!isCreator && serverError && (
                 <p className="rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
                   {serverError}
                 </p>
@@ -244,13 +250,22 @@ export function OnboardingWizard({ categories }: OnboardingWizardProps) {
                 >
                   Back
                 </button>
-                <button
-                  onClick={handleComplete}
-                  disabled={isPending}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-terracotta-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400"
-                >
-                  {isPending ? "Saving…" : "Browse resources →"}
-                </button>
+                {isCreator ? (
+                  <Link
+                    href="/creator/home"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-terracotta-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400"
+                  >
+                    Go to Creator Studio →
+                  </Link>
+                ) : (
+                  <button
+                    onClick={handleComplete}
+                    disabled={isPending}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-terracotta-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta-400"
+                  >
+                    {isPending ? "Saving…" : "Browse resources →"}
+                  </button>
+                )}
               </div>
             </div>
           )}

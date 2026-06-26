@@ -35,7 +35,7 @@ export async function applyAsCreator(
     .maybeSingle();
 
   if (existingProfile) {
-    redirect("/creator");
+    redirect("/creator/home");
   }
 
   // 4. CHECK handle uniqueness
@@ -127,7 +127,7 @@ export async function applyAsCreator(
     });
   }
 
-  redirect("/creator");
+  redirect("/creator/home");
 }
 
 // ── updateCreatorProfile ──────────────────────────────────────────────────────
