@@ -5,14 +5,12 @@ import { createClient } from "@/lib/supabase/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { DeactivateUserButton } from "@/components/admin/DeactivateUserButton";
-import { ShieldAlert } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: `Users — ${APP_NAME} Admin`,
+  title: `Consumers — ${APP_NAME} Admin`,
 };
 
 interface SearchParams {
-  role?: string;
   sub?: string;
   q?: string;
   page?: string;
@@ -20,18 +18,10 @@ interface SearchParams {
 
 const PAGE_SIZE = 30;
 
-const ROLE_OPTIONS = [
-  { value: "", label: "All roles" },
-  { value: "buyer", label: "Buyer" },
-  { value: "creator", label: "Creator" },
-  { value: "admin", label: "Admin" },
-  { value: "super_admin", label: "Super Admin" },
-];
-
 const SUB_OPTIONS = [
   { value: "", label: "All" },
-  { value: "active", label: "Active subscriber" },
-  { value: "none", label: "No subscription" },
+  { value: "active", label: "Active" },
+  { value: "free", label: "Free" },
 ];
 
 export default async function AdminUsersPage({
@@ -40,7 +30,6 @@ export default async function AdminUsersPage({
   searchParams: Promise<SearchParams>;
 }) {
   const sp = await searchParams;
-  const role = sp.role ?? "";
   const sub = sp.sub ?? "";
   const q = sp.q?.trim() ?? "";
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
@@ -49,18 +38,14 @@ export default async function AdminUsersPage({
   const [auth, supabase] = await Promise.all([getAuthenticatedUser(), createClient()]);
   const isSuperAdmin = auth ? await hasPermission(auth.user.id, "*") : false;
 
-  // Build base query
   let query = supabase
     .from("profiles")
     .select(
       `id, full_name, email, role, created_at, onboarded,
        subscriptions!subscriptions_owner_id_fkey(status, plan_id)`,
       { count: "exact" },
-    );
-
-  if (role) {
-    query = query.eq("role", role);
-  }
+    )
+    .eq("role", "user");
 
   if (q) {
     query = query.or(`full_name.ilike.%${q}%,email.ilike.%${q}%`);
@@ -82,11 +67,10 @@ export default async function AdminUsersPage({
 
   const users = (rows ?? []) as unknown as ProfileRow[];
 
-  // If filtering by subscription status, filter post-query (Supabase limitation)
   const filteredUsers =
     sub === "active"
       ? users.filter((u) => u.subscriptions?.some((s) => s.status === "active"))
-      : sub === "none"
+      : sub === "free"
         ? users.filter((u) => !u.subscriptions?.some((s) => s.status === "active"))
         : users;
 
@@ -96,19 +80,8 @@ export default async function AdminUsersPage({
   const fmt = (d: string | null) =>
     d ? new Date(d).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" }) : "—";
 
-  const roleBadge = (r: string) => {
-    const map: Record<string, string> = {
-      super_admin: "bg-red-100 text-red-700",
-      admin: "bg-amber-100 text-amber-700",
-      creator: "bg-brand-green-100 text-brand-green-700",
-      buyer: "bg-muted text-muted-foreground",
-    };
-    return map[r] ?? "bg-muted text-muted-foreground";
-  };
-
   function buildUrl(overrides: Record<string, string>) {
     const p = new URLSearchParams({
-      ...(role && { role }),
       ...(sub && { sub }),
       ...(q && { q }),
       page: "1",
@@ -121,9 +94,9 @@ export default async function AdminUsersPage({
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-heading text-xl font-semibold text-foreground">Users</h1>
+          <h1 className="font-heading text-xl font-semibold text-foreground">Consumers</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {totalCount.toLocaleString()} total user{totalCount !== 1 ? "s" : ""}
+            Registered consumer accounts · {totalCount.toLocaleString()} total
           </p>
         </div>
       </div>
@@ -139,28 +112,10 @@ export default async function AdminUsersPage({
             placeholder="Search name or email…"
             className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
-          {role && <input type="hidden" name="role" value={role} />}
           {sub && <input type="hidden" name="sub" value={sub} />}
         </form>
 
-        {/* Role filter */}
-        <div className="flex gap-1 flex-wrap">
-          {ROLE_OPTIONS.map((opt) => (
-            <Link
-              key={opt.value}
-              href={buildUrl({ role: opt.value })}
-              className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
-                role === opt.value
-                  ? "border-brand-green-700 bg-brand-green-700 text-white"
-                  : "border-border bg-card text-foreground hover:bg-muted"
-              }`}
-            >
-              {opt.label}
-            </Link>
-          ))}
-        </div>
-
-        {/* Sub filter */}
+        {/* Subscription filter */}
         <div className="flex gap-1">
           {SUB_OPTIONS.map((opt) => (
             <Link
@@ -183,8 +138,7 @@ export default async function AdminUsersPage({
         <table className="w-full text-sm">
           <thead className="bg-muted/50">
             <tr>
-              <th className="px-4 py-3 text-left font-semibold text-muted-foreground">User</th>
-              <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Role</th>
+              <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Consumer</th>
               <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Subscription</th>
               <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Joined</th>
               <th className="px-4 py-3" />
@@ -193,8 +147,8 @@ export default async function AdminUsersPage({
           <tbody className="divide-y divide-border">
             {filteredUsers.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-12 text-center text-sm text-muted-foreground">
-                  No users found.
+                <td colSpan={4} className="px-4 py-12 text-center text-sm text-muted-foreground">
+                  No consumers found.
                 </td>
               </tr>
             ) : (
@@ -207,22 +161,12 @@ export default async function AdminUsersPage({
                       <p className="text-xs text-muted-foreground">{u.email}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${roleBadge(u.role)}`}
-                      >
-                        {["admin", "super_admin"].includes(u.role) && (
-                          <ShieldAlert className="h-3 w-3" />
-                        )}
-                        {u.role.replace("_", " ")}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
                       {activeSub ? (
                         <span className="inline-flex items-center rounded-full bg-brand-green-100 px-2 py-0.5 text-xs font-medium text-brand-green-700">
                           {activeSub.plan_id}
                         </span>
                       ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
+                        <span className="text-xs text-muted-foreground">Free</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">
@@ -236,7 +180,7 @@ export default async function AdminUsersPage({
                         >
                           View →
                         </Link>
-                        {isSuperAdmin && !["admin", "super_admin", "banned"].includes(u.role) && (
+                        {isSuperAdmin && (
                           <DeactivateUserButton userId={u.id} userName={u.full_name ?? u.email} />
                         )}
                       </div>
