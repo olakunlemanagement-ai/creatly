@@ -17,8 +17,12 @@ export const ALLOWED_MIME_TYPES = [
   "application/octet-stream", // fallback for font files with wrong MIME
 ] as const;
 
-export const MAX_FILE_SIZE_BYTES = 200 * 1024 * 1024; // 200 MB
+// 5 GB cap — matches the Supabase Pro plan storage object limit.
+// Files above 100 MB should use TUS resumable upload (see UploadWizard).
+// Supabase Free plan hard limit is 50 MB per object; upgrade to Pro is required.
+export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024 * 1024; // 5 GB
 export const MAX_PREVIEW_SIZE_BYTES = 5 * 1024 * 1024;  // 5 MB
+export const TUS_THRESHOLD_BYTES = 100 * 1024 * 1024; // 100 MB — use TUS above this
 
 export const uploadDetailsSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(120),

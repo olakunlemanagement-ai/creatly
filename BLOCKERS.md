@@ -245,4 +245,25 @@ Google OAuth **will not work** until the following two steps are completed by th
 
 **No code change needed** — the button is already deployed. OAuth will activate as soon as the provider is enabled in Supabase.
 
+---
+
+## CP1.15 — 5 GB Upload Cap (BLOCKER: Supabase Pro required)
+
+`MAX_FILE_SIZE_BYTES` is now set to 5 GB and `TUS_THRESHOLD_BYTES` is 100 MB (above which
+TUS resumable upload should be used). However, the **Supabase Free plan caps individual
+storage objects at 50 MB**. Uploads larger than 50 MB will fail until:
+
+### Required founder action
+
+1. Upgrade the Supabase project to the **Pro plan** (Supabase Dashboard → Settings → Billing).
+   - Pro plan allows up to **50 GB** per object (configurable).
+2. In Supabase → Storage → Buckets → `resources` → Edit:
+   - Set **Max upload size** to `5368709120` (5 GB in bytes).
+3. For files above 100 MB, the upload wizard should use **TUS resumable upload** via
+   `@supabase/storage-js` `UploadManager`. This is not yet implemented in `UploadWizard.tsx`
+   — it is marked for a future step once Pro is active.
+
+**Current state:** The validation cap is raised in code. Files up to 50 MB will work on Free plan.
+Files 50 MB–5 GB will fail until Pro is active.
+
 *Log resolutions here as: `✅ Resolved YYYY-MM-DD — <note>`*
