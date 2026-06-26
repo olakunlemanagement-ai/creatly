@@ -168,4 +168,50 @@ Sentry is wired up but **not active** until the DSN and (optionally) auth token 
 
 ---
 
+---
+
+## Phase 5 — Creator Earnings & Payouts
+
+### 1. Enable Paystack Transfers (founder action)
+
+Paystack Transfers (the Transfer API used for creator payouts) must be explicitly enabled on the account — it is off by default.
+
+**Steps:**
+1. Log in to your Paystack Dashboard.
+2. Go to **Settings → Preferences → Transfers**.
+3. Enable transfers.
+4. Ensure your Paystack account is fully verified and has sufficient balance before triggering payouts.
+
+> Without this, `POST /api/admin/process-payouts` will fail with a Paystack error.
+
+---
+
+### 2. First earnings calculation (admin action)
+
+Earnings are NOT calculated automatically. An admin must trigger them manually each month:
+
+1. Go to `/admin/earnings`.
+2. Select the month (e.g. `2026-06`).
+3. Click **Calculate earnings** — this upserts `creator_earnings` rows.
+4. Review the table, then click **Process payouts** to trigger Paystack transfers.
+
+> Automated cron scheduling is a future enhancement. For now, this is a monthly admin task.
+
+---
+
+### 3. Paystack Transfer webhook events
+
+The following Paystack webhook events must be subscribed to in the Paystack Dashboard for payout status to update automatically:
+
+| Event | Effect |
+|-------|--------|
+| `transfer.success` | Marks payout as `success` + sets `settled_at` |
+| `transfer.failed` | Marks payout as `failed` + stores `failure_reason` |
+| `transfer.reversed` | Marks payout as `reversed` |
+
+Add these to the existing webhook subscription at:
+**Paystack Dashboard → Settings → API Keys & Webhooks → Webhook URL**
+
+---
+
 *Log resolutions here as: `✅ Resolved YYYY-MM-DD — <note>`*

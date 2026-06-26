@@ -160,6 +160,44 @@ export async function POST(req: Request) {
     return new Response("OK", { status: 200 });
   }
 
+  // ── transfer.success ─────────────────────────────────────────────────────────
+  // Paystack fires when a transfer is confirmed by the bank.
+  if (eventName === "transfer.success" && data) {
+    const transferCode = data.transfer_code as string | undefined;
+    if (transferCode) {
+      await supabase
+        .from("creator_payouts")
+        .update({ status: "success", settled_at: new Date().toISOString() })
+        .eq("paystack_transfer_code", transferCode);
+    }
+    return new Response("OK", { status: 200 });
+  }
+
+  // ── transfer.failed ───────────────────────────────────────────────────────────
+  if (eventName === "transfer.failed" && data) {
+    const transferCode = data.transfer_code as string | undefined;
+    const reason = (data.reason ?? data.failure_reason ?? "Transfer failed") as string;
+    if (transferCode) {
+      await supabase
+        .from("creator_payouts")
+        .update({ status: "failed", failure_reason: reason })
+        .eq("paystack_transfer_code", transferCode);
+    }
+    return new Response("OK", { status: 200 });
+  }
+
+  // ── transfer.reversed ────────────────────────────────────────────────────────
+  if (eventName === "transfer.reversed" && data) {
+    const transferCode = data.transfer_code as string | undefined;
+    if (transferCode) {
+      await supabase
+        .from("creator_payouts")
+        .update({ status: "reversed" })
+        .eq("paystack_transfer_code", transferCode);
+    }
+    return new Response("OK", { status: 200 });
+  }
+
   // All other events — return 200 so Paystack doesn't retry.
   return new Response("OK", { status: 200 });
 }
