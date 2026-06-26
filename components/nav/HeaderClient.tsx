@@ -279,14 +279,6 @@ export function HeaderClient({ auth, navCategories }: HeaderClientProps) {
                 >
                   License
                 </Link>
-                {(!auth || auth.profile.role !== "creator") && (
-                  <Link
-                    href="/creators"
-                    className="rounded-md px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 hover:text-stone-900"
-                  >
-                    Become a creator
-                  </Link>
-                )}
               </nav>
 
               <div className="hidden items-center gap-2 lg:flex">
