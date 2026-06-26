@@ -5,10 +5,10 @@
 // ============================================================
 
 export const PLAN_TYPES = [
-  "cruise",
-  "cruise_plus",
-  "cruise_pro",
-  "cruise_pro_max",
+  "monthly",
+  "quarterly",
+  "biannual",
+  "annual",
 ] as const;
 export type PlanType = (typeof PLAN_TYPES)[number];
 

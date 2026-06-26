@@ -108,8 +108,8 @@ describe("POST /api/webhooks/paystack", () => {
       event: "charge.success",
       data: {
         reference: "ref-abc",
-        amount:    PLANS.cruise.kobo,
-        metadata:  { user_id: "user-1", plan_id: "cruise", kobo: PLANS.cruise.kobo },
+        amount:    PLANS.monthly.kobo,
+        metadata:  { user_id: "user-1", plan_id: "monthly", kobo: PLANS.monthly.kobo },
       },
     };
 
@@ -137,8 +137,8 @@ describe("POST /api/webhooks/paystack", () => {
       event: "charge.success",
       data: {
         reference: "ref-already-seen",
-        amount:    PLANS.cruise.kobo,
-        metadata:  { user_id: "user-1", plan_id: "cruise", kobo: PLANS.cruise.kobo },
+        amount:    PLANS.monthly.kobo,
+        metadata:  { user_id: "user-1", plan_id: "monthly", kobo: PLANS.monthly.kobo },
       },
     };
 

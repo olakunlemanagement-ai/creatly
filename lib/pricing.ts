@@ -3,10 +3,10 @@
 // `months` drives the subscription period_end calculation in the webhook handler.
 
 export const PLANS = {
-  cruise:         { id: "cruise",         kobo: 500000,  label: "Cruise",         description: "Get unlimited assets for 1 month",  duration: "1 month",  months: 1  },
-  cruise_plus:    { id: "cruise_plus",    kobo: 1000000, label: "Cruise Plus",    description: "Get unlimited assets for 3 months", duration: "3 months", months: 3  },
-  cruise_pro:     { id: "cruise_pro",     kobo: 2000000, label: "Cruise Pro",     description: "Get unlimited assets for 6 months", duration: "6 months", months: 6  },
-  cruise_pro_max: { id: "cruise_pro_max", kobo: 4000000, label: "Cruise Pro Max", description: "Get unlimited assets for 1 year",   duration: "1 year",   months: 12, featured: true },
+  monthly:   { id: "monthly",   kobo: 1000000,  label: "Monthly",   description: "Unlimited downloads for 1 month",   duration: "1 month",  months: 1  },
+  quarterly: { id: "quarterly", kobo: 2700000,  label: "3 Months",  description: "Unlimited downloads for 3 months",  duration: "3 months", months: 3,  savings: "Save ₦3,000"  },
+  biannual:  { id: "biannual",  kobo: 5000000,  label: "6 Months",  description: "Unlimited downloads for 6 months",  duration: "6 months", months: 6,  savings: "Save ₦10,000" },
+  annual:    { id: "annual",    kobo: 10000000, label: "Annual",     description: "Unlimited downloads for 1 year",    duration: "1 year",   months: 12, savings: "Save ₦20,000", featured: true },
 } as const;
 
 export type PlanId = keyof typeof PLANS;
