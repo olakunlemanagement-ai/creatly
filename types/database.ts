@@ -39,6 +39,12 @@ export type OnboardingRole = (typeof ONBOARDING_ROLES)[number];
 export const PAYMENT_REFERENCE_STATUS = ["pending", "success", "failed"] as const;
 export type PaymentReferenceStatus = (typeof PAYMENT_REFERENCE_STATUS)[number];
 
+export const CREATOR_EARNINGS_STATUS = ["pending", "paid", "carried_over"] as const;
+export type CreatorEarningsStatus = (typeof CREATOR_EARNINGS_STATUS)[number];
+
+export const CREATOR_PAYOUT_STATUS = ["pending", "success", "failed", "reversed"] as const;
+export type CreatorPayoutStatus = (typeof CREATOR_PAYOUT_STATUS)[number];
+
 // ============================================================
 // SUPABASE GENERATED TYPES (below — do not edit by hand)
 // ============================================================
@@ -84,6 +90,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_invites: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          token: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_invites_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -128,7 +172,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "categories"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       category_follows: {
@@ -163,6 +207,128 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_bank_accounts: {
+        Row: {
+          account_name: string
+          account_number: string
+          bank_code: string
+          bank_name: string
+          created_at: string
+          creator_id: string
+          id: string
+          is_default: boolean
+          verified_at: string | null
+        }
+        Insert: {
+          account_name: string
+          account_number: string
+          bank_code: string
+          bank_name: string
+          created_at?: string
+          creator_id: string
+          id?: string
+          is_default?: boolean
+          verified_at?: string | null
+        }
+        Update: {
+          account_name?: string
+          account_number?: string
+          bank_code?: string
+          bank_name?: string
+          created_at?: string
+          creator_id?: string
+          id?: string
+          is_default?: boolean
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
+      creator_earnings: {
+        Row: {
+          created_at: string
+          creator_id: string
+          download_count: number
+          earnings_kobo: number
+          id: string
+          period_month: string
+          revenue_pool_kobo: number
+          status: string
+          total_downloads: number
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          download_count?: number
+          earnings_kobo?: number
+          id?: string
+          period_month: string
+          revenue_pool_kobo?: number
+          status?: string
+          total_downloads?: number
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          download_count?: number
+          earnings_kobo?: number
+          id?: string
+          period_month?: string
+          revenue_pool_kobo?: number
+          status?: string
+          total_downloads?: number
+        }
+        Relationships: []
+      }
+      creator_payouts: {
+        Row: {
+          amount_kobo: number
+          bank_account_id: string
+          creator_id: string
+          failure_reason: string | null
+          id: string
+          initiated_at: string
+          paystack_recipient_code: string | null
+          paystack_transfer_code: string | null
+          period_months: string[]
+          settled_at: string | null
+          status: string
+        }
+        Insert: {
+          amount_kobo: number
+          bank_account_id: string
+          creator_id: string
+          failure_reason?: string | null
+          id?: string
+          initiated_at?: string
+          paystack_recipient_code?: string | null
+          paystack_transfer_code?: string | null
+          period_months: string[]
+          settled_at?: string | null
+          status?: string
+        }
+        Update: {
+          amount_kobo?: number
+          bank_account_id?: string
+          creator_id?: string
+          failure_reason?: string | null
+          id?: string
+          initiated_at?: string
+          paystack_recipient_code?: string | null
+          paystack_transfer_code?: string | null
+          period_months?: string[]
+          settled_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_payouts_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "creator_bank_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -434,6 +600,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      plans: {
+        Row: {
+          active: boolean
+          description: string | null
+          duration: string | null
+          id: string
+          interval: string
+          kobo: number
+          label: string
+          seats: number
+        }
+        Insert: {
+          active?: boolean
+          description?: string | null
+          duration?: string | null
+          id: string
+          interval: string
+          kobo: number
+          label: string
+          seats?: number
+        }
+        Update: {
+          active?: boolean
+          description?: string | null
+          duration?: string | null
+          id?: string
+          interval?: string
+          kobo?: number
+          label?: string
+          seats?: number
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -878,67 +1077,20 @@ export const Constants = {
 } as const
 
 // ============================================================
-// NAMED TYPE ALIASES
+// NAMED ROW TYPE ALIASES
+// Convenience re-exports so callers don't have to write Tables<'table_name'>.
+// Add new ones as tables are added; keep in alphabetical order.
 // ============================================================
-
-type DBRow<T extends keyof Database["public"]["Tables"]> =
-  Database["public"]["Tables"][T]["Row"];
-
-export type Profile = DBRow<"profiles">;
-export type Category = DBRow<"categories">;
-export type Resource = DBRow<"resources">;
-export type Subscription = DBRow<"subscriptions">;
-export type SubscriptionEvent = DBRow<"subscription_events">;
-export type TeamMember = DBRow<"team_members">;
-export type Download = DBRow<"downloads">;
-export type Favourite = DBRow<"favourites">;
-export type Notification = DBRow<"notifications">;
-export type NotificationPreference = DBRow<"notification_preferences">;
-export type CategoryFollow = DBRow<"category_follows">;
-export type Creator = DBRow<"creators">;
-export type CreatorProfile = DBRow<"creator_profiles">;
-
-// ============================================================
-// PHASE 2 HAND-WRITTEN TYPES
-// These tables were added in migration 20260624000000_payments.sql.
-// Run `pnpm gen:types` after pushing that migration to replace with generated types.
-// ============================================================
-
-export type Plan = {
-  id: string;          // 'cruise' | 'cruise_plus' | 'cruise_pro' | 'cruise_pro_max'
-  kobo: number;        // integer kobo — never float
-  interval: string;    // free-form duration label stored in DB (e.g. '1_month', '3_months')
-  seats: number;
-  label: string;
-  description: string | null;
-  duration: string | null;
-  active: boolean;
-};
-
-export type PaymentReference = {
-  reference: string;   // Paystack reference; primary key
-  user_id: string;
-  plan_id: string;
-  kobo: number;        // integer kobo; verified vs plan.kobo in webhook
-  status: PaymentReferenceStatus;
-  created_at: string;
-  settled_at: string | null;
-};
-
-export type Team = {
-  id: string;
-  name: string;
-  owner_id: string;
-  created_at: string;
-};
-
-export type TeamInvite = {
-  id: string;
-  team_id: string;
-  email: string;
-  token: string;
-  invited_by: string;
-  accepted_at: string | null;
-  expires_at: string;
-  created_at: string;
-};
+export type Category             = Tables<"categories">
+export type Creator              = Tables<"creators">
+export type CreatorBankAccount   = Tables<"creator_bank_accounts">
+export type CreatorEarnings      = Tables<"creator_earnings">
+export type CreatorPayout        = Tables<"creator_payouts">
+export type CreatorProfile       = Tables<"creator_profiles">
+export type Download             = Tables<"downloads">
+export type Favourite            = Tables<"favourites">
+export type Notification         = Tables<"notifications">
+export type NotificationPreference = Tables<"notification_preferences">
+export type Profile              = Tables<"profiles">
+export type Resource             = Tables<"resources">
+export type Subscription         = Tables<"subscriptions">
