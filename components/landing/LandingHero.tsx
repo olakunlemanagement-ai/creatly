@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Reveal } from "@/components/shared/Reveal";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/brand/Logo";
 
 // Each collage item: positioning/shadow classes + final rotate value for FM animation
 const COLLAGE = [
@@ -49,6 +50,13 @@ export function LandingHero() {
       className="hero-gradient-mesh relative overflow-hidden"
       style={{ minHeight: "88vh" }}
     >
+      {/* Hero logo — visible before the sticky nav slides in */}
+      <div className="absolute inset-x-0 top-0 z-10 flex items-center px-5 pt-5 sm:px-8 lg:px-12">
+        <Link href="/" aria-label="Home">
+          <Logo variant="full" tone="cream" size={28} />
+        </Link>
+      </div>
+
       {/* Grain texture overlay */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.03]"
@@ -59,7 +67,7 @@ export function LandingHero() {
       />
 
       {/* Grid layout */}
-      <div className="relative mx-auto grid min-h-[inherit] max-w-7xl grid-cols-1 gap-0 px-5 pb-16 pt-28 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-8 lg:pt-32">
+      <div className="relative mx-auto grid min-h-[inherit] max-w-7xl grid-cols-1 gap-0 px-5 pb-16 pt-24 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-8 lg:pt-28">
 
         {/* Left: Text column */}
         <div className="flex flex-col items-start justify-center">

@@ -257,9 +257,7 @@ export function HeaderClient({ auth, navCategories }: HeaderClientProps) {
     }
 
     function onScroll() {
-      const hero = document.getElementById("landing-hero");
-      const threshold = hero ? hero.offsetHeight : window.innerHeight * 0.75;
-      setScrolled(window.scrollY >= threshold);
+      setScrolled(window.scrollY >= 80);
     }
 
     onScroll();
