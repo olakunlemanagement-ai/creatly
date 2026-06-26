@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/nav/SiteHeader";
+import { SiteFooter } from "@/components/landing/SiteFooter";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { ExpiredBanner } from "@/components/shared/ExpiredBanner";
 
@@ -24,6 +25,7 @@ export default async function AppLayout({
       <main id="main-content" className="flex-1 pt-16 lg:pt-[6.5rem]">
         {children}
       </main>
+      <SiteFooter />
     </div>
   );
 }
