@@ -38,6 +38,13 @@ const envSchema = z.object({
   // Optional in dev; required in production for error monitoring.
   // BLOCKER: obtain DSN from sentry.io → Project → Settings → Client Keys.
   NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
+
+  // Token that gates /api/sentry-test in all environments. Set in .env.local / Vercel env.
+  // Defaults to a build-time random string so the route is never publicly guessable.
+  SENTRY_TEST_TOKEN: z
+    .string()
+    .optional()
+    .default(() => Math.random().toString(36).slice(2)),
 });
 
 export const env = envSchema.parse(process.env);

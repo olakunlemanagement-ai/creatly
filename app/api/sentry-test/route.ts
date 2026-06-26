@@ -1,12 +1,15 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { fail } from "@/lib/api-response";
+import { env } from "@/lib/env";
 
-// Dev-only route to verify Sentry is capturing errors correctly.
-// Returns 404 in production so it is never exposed.
-export function GET(): NextResponse {
-  if (process.env.NODE_ENV !== "development") {
-    return fail("not_found", "Not found", 404);
+// Protected test route — available in all environments.
+// Requires ?token=SENTRY_TEST_TOKEN to prevent public triggering.
+export function GET(request: NextRequest): NextResponse {
+  const token = request.nextUrl.searchParams.get("token");
+
+  if (!token || token !== env.SENTRY_TEST_TOKEN) {
+    return fail("unauthorized", "Unauthorized", 401);
   }
 
   Sentry.captureException(new Error("Sentry test error from /api/sentry-test"));
