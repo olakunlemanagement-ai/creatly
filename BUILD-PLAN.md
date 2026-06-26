@@ -2536,7 +2536,7 @@ Payout processing is manual (admin-triggered) for now — automated scheduling (
 
 ---
 
-CORRECTION PASS 1 ⬜
+CORRECTION PASS 1 ✅
 
 
 ⚙️ AUTONOMOUS RUN MODE
@@ -2548,7 +2548,7 @@ After completing ALL items, output a checklist of every item with ✅ done or �
 
 
 
-CP1.1 — Admin role selector: show roles list ⬜
+CP1.1 — Admin role selector: show roles list ✅
 
 The role dropdown on /admin/team invite form is not showing the seeded roles.
 
@@ -2564,7 +2564,7 @@ Test: open invite form → dropdown shows Content Admin, Creator Admin, Support 
 Commit: fix(admin): seed admin_roles + pass roles to invite form select
 
 
-CP1.2 — Update pricing plans ⬜
+CP1.2 — Update pricing plans ✅
 
 New pricing (all in integer kobo):
 
@@ -2586,7 +2586,7 @@ Update use-subscription hook
 Commit: feat(pricing): update to 4-tier pricing — 10k/27k/50k/100k
 
 
-CP1.3 — Pricing page redesign ⬜ (design-led)
+CP1.3 — Pricing page redesign ✅
 
 Current pricing page feels bland. Redesign with energy and colour, referencing Envato Elements pricing page style.
 
@@ -2606,7 +2606,7 @@ Mobile: cards stack, featured card first
 Commit: feat(pricing): redesign pricing page with bold editorial layout
 
 
-CP1.4 — Categories rebuild (Envato Elements reference) ⬜ (design-led)
+CP1.4 — Categories rebuild (Envato Elements reference) ✅
 
 Reference: https://elements.envato.com/ for category layout and presentation.
 
@@ -2625,7 +2625,7 @@ Keep the sidebar filter tree for active browse filtering (that's separate)
 Commit: feat(browse): visual category tiles à la Envato Elements
 
 
-CP1.5 — Dashboard footer (users + creators) ⬜
+CP1.5 — Dashboard footer (users + creators) ✅
 
 Add a minimal footer to dashboard and creator studio pages.
 
@@ -2648,7 +2648,7 @@ Add to creator layout below main content
 Commit: feat(layout): add footer to dashboard and creator studio
 
 
-CP1.6 — Remove all placeholder/dummy data ⬜
+CP1.6 — Remove all placeholder/dummy data ✅
 
 Audit and remove all hardcoded placeholder numbers and dummy content across the app.
 
@@ -2666,7 +2666,7 @@ Replace any Lorem Ipsum text anywhere in the app
 Commit: fix(data): remove all placeholder numbers and dummy content
 
 
-CP1.7 — Admin overview page complete overhaul ⬜
+CP1.7 — Admin overview page complete overhaul ✅
 
 Current issues: shows creator data instead of user data, cards not linked, missing key metrics.
 
@@ -2703,7 +2703,7 @@ All cards linked to their respective pages.
 Commit: feat(admin): complete overview overhaul with real data and linked cards
 
 
-CP1.8 — Admin users list page ⬜
+CP1.8 — Admin users list page ✅
 
 New page: /admin/users — list of ALL users (not just creators):
 
@@ -2724,7 +2724,7 @@ Each row actions: View profile, View downloads, Deactivate account (super_admin 
 Commit: feat(admin): users list page with filters, sort, and subscription status
 
 
-CP1.9 — Admin creators list improvements ⬜
+CP1.9 — Admin creators list improvements ✅
 
 Fix the existing /admin/creators page:
 
@@ -2745,7 +2745,7 @@ Search by name or handle (existing)
 Commit: feat(admin): creators list with real data, contact details, earnings, and sort/filter
 
 
-CP1.10 — Admin subscriptions page ⬜
+CP1.10 — Admin subscriptions page ✅
 
 New page: /admin/subscriptions — all subscription records:
 
@@ -2758,7 +2758,7 @@ Summary cards at top: Active, Inactive, Cancelled, Total revenue this month
 Commit: feat(admin): subscriptions management page
 
 
-CP1.11 — Fix "Mark as featured" forbidden error ⬜
+CP1.11 — Fix "Mark as featured" forbidden error ✅
 
 Admin is getting a 403 when trying to toggle is_featured on resources.
 
@@ -2774,7 +2774,7 @@ Test: toggle featured on a resource → should save without forbidden error
 Commit: fix(admin): resolve forbidden error on mark-as-featured
 
 
-CP1.12 — Deactivate account: super_admin only ⬜
+CP1.12 — Deactivate account: super_admin only ✅
 
 Account deactivation (both user and creator accounts) must be restricted to super_admin only.
 
@@ -2790,7 +2790,7 @@ Deactivation sets profiles.role='user' and subscriptions.status='inactive' — d
 Commit: fix(admin): restrict account deactivation to super_admin only
 
 
-CP1.13 — Fix /creator routing ⬜
+CP1.13 — Fix /creator routing ✅
 
 joincreatly.com/creator is redirecting to / instead of the creator dashboard.
 
@@ -2807,7 +2807,7 @@ Test all creator routes: /creator, /creator/home, /creator/assets, /creator/uplo
 Commit: fix(creator): /creator routes to /creator/home not /
 
 
-CP1.14 — Google OAuth signup ⬜
+CP1.14 — Google OAuth signup ✅
 
 Add "Continue with Google" to signup and login pages.
 
@@ -2835,7 +2835,7 @@ BLOCKER: Requires Google Cloud Console OAuth setup + Supabase provider config. L
 Commit: feat(auth): Google OAuth signup and login
 
 
-CP1.15 — Fix download/upload storage cap ⬜
+CP1.15 — Fix download/upload storage cap ✅
 
 Fix:
 
@@ -2863,23 +2863,24 @@ After completing all items, output:
 
 ## CORRECTION PASS 1 — COMPLETION CHECKLIST
 
-CP1.1  Admin role selector shows roles          ✅/❌
-CP1.2  Pricing plans updated (10k/27k/50k/100k) ✅/❌
-CP1.3  Pricing page redesigned                  ✅/❌
-CP1.4  Category tiles (Envato style)            ✅/❌
-CP1.5  Dashboard + creator footer               ✅/❌
-CP1.6  Placeholder data removed                 ✅/❌
-CP1.7  Admin overview overhauled                ✅/❌
-CP1.8  Admin users list page                    ✅/❌
-CP1.9  Creators list improvements               ✅/❌
-CP1.10 Subscriptions page                       ✅/❌
-CP1.11 Mark as featured fixed                   ✅/❌
-CP1.12 Deactivate: super_admin only             ✅/❌
-CP1.13 /creator routing fixed                   ✅/❌
-CP1.14 Google OAuth                             ✅/❌ (may be blocked)
-CP1.15 Storage cap raised                       ✅/❌
+CP1.1  Admin role selector shows roles          ✅
+CP1.2  Pricing plans updated (10k/27k/50k/100k) ✅
+CP1.3  Pricing page redesigned                  ✅
+CP1.4  Category tiles (Envato style)            ✅
+CP1.5  Dashboard + creator footer               ✅
+CP1.6  Placeholder data removed                 ✅ (verified — no Lorem ipsum; all data real)
+CP1.7  Admin overview overhauled                ✅
+CP1.8  Admin users list page                    ✅
+CP1.9  Creators list improvements               ✅
+CP1.10 Subscriptions page                       ✅
+CP1.11 Mark as featured fixed                   ✅ (fixed by CP1.1 admin_team seed migration)
+CP1.12 Deactivate: super_admin only             ✅
+CP1.13 /creator routing fixed                   ✅
+CP1.14 Google OAuth                             ✅ (UI done — BLOCKED: needs Google Cloud + Supabase provider config — see BLOCKERS.md)
+CP1.15 Storage cap raised                       ✅ (code done — BLOCKED: needs Supabase Pro plan — see BLOCKERS.md)
 
-BLOCKERS:
-- List any items that need founder action
+BLOCKERS requiring founder action:
+- CP1.14: Google OAuth — configure Google Cloud Console + Supabase provider (BLOCKERS.md)
+- CP1.15: 5 GB uploads — upgrade Supabase to Pro plan + set bucket max size (BLOCKERS.md)
 
 *Keep this file updated: mark steps ✅ as they complete. The founder and engineering partner expand the "to be expanded" steps before they're started.*
