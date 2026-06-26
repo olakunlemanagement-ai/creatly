@@ -1,13 +1,21 @@
 "use client";
 
 import { useTransition, useRef, useState } from "react";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, CheckIcon } from "lucide-react";
+import { Select as SelectPrimitive } from "radix-ui";
 import { inviteAdmin } from "@/lib/actions/admin";
+import {
+  Select,
+  SelectContent,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Role = {
   id: string;
   name: string;
   label: string;
+  description: string | null;
 };
 
 interface Props {
@@ -48,33 +56,51 @@ export function InviteAdminForm({ roles }: Props) {
         An email will be sent with a link to accept the invite. The link expires in 7 days.
       </p>
 
-      <form ref={formRef} onSubmit={handleSubmit} className="flex flex-wrap gap-2">
-        <input
-          name="email"
-          type="email"
-          required
-          placeholder="email@example.com"
-          disabled={isPending}
-          className="min-w-0 flex-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
-        />
+      <form ref={formRef} onSubmit={handleSubmit} className="flex flex-wrap items-end gap-2">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <label className="text-xs font-medium text-muted-foreground">Email</label>
+          <input
+            name="email"
+            type="email"
+            required
+            placeholder="email@example.com"
+            disabled={isPending}
+            className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+          />
+        </div>
 
-        <select
-          value={roleId}
-          onChange={(e) => setRoleId(e.target.value)}
-          disabled={isPending}
-          required
-          className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
-        >
-          <option value="" disabled>Select role…</option>
-          {roles.map((r) => (
-            <option key={r.id} value={r.id}>{r.label}</option>
-          ))}
-        </select>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-muted-foreground">Role</label>
+          <Select value={roleId} onValueChange={setRoleId} disabled={isPending}>
+            <SelectTrigger className="h-auto min-w-44 rounded-xl border-border px-3 py-2.5 text-sm">
+              <SelectValue placeholder="Select role…" />
+            </SelectTrigger>
+            <SelectContent className="min-w-64">
+              {roles.map((r) => (
+                <SelectPrimitive.Item
+                  key={r.id}
+                  value={r.id}
+                  className="relative flex w-full cursor-default flex-col rounded-md py-2 pr-8 pl-2 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50"
+                >
+                  <span className="pointer-events-none absolute right-2 top-2.5 flex size-4 items-center justify-center">
+                    <SelectPrimitive.ItemIndicator>
+                      <CheckIcon className="h-3 w-3" />
+                    </SelectPrimitive.ItemIndicator>
+                  </span>
+                  <SelectPrimitive.ItemText>{r.label}</SelectPrimitive.ItemText>
+                  {r.description && (
+                    <span className="mt-0.5 text-xs text-muted-foreground">{r.description}</span>
+                  )}
+                </SelectPrimitive.Item>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         <button
           type="submit"
           disabled={isPending || !roleId}
-          className="flex items-center gap-2 rounded-xl bg-brand-green-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-green-800 disabled:opacity-50 transition-colors"
+          className="flex items-center gap-2 rounded-xl bg-brand-green-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-green-800 disabled:opacity-50"
         >
           {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           Send invite

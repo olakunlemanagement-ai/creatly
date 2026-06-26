@@ -164,22 +164,31 @@ export default async function AdminTeamPage() {
                     </td>
 
                     <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${roleStyle(member.role.name)}`}
-                      >
-                        {member.role.label}
-                      </span>
-                      {/* Permissions list — inline below the badge */}
-                      <div className="mt-1.5 flex flex-wrap gap-1">
-                        {(member.role.permissions as string[]).map((p) => (
+                      <details className="group">
+                        <summary className="list-none cursor-pointer">
                           <span
-                            key={p}
-                            className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${roleStyle(member.role.name)}`}
                           >
-                            {p}
+                            {member.role.label}
                           </span>
-                        ))}
-                      </div>
+                          <span className="ml-1.5 text-[10px] text-muted-foreground group-open:hidden">
+                            ▸ {(member.role.permissions as string[]).length} permissions
+                          </span>
+                          <span className="ml-1.5 hidden text-[10px] text-muted-foreground group-open:inline">
+                            ▾ hide
+                          </span>
+                        </summary>
+                        <div className="mt-1.5 flex flex-wrap gap-1">
+                          {(member.role.permissions as string[]).map((p) => (
+                            <span
+                              key={p}
+                              className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+                            >
+                              {p}
+                            </span>
+                          ))}
+                        </div>
+                      </details>
                     </td>
 
                     <td className="hidden px-4 py-3 text-muted-foreground sm:table-cell">
