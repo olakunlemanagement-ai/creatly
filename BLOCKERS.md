@@ -190,7 +190,7 @@ Paystack Transfers (the Transfer API used for creator payouts) must be explicitl
 
 Earnings are NOT calculated automatically. An admin must trigger them manually each month:
 
-1. Go to `/admin/earnings`.
+1. Go to `/backstage-cl-hq-manage-9x3kp2/earnings`.
 2. Select the month (e.g. `2026-06`).
 3. Click **Calculate earnings** — this upserts `creator_earnings` rows.
 4. Review the table, then click **Process payouts** to trigger Paystack transfers.

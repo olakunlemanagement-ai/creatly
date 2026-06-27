@@ -37,7 +37,7 @@ export default async function AcceptAdminInvitePage({ searchParams }: Props) {
     return <InviteErrorPage message={result.error} />;
   }
 
-  redirect("/admin");
+  redirect("/backstage-cl-hq-manage-9x3kp2");
 }
 
 function InviteErrorPage({ message }: { message: string }) {

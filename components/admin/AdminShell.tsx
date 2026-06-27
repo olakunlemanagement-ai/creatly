@@ -29,14 +29,14 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/admin/overview", label: "Overview", icon: LayoutDashboard },
-  { href: "/admin/users", label: "Consumers", icon: Users },
-  { href: "/admin/creators", label: "Creators", icon: UserCheck },
-  { href: "/admin/categories", label: "Categories", icon: Tag },
-  { href: "/admin/resources", label: "Resources", icon: FileBox },
-  { href: "/admin/review", label: "Review Queue", icon: ClipboardList },
-  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/admin/earnings", label: "Earnings", icon: Wallet },
+  { href: "/backstage-cl-hq-manage-9x3kp2/overview", label: "Overview", icon: LayoutDashboard },
+  { href: "/backstage-cl-hq-manage-9x3kp2/users", label: "Consumers", icon: Users },
+  { href: "/backstage-cl-hq-manage-9x3kp2/creators", label: "Creators", icon: UserCheck },
+  { href: "/backstage-cl-hq-manage-9x3kp2/categories", label: "Categories", icon: Tag },
+  { href: "/backstage-cl-hq-manage-9x3kp2/resources", label: "Resources", icon: FileBox },
+  { href: "/backstage-cl-hq-manage-9x3kp2/review", label: "Review Queue", icon: ClipboardList },
+  { href: "/backstage-cl-hq-manage-9x3kp2/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/backstage-cl-hq-manage-9x3kp2/earnings", label: "Earnings", icon: Wallet },
 ];
 
 // Dark forest brand colour for the admin sidebar
@@ -74,7 +74,7 @@ export function AdminShell({ fullName, email, role, children }: Props) {
     >
       {/* Logo + Admin badge */}
       <div className="mb-8 flex items-center gap-2.5 px-4">
-        <Link href="/admin/overview" aria-label={`${APP_NAME} Admin`}>
+        <Link href="/backstage-cl-hq-manage-9x3kp2/overview" aria-label={`${APP_NAME} Admin`}>
           <Logo variant="mark" tone="cream" className="h-7 w-7" />
         </Link>
         <span className="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-widest text-white/70">
@@ -87,7 +87,7 @@ export function AdminShell({ fullName, email, role, children }: Props) {
         {[
           ...NAV_ITEMS,
           ...(role === "super_admin"
-            ? [{ href: "/admin/team", label: "Team", icon: UserCog }]
+            ? [{ href: "/backstage-cl-hq-manage-9x3kp2/team", label: "Team", icon: UserCog }]
             : []),
         ].map(({ href, label, icon: Icon }) => {
           const active = isActive(href);
@@ -143,7 +143,7 @@ export function AdminShell({ fullName, email, role, children }: Props) {
         className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-white/10 px-4 lg:hidden"
         style={{ background: SIDEBAR_BG }}
       >
-        <Link href="/admin/overview">
+        <Link href="/backstage-cl-hq-manage-9x3kp2/overview">
           <Logo variant="mark" tone="cream" className="h-7 w-7" />
         </Link>
         <button

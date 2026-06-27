@@ -75,7 +75,7 @@ export function LoginForm({
           return;
         }
         if (role === "admin" || role === "super_admin") {
-          router.push("/admin");
+          router.push("/backstage-cl-hq-manage-9x3kp2");
           router.refresh();
           return;
         }

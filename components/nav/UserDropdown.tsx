@@ -100,7 +100,7 @@ export function UserDropdown({ auth }: UserDropdownProps) {
         {/* role='admin' | 'super_admin' — admin panel only */}
         {(role === "admin" || role === "super_admin") && (
           <DropdownMenuItem asChild>
-            <Link href="/admin" className="flex items-center gap-2">
+            <Link href="/backstage-cl-hq-manage-9x3kp2" className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4" />
               Admin Panel
             </Link>

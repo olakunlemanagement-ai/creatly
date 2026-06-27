@@ -80,7 +80,7 @@ export function CreatorForm({ creator }: Props) {
         return;
       }
 
-      router.push("/admin/creators");
+      router.push("/backstage-cl-hq-manage-9x3kp2/creators");
       router.refresh();
     });
   }
@@ -216,7 +216,7 @@ export function CreatorForm({ creator }: Props) {
         </button>
         <button
           type="button"
-          onClick={() => router.push("/admin/creators")}
+          onClick={() => router.push("/backstage-cl-hq-manage-9x3kp2/creators")}
           className="rounded-xl border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
         >
           Cancel

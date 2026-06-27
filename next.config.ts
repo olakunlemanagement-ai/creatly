@@ -7,6 +7,20 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseHostname = supabaseUrl ? new URL(supabaseUrl).hostname : null;
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/admin",
+        destination: "/backstage-cl-hq-manage-9x3kp2",
+        permanent: true,
+      },
+      {
+        source: "/admin/:path*",
+        destination: "/backstage-cl-hq-manage-9x3kp2/:path*",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     // Bypass the /_next/image optimizer in dev — picsum.photos isn't reliably
     // reachable through the proxy, causing placeholder images to fail.

@@ -175,7 +175,7 @@ export function AdminUploadWizard({ categories, creators }: Props) {
       if (result.error) {
         setSubmitError(result.error);
       } else {
-        router.push("/admin/resources");
+        router.push("/backstage-cl-hq-manage-9x3kp2/resources");
         router.refresh();
       }
     });

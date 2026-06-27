@@ -161,7 +161,7 @@ export async function adminCreateResource(
     return { error: "Could not create resource. Please try again." };
   }
 
-  revalidatePath("/admin/resources");
+  revalidatePath("/backstage-cl-hq-manage-9x3kp2/resources");
   revalidatePath("/browse");
   return { slug: finalSlug };
 }
@@ -224,8 +224,8 @@ export async function adminUpdateResource(
     return { error: "Could not update resource. Please try again." };
   }
 
-  revalidatePath("/admin/resources");
-  revalidatePath(`/admin/resources/${id}/edit`);
+  revalidatePath("/backstage-cl-hq-manage-9x3kp2/resources");
+  revalidatePath(`/backstage-cl-hq-manage-9x3kp2/resources/${id}/edit`);
   revalidatePath("/browse");
   return {};
 }
@@ -245,7 +245,7 @@ export async function adminToggleFeatured(
     .eq("id", id);
 
   if (error) return { error: "Could not update featured status." };
-  revalidatePath("/admin/resources");
+  revalidatePath("/backstage-cl-hq-manage-9x3kp2/resources");
   revalidatePath("/browse");
   return {};
 }
@@ -274,7 +274,7 @@ export async function adminToggleStatus(
     .eq("id", id);
 
   if (error) return { error: "Could not update status." };
-  revalidatePath("/admin/resources");
+  revalidatePath("/backstage-cl-hq-manage-9x3kp2/resources");
   revalidatePath("/browse");
   return {};
 }
@@ -291,7 +291,7 @@ export async function adminArchiveResource(id: string): Promise<{ error?: string
     .eq("id", id);
 
   if (error) return { error: "Could not archive resource." };
-  revalidatePath("/admin/resources");
+  revalidatePath("/backstage-cl-hq-manage-9x3kp2/resources");
   revalidatePath("/browse");
   return {};
 }

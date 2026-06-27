@@ -204,7 +204,7 @@ export function MobileOverlay({ open, onClose, auth, navCategories }: MobileOver
                 )}
                 {(auth.profile.role === "admin" || auth.profile.role === "super_admin") && (
                   <Link
-                    href="/admin"
+                    href="/backstage-cl-hq-manage-9x3kp2"
                     onClick={onClose}
                     className="group inline-flex items-center gap-1.5 text-sm font-medium text-cream-100 transition-colors hover:text-terracotta-400"
                   >

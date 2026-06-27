@@ -7,7 +7,7 @@
 // Role routing matrix:
 //  /dashboard/*, /onboarding  → role='user' only
 //  /creator/* (not auth pages) → role='creator' only
-//  /admin/*                   → role in ('admin','super_admin') only
+//  /backstage-cl-hq-manage-9x3kp2/* → role in ('admin','super_admin') only
 //  /login, /signup/*          → unauthenticated only (redirect logged-in to role home)
 //  /creator/login, /creator/signup → unauthenticated or same-flow (redirect if already in)
 //  /creators/apply            → unauthenticated OR role='creator'
@@ -26,7 +26,7 @@ function safeNextParam(raw: string | null): string | null {
 // The canonical home for each role after login.
 function roleHome(role: UserRole): string {
   if (role === "creator") return "/creator/home";
-  if (role === "admin" || role === "super_admin") return "/admin";
+  if (role === "admin" || role === "super_admin") return "/backstage-cl-hq-manage-9x3kp2";
   return "/browse";
 }
 
@@ -60,9 +60,9 @@ function isCreatorOnlyRoute(p: string): boolean {
   return p.startsWith("/creator") && !isCreatorAuthPage(p);
 }
 
-// /admin/* — admin/super_admin only.
+// /backstage-cl-hq-manage-9x3kp2/* — admin/super_admin only.
 function isAdminRoute(p: string): boolean {
-  return p.startsWith("/admin");
+  return p.startsWith("/backstage-cl-hq-manage-9x3kp2");
 }
 
 // /creators/apply — special: unauthenticated OR creator only.
@@ -173,7 +173,7 @@ export async function middleware(request: NextRequest) {
   if (isCreatorAuthPage(pathname)) {
     if (role === "creator") return redirectTo("/creator/home");
     if (role === "user") return redirectTo("/browse");
-    if (role === "admin" || role === "super_admin") return redirectTo("/admin");
+    if (role === "admin" || role === "super_admin") return redirectTo("/backstage-cl-hq-manage-9x3kp2");
     return supabaseResponse; // null role — let through
   }
 
@@ -181,7 +181,7 @@ export async function middleware(request: NextRequest) {
   if (isUserOnlyRoute(pathname)) {
     if (role === "user") return supabaseResponse;
     if (role === "creator") return redirectTo("/creator/home");
-    if (role === "admin" || role === "super_admin") return redirectTo("/admin");
+    if (role === "admin" || role === "super_admin") return redirectTo("/backstage-cl-hq-manage-9x3kp2");
     return redirectTo("/browse");
   }
 
@@ -189,18 +189,18 @@ export async function middleware(request: NextRequest) {
   if (isCreatorOnlyRoute(pathname)) {
     if (role === "creator") return supabaseResponse;
     if (role === "user") return redirectTo("/browse");
-    if (role === "admin" || role === "super_admin") return redirectTo("/admin");
+    if (role === "admin" || role === "super_admin") return redirectTo("/backstage-cl-hq-manage-9x3kp2");
     return redirectTo("/browse");
   }
 
-  // ── Admin routes: /admin/* ───────────────────────────────────────────────
+  // ── Admin routes: /backstage-cl-hq-manage-9x3kp2/* ──────────────────────
   if (isAdminRoute(pathname)) {
     if (role !== "admin" && role !== "super_admin") {
       return redirectTo("/");
     }
     // /admin/team restricted to super_admin only
-    if (pathname.startsWith("/admin/team") && role !== "super_admin") {
-      return redirectTo("/admin/overview");
+    if (pathname.startsWith("/backstage-cl-hq-manage-9x3kp2/team") && role !== "super_admin") {
+      return redirectTo("/backstage-cl-hq-manage-9x3kp2/overview");
     }
     return supabaseResponse;
   }
@@ -209,7 +209,7 @@ export async function middleware(request: NextRequest) {
   if (isCreatorsApply(pathname)) {
     if (!role || role === "creator") return supabaseResponse;
     if (role === "user") return redirectTo("/browse");
-    if (role === "admin" || role === "super_admin") return redirectTo("/admin");
+    if (role === "admin" || role === "super_admin") return redirectTo("/backstage-cl-hq-manage-9x3kp2");
     return supabaseResponse;
   }
 

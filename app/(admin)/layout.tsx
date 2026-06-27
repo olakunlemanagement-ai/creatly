@@ -15,7 +15,7 @@ export default async function AdminGroupLayout({
 }) {
   const auth = await getAuthenticatedUser();
 
-  if (!auth) redirect("/login?next=/admin");
+  if (!auth) redirect("/login?next=/backstage-cl-hq-manage-9x3kp2");
 
   const { role } = auth.profile;
   if (role !== "admin" && role !== "super_admin") redirect("/dashboard");

@@ -81,7 +81,7 @@ export async function approveResource(
     return { error: "Could not approve this asset. Please try again." };
   }
 
-  revalidatePath("/admin/review");
+  revalidatePath("/backstage-cl-hq-manage-9x3kp2/review");
   return {};
 }
 
@@ -115,7 +115,7 @@ export async function rejectResource(
     return { error: "Could not reject this asset. Please try again." };
   }
 
-  revalidatePath("/admin/review");
+  revalidatePath("/backstage-cl-hq-manage-9x3kp2/review");
   return {};
 }
 
@@ -181,7 +181,7 @@ export async function createCreator(
     return { error: "Could not create creator. Please try again." };
   }
 
-  revalidatePath("/admin/creators");
+  revalidatePath("/backstage-cl-hq-manage-9x3kp2/creators");
   return { id: creator.id };
 }
 
@@ -239,8 +239,8 @@ export async function updateCreator(
     return { error: "Could not update creator. Please try again." };
   }
 
-  revalidatePath("/admin/creators");
-  revalidatePath(`/admin/creators/${id}/edit`);
+  revalidatePath("/backstage-cl-hq-manage-9x3kp2/creators");
+  revalidatePath(`/backstage-cl-hq-manage-9x3kp2/creators/${id}/edit`);
   return {};
 }
 
@@ -262,7 +262,7 @@ export async function softDeleteCreator(id: string): Promise<{ error?: string }>
     return { error: "Could not deactivate creator. Please try again." };
   }
 
-  revalidatePath("/admin/creators");
+  revalidatePath("/backstage-cl-hq-manage-9x3kp2/creators");
   return {};
 }
 
@@ -303,7 +303,7 @@ export async function createCategory(
     return { error: "Could not create category. Please try again." };
   }
 
-  revalidatePath("/admin/categories");
+  revalidatePath("/backstage-cl-hq-manage-9x3kp2/categories");
   revalidatePath("/browse");
   return { id: cat.id };
 }
@@ -340,7 +340,7 @@ export async function updateCategory(
     return { error: "Could not update category. Please try again." };
   }
 
-  revalidatePath("/admin/categories");
+  revalidatePath("/backstage-cl-hq-manage-9x3kp2/categories");
   revalidatePath("/browse");
   return {};
 }
@@ -376,7 +376,7 @@ export async function moveCategoryOrder(
     admin.from("categories").update({ sort_order: current.sort_order }).eq("id", swap.id),
   ]);
 
-  revalidatePath("/admin/categories");
+  revalidatePath("/backstage-cl-hq-manage-9x3kp2/categories");
   revalidatePath("/browse");
   return {};
 }
@@ -446,7 +446,7 @@ export async function inviteAdmin(
     acceptUrl,
   });
 
-  revalidatePath("/admin/team");
+  revalidatePath("/backstage-cl-hq-manage-9x3kp2/team");
   return {};
 }
 
@@ -515,7 +515,7 @@ export async function deactivateUser(userId: string): Promise<{ error?: string }
     return { error: "Could not deactivate account. Please try again." };
   }
 
-  revalidatePath("/admin/users");
+  revalidatePath("/backstage-cl-hq-manage-9x3kp2/users");
   return {};
 }
 
@@ -565,7 +565,7 @@ export async function removeAdmin(userId: string): Promise<{ error?: string }> {
     return { error: "Removed from team but could not demote role. Contact support." };
   }
 
-  revalidatePath("/admin/team");
+  revalidatePath("/backstage-cl-hq-manage-9x3kp2/team");
   return {};
 }
 
