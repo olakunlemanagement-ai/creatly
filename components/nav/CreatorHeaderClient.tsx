@@ -127,10 +127,10 @@ export function CreatorHeaderClient({ auth }: CreatorHeaderClientProps) {
             ) : (
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href="/creator/login">Sign in</Link>
+                  <Link href="/creators">Sign in</Link>
                 </Button>
                 <Button variant="terracotta" size="sm" className="rounded-full" asChild>
-                  <Link href="/creator/signup">Sign up</Link>
+                  <Link href="/creators">Sign up</Link>
                 </Button>
               </div>
             )}
