@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Reveal } from "@/components/shared/Reveal";
@@ -23,20 +22,27 @@ function getPalette(index: number) {
 }
 
 const CATEGORY_IMAGES: Record<string, string> = {
-  "stock-video":      "https://images.unsplash.com/photo-1536240478700-b869ad10e128?fit=crop&w=800&q=80",
-  "video-assets":     "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?fit=crop&w=800&q=80",
-  "stock-music":      "https://images.unsplash.com/photo-1511379938547-c1f69419868d?fit=crop&w=800&q=80",
-  "sound-assets":     "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?fit=crop&w=800&q=80",
-  "graphic-assets":   "https://images.unsplash.com/photo-1561070791-2526d30994b5?fit=crop&w=800&q=80",
-  "graphics":         "https://images.unsplash.com/photo-1561070791-2526d30994b5?fit=crop&w=800&q=80",
-  "templates":        "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?fit=crop&w=800&q=80",
-  "fonts":            "https://images.unsplash.com/photo-1631578186726-c4d347a2a3e5?fit=crop&w=800&q=80",
-  "mockups":          "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?fit=crop&w=800&q=80",
-  "motion-graphics":  "https://images.unsplash.com/photo-1550745165-9bc0b252726f?fit=crop&w=800&q=80",
-  "presentations":    "https://images.unsplash.com/photo-1542626991-cbc4e32524cc?fit=crop&w=800&q=80",
-  "icons":            "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?fit=crop&w=800&q=80",
-  "brand-kits":       "https://images.unsplash.com/photo-1559028006-448665bd7c7f?fit=crop&w=800&q=80",
-  "social-media":     "https://images.unsplash.com/photo-1611162617474-5b21e879e113?fit=crop&w=800&q=80",
+  "stock-video":           "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800",
+  "video-assets":          "https://images.unsplash.com/photo-1536240478700-b869ad10e128?w=800",
+  "stock-music":           "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800",
+  "sound-assets":          "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=800",
+  "graphic-assets":        "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800",
+  "graphics":              "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800",
+  "graphic-elements":      "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=800",
+  "presentation-assets":   "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=800",
+  "presentations":         "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=800",
+  "stock-photos":          "https://images.unsplash.com/photo-1606787366850-de6330128bfc?w=800",
+  "photos":                "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=800",
+  "fonts":                 "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=800",
+  "add-ons":               "https://images.unsplash.com/photo-1555066931-4365d14431b9?w=800",
+  "web-templates":         "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800",
+  "templates":             "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800",
+  "3d":                    "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800",
+  "mockups":               "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800",
+  "motion-graphics":       "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800",
+  "icons":                 "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=800",
+  "brand-kits":            "https://images.unsplash.com/photo-1559028006-448665bd7c7f?w=800",
+  "social-media":          "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800",
 };
 
 function getCategoryImage(slug: string): string | null {
@@ -143,12 +149,11 @@ function CategoryTile({
     >
       {/* Background image */}
       {imageUrl && (
-        <Image
+        <img
           src={imageUrl}
           alt=""
-          fill
-          className="object-cover"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          loading="lazy"
+          className="absolute inset-0 w-full h-full object-cover"
         />
       )}
 
