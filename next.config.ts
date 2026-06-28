@@ -33,6 +33,9 @@ const nextConfig: NextConfig = {
       // Dev seed placeholder images (picsum.photos)
       { protocol: "https", hostname: "picsum.photos" },
       { protocol: "https", hostname: "placehold.co" },
+      // Category bento tile background images
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "images.pexels.com" },
       // Supabase Storage — public preview bucket
       ...(supabaseHostname
         ? [

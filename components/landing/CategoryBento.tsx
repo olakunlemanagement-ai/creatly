@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Reveal } from "@/components/shared/Reveal";
@@ -7,7 +8,7 @@ interface CategoryBentoProps {
   categories: CategoryTileData[];
 }
 
-// Rotates through on-brand palette: forest, terracotta, sand, cream-deep, olive
+// Fallback solid-color palette used when no image matches the slug
 const TILE_PALETTES = [
   { bg: "bg-brand-green-900",   text: "text-cream-100",  sub: "text-cream-300/60" },
   { bg: "bg-terracotta-700",    text: "text-cream-100",  sub: "text-cream-200/60" },
@@ -19,6 +20,31 @@ const TILE_PALETTES = [
 
 function getPalette(index: number) {
   return TILE_PALETTES[index % TILE_PALETTES.length]!;
+}
+
+const CATEGORY_IMAGES: Record<string, string> = {
+  "stock-video":      "https://images.unsplash.com/photo-1536240478700-b869ad10e128?fit=crop&w=800&q=80",
+  "video-assets":     "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?fit=crop&w=800&q=80",
+  "stock-music":      "https://images.unsplash.com/photo-1511379938547-c1f69419868d?fit=crop&w=800&q=80",
+  "sound-assets":     "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?fit=crop&w=800&q=80",
+  "graphic-assets":   "https://images.unsplash.com/photo-1561070791-2526d30994b5?fit=crop&w=800&q=80",
+  "graphics":         "https://images.unsplash.com/photo-1561070791-2526d30994b5?fit=crop&w=800&q=80",
+  "templates":        "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?fit=crop&w=800&q=80",
+  "fonts":            "https://images.unsplash.com/photo-1631578186726-c4d347a2a3e5?fit=crop&w=800&q=80",
+  "mockups":          "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?fit=crop&w=800&q=80",
+  "motion-graphics":  "https://images.unsplash.com/photo-1550745165-9bc0b252726f?fit=crop&w=800&q=80",
+  "presentations":    "https://images.unsplash.com/photo-1542626991-cbc4e32524cc?fit=crop&w=800&q=80",
+  "icons":            "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?fit=crop&w=800&q=80",
+  "brand-kits":       "https://images.unsplash.com/photo-1559028006-448665bd7c7f?fit=crop&w=800&q=80",
+  "social-media":     "https://images.unsplash.com/photo-1611162617474-5b21e879e113?fit=crop&w=800&q=80",
+};
+
+function getCategoryImage(slug: string): string | null {
+  if (CATEGORY_IMAGES[slug]) return CATEGORY_IMAGES[slug]!;
+  const key = Object.keys(CATEGORY_IMAGES).find(
+    (k) => slug.includes(k) || k.includes(slug),
+  );
+  return key ? (CATEGORY_IMAGES[key] ?? null) : null;
 }
 
 export function CategoryBento({ categories }: CategoryBentoProps) {
@@ -54,6 +80,7 @@ export function CategoryBento({ categories }: CategoryBentoProps) {
                 palette={getPalette(0)}
                 className="col-span-2 row-span-2"
                 featured
+                imageUrl={getCategoryImage(featured.slug)}
               />
             )}
 
@@ -63,6 +90,7 @@ export function CategoryBento({ categories }: CategoryBentoProps) {
                 key={cat.id}
                 category={cat}
                 palette={getPalette(i + 1)}
+                imageUrl={getCategoryImage(cat.slug)}
               />
             ))}
           </div>
@@ -95,11 +123,13 @@ function CategoryTile({
   palette,
   className = "",
   featured = false,
+  imageUrl,
 }: {
   category: CategoryTileData;
   palette: Palette;
   className?: string;
   featured?: boolean;
+  imageUrl?: string | null;
 }) {
   return (
     <Link
@@ -111,15 +141,30 @@ function CategoryTile({
         className,
       ].join(" ")}
     >
-      {/* Subtle diagonal pattern overlay */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.06]"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%)",
-          backgroundSize: "8px 8px",
-        }}
-      />
+      {/* Background image */}
+      {imageUrl && (
+        <Image
+          src={imageUrl}
+          alt=""
+          fill
+          className="object-cover"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+        />
+      )}
+
+      {/* Dark overlay when image is present; subtle pattern when not */}
+      {imageUrl ? (
+        <div className="pointer-events-none absolute inset-0 bg-black/40" />
+      ) : (
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.06]"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%)",
+            backgroundSize: "8px 8px",
+          }}
+        />
+      )}
 
       {/* Bottom-left label block */}
       <div className="relative z-10">
@@ -127,14 +172,16 @@ function CategoryTile({
           className={[
             "font-heading font-bold leading-tight",
             featured ? "text-2xl sm:text-3xl" : "text-base sm:text-lg",
-            palette.text,
+            imageUrl ? "text-white" : palette.text,
           ].join(" ")}
           style={{ letterSpacing: "-0.01em" }}
         >
           {category.name}
         </p>
         {typeof category.resource_count === "number" && (
-          <p className={`mt-1 text-xs font-medium ${palette.sub}`}>
+          <p
+            className={`mt-1 text-xs font-medium ${imageUrl ? "text-white/70" : palette.sub}`}
+          >
             {category.resource_count.toLocaleString()}{" "}
             {category.resource_count === 1 ? "resource" : "resources"}
           </p>
