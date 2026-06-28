@@ -7,7 +7,8 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { browseParamsSchema } from "@/lib/validations/browse";
 import { BrowseHero } from "@/components/resource/BrowseHero";
 import { FeaturedStrip } from "@/components/resource/FeaturedStrip";
-import { CategoryTiles, type CategoryTileData } from "@/components/resource/CategoryTiles";
+import { type CategoryTileData } from "@/components/resource/CategoryTiles";
+import { CategoryScrollRow, type CategoryScrollItem } from "@/components/resource/CategoryScrollRow";
 import { SortControl } from "@/components/resource/SortControl";
 import { CategoryFilterSidebar } from "@/components/resource/CategoryFilterSidebar";
 import { MobileFilterClientWrapper } from "@/components/resource/MobileFilterClientWrapper";
@@ -159,26 +160,25 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     resourceQuery = resourceQuery.order("created_at", { ascending: false });
   }
 
-  // ── Fetch level-1 categories with resource counts (for tile grid) ──────────
-  const { data: level1Cats } = !isFiltered
-    ? await supabase
-        .from("categories")
-        .select("id, name, slug")
-        .eq("is_active", true)
-        .eq("level", 1)
-        .order("sort_order")
-        .returns<CategoryTileData[]>()
-    : { data: [] as CategoryTileData[] };
+  // ── Fetch level-1 categories with resource counts (for scroll row — always) ──
+  const { data: level1Cats } = await supabase
+    .from("categories")
+    .select("id, name, slug")
+    .eq("is_active", true)
+    .eq("level", 1)
+    .order("sort_order")
+    .returns<CategoryTileData[]>();
 
-  // Append resource counts per category
-  const level1CatTiles: CategoryTileData[] = await Promise.all(
+  // Append per-category resource counts + level-2 children for scroll row
+  const scrollRowCats: CategoryScrollItem[] = await Promise.all(
     (level1Cats ?? []).map(async (cat) => {
       const { count: rc } = await supabase
         .from("resources")
         .select("id", { count: "exact", head: true })
         .eq("category_id", cat.id)
         .eq("status", "published");
-      return { ...cat, resource_count: rc ?? 0 };
+      const children = navCategories.find((nc) => nc.id === cat.id)?.children ?? [];
+      return { ...cat, resource_count: rc ?? 0, children };
     }),
   );
 
@@ -223,14 +223,16 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
         />
       </Suspense>
 
-      {/* ── Category tiles (shown only on unfiltered landing view) ── */}
-      {!isFiltered && level1CatTiles.length > 0 && (
-        <div className="border-b border-border bg-muted/30 px-4 py-8 sm:px-6">
+      {/* ── Category scroll row — Envato-style, always visible ── */}
+      {scrollRowCats.length > 0 && (
+        <div className="border-b border-border bg-muted/20 px-4 py-4 sm:px-6">
           <div className="mx-auto max-w-7xl">
-            <p className="mb-4 font-mono text-xs uppercase tracking-widest text-muted-foreground">
-              {"// Browse by category"}
-            </p>
-            <CategoryTiles categories={level1CatTiles} activeCategory={null} />
+            <Suspense>
+              <CategoryScrollRow
+                categories={scrollRowCats}
+                activeCategory={categorySlug ?? null}
+              />
+            </Suspense>
           </div>
         </div>
       )}
