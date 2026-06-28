@@ -1,15 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { Eye, EyeOff, CheckCircle2, ArrowRight, Loader2 } from "lucide-react";
 
 import { creatorSignupSchema, type CreatorSignupInput } from "@/lib/validations/auth";
-import { createClient } from "@/lib/supabase/client";
-import { APP_NAME, APP_URL } from "@/lib/config";
+import { creatorSignup } from "@/lib/actions/creator-signup";
+import { APP_NAME } from "@/lib/config";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -26,7 +25,6 @@ import { PasswordStrengthMeter } from "@/components/auth/PasswordStrengthMeter";
 const labelClass = "font-mono text-[10px] uppercase tracking-widest text-muted-foreground";
 
 export function CreatorSignupForm() {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -46,31 +44,11 @@ export function CreatorSignupForm() {
 
   async function onSubmit(values: CreatorSignupInput) {
     setServerError(null);
-    const supabase = createClient();
-
-    const emailRedirectTo = `${APP_URL}/auth/callback?next=/creators/apply`;
-
-    const { data, error } = await supabase.auth.signUp({
-      email: values.email,
-      password: values.password,
-      options: {
-        data: { full_name: values.full_name },
-        emailRedirectTo,
-      },
-    });
-
-    // Treat "User already registered" as success — no email enumeration.
-    if (error && error.message !== "User already registered") {
-      setServerError("Something went wrong. Please try again.");
+    const result = await creatorSignup(values);
+    if ("error" in result) {
+      setServerError(result.error);
       return;
     }
-
-    // If email confirmation is disabled, Supabase returns a session immediately.
-    if (data.session) {
-      router.push("/creators/apply");
-      return;
-    }
-
     setSubmitted(true);
   }
 
