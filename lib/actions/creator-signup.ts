@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { APP_URL } from "@/lib/config";
 import { creatorSignupSchema, type CreatorSignupInput } from "@/lib/validations/auth";
 
@@ -15,7 +16,7 @@ export async function creatorSignup(
   const { email, password, full_name } = parsed.data;
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -31,6 +32,20 @@ export async function creatorSignup(
     }
     console.error("[creatorSignup] signUp error:", error.message);
     return { error: "Something went wrong. Please try again." };
+  }
+
+  // Set role='creator' immediately so middleware never routes this user through
+  // the consumer flow — even before they verify their email.
+  const userId = data?.user?.id;
+  if (userId) {
+    const supabaseAdmin = createAdminClient();
+    const { error: roleError } = await supabaseAdmin
+      .from("profiles")
+      .update({ role: "creator" })
+      .eq("id", userId);
+    if (roleError) {
+      console.error("[creatorSignup] role update error:", roleError.message);
+    }
   }
 
   return { ok: true };

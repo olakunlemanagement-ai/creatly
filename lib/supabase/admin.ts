@@ -10,8 +10,10 @@
 //      users have no RLS SELECT policy on storage.objects for that bucket (by design —
 //      giving them one would let any user bypass the server-side entitlement check).
 //      Entitlement is verified in the route handler before this function is called.
-//   3. lib/actions/creator-signup.ts — uses admin.generateLink() to create creator accounts
-//      without triggering Supabase's default verification email (we send our own via Resend).
+//   3. lib/actions/creator-signup.ts — (a) uses admin.generateLink() to create creator accounts
+//      without triggering Supabase's default verification email (we send our own via Resend);
+//      (b) immediately sets role='creator' on the new profile so middleware never routes
+//      the creator through the consumer flow, even before email verification.
 // ============================================================
 import { createClient } from "@supabase/supabase-js";
 import { env } from "@/lib/env";

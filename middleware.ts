@@ -208,7 +208,8 @@ export async function middleware(request: NextRequest) {
   // ── /creators/apply: unauthenticated OR creator only ─────────────────────
   if (isCreatorsApply(pathname)) {
     if (!role || role === "creator") return supabaseResponse;
-    if (role === "user") return redirectTo("/browse");
+    // role='user' means they arrived from the wrong flow — send back to consumer signup.
+    if (role === "user") return redirectTo("/signup");
     if (role === "admin" || role === "super_admin") return redirectTo("/backstage-cl-hq-manage-9x3kp2");
     return supabaseResponse;
   }

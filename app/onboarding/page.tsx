@@ -18,8 +18,12 @@ export default async function OnboardingPage() {
     redirect("/login?next=/onboarding");
   }
 
-  // Creators skip consumer onboarding entirely
-  if (auth.profile.role === "creator") {
+  // Creators skip consumer onboarding entirely — check role AND signup_type as a
+  // belt-and-suspenders guard in case the admin role update in creatorSignup raced.
+  if (
+    auth.profile.role === "creator" ||
+    auth.user.user_metadata?.signup_type === "creator"
+  ) {
     redirect("/creator/home");
   }
 
