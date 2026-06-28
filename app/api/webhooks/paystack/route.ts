@@ -1,7 +1,7 @@
 import { timingSafeEqual, createHmac } from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { PLANS } from "@/lib/pricing";
-import type { PlanId } from "@/lib/pricing";
+import { ALL_PLANS } from "@/lib/pricing";
+import type { AllPlanId } from "@/lib/pricing";
 
 // Paystack calls this endpoint — no Next.js auth middleware.
 // Verification is HMAC-SHA512 of the raw request body against PAYSTACK_SECRET_KEY.
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       return new Response("OK", { status: 200 }); // already processed
     }
 
-    const plan = PLANS[planId as PlanId];
+    const plan = ALL_PLANS[planId as AllPlanId];
     if (!plan) {
       console.error("[webhook] unknown plan_id:", planId);
       return new Response("OK", { status: 200 });
@@ -85,6 +85,41 @@ export async function POST(req: Request) {
     const periodEnd = new Date(now);
     periodEnd.setMonth(periodEnd.getMonth() + plan.months);
 
+    // ── Team workspace — auto-create on first team plan purchase ────────────────
+    // For team plans (seats > 1): ensure a team workspace exists for this owner.
+    // On renewal the team_id is already set; we skip creation.
+    let teamId: string | null = null;
+    const isTeamPlan = plan.seats > 1;
+
+    if (isTeamPlan) {
+      // Check if owner already has a subscription with a team linked
+      const { data: existingSub } = await supabase
+        .from("subscriptions")
+        .select("id, team_id")
+        .eq("owner_id", userId)
+        .maybeSingle();
+
+      if (existingSub?.team_id) {
+        // Renewing — reuse the existing team workspace
+        teamId = existingSub.team_id as string;
+      } else {
+        // First team plan purchase — create a workspace
+        const { data: newTeam, error: teamError } = await supabase
+          .from("teams")
+          .insert({ name: "My Team", owner_id: userId })
+          .select("id")
+          .single();
+
+        if (teamError || !newTeam) {
+          console.error("[webhook] team creation error:", teamError);
+          // Don't abort — subscription upsert will proceed without a team_id
+          // and the owner can create the team manually. Log for ops to fix.
+        } else {
+          teamId = newTeam.id as string;
+        }
+      }
+    }
+
     // ── Upsert subscription — webhook is the sole writer ─────────────────────
     // Uses owner_id (our column) mapped from metadata.user_id.
     const { data: sub, error: subError } = await supabase
@@ -95,7 +130,8 @@ export async function POST(req: Request) {
           plan_id:               planId,
           plan_type:             planId as string,      // keep legacy column in sync
           amount_kobo:           plan.kobo,
-          max_seats:             1,
+          max_seats:             plan.seats,            // 1 for individual, 5 for team
+          team_id:               teamId,
           status:                "active",
           current_period_start:  now.toISOString(),
           current_period_end:    periodEnd.toISOString(),

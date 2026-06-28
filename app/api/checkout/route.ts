@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { ok, fail } from "@/lib/api-response";
 import { checkoutSchema } from "@/lib/validations/checkout";
-import { PLANS } from "@/lib/pricing";
+import { ALL_PLANS } from "@/lib/pricing";
 import { createClient } from "@/lib/supabase/server";
 import { env } from "@/lib/env";
 
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) return fail("invalid_input", "Invalid plan selection.", 422);
 
     const { planId } = parsed.data;
-    const plan = PLANS[planId as keyof typeof PLANS];
+    const plan = ALL_PLANS[planId as keyof typeof ALL_PLANS];
 
     // 3. Generate idempotency reference
     const reference = crypto.randomUUID();

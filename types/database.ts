@@ -9,6 +9,9 @@ export const PLAN_TYPES = [
   "quarterly",
   "biannual",
   "annual",
+  "team_monthly",
+  "team_quarterly",
+  "team_annual",
 ] as const;
 export type PlanType = (typeof PLAN_TYPES)[number];
 

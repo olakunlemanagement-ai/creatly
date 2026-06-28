@@ -52,7 +52,7 @@ or when the founder calls for it). Add new items here as they're spotted.
 ## CORRECTION PASS 1 ✅ (see BUILD-PLAN-archive.md)
 
 ---
-CORRECTION PASS 2 ⬜
+CORRECTION PASS 2 ✅
 
 
 ⚙️ AUTONOMOUS RUN MODE
@@ -62,7 +62,7 @@ Execute every item in order. Build + self-review + one commit per item + /clear 
 
 
 
-CP2.1 — Newsletter backend ⬜
+CP2.1 — Newsletter backend ✅
 
 Scope:
 The footer has a newsletter email input with "Subscribe" button that currently goes nowhere.
@@ -127,7 +127,7 @@ No sending functionality yet (just list management for now)
 Commit: feat(newsletter): subscriber backend, welcome email, admin list
 
 
-CP2.2 — Envato-style category redesign ⬜ (design-led)
+CP2.2 — Envato-style category redesign ✅ (design-led)
 
 Reference: https://elements.envato.com/ — study the category browsing experience.
 
@@ -192,7 +192,7 @@ Mobile: bottom sheet with the full filter tree
 Commit: feat(categories): Envato-aligned structure + visual redesign
 
 
-CP2.3 — Teams plan ⬜
+CP2.3 — Teams plan ✅
 
 Recommended team plan structure (based on the individual plan pricing of ₦10k/month):
 

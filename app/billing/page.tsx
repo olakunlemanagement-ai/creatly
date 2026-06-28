@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatNaira } from "@/lib/format";
-import { PLANS } from "@/lib/pricing";
-import type { PlanId } from "@/lib/pricing";
+import { ALL_PLANS } from "@/lib/pricing";
+import type { AllPlanId } from "@/lib/pricing";
 import { BillingCancelButton } from "./BillingCancelButton";
 import type { Metadata } from "next";
 import { APP_NAME } from "@/lib/config";
@@ -24,7 +24,7 @@ export default async function BillingPage() {
   // Current subscription (SSR — fresh on every load)
   const { data: sub } = await supabase
     .from("subscriptions")
-    .select("id, status, plan_id, amount_kobo, current_period_end, cancel_at, paystack_sub_code")
+    .select("id, status, plan_id, amount_kobo, current_period_end, cancel_at, paystack_sub_code, max_seats, team_id")
     .eq("owner_id", auth.user.id)
     .in("status", ["active", "past_due"])
     .order("created_at", { ascending: false })
@@ -40,7 +40,40 @@ export default async function BillingPage() {
     .order("created_at", { ascending: false })
     .limit(20);
 
-  const plan = sub?.plan_id ? PLANS[sub.plan_id as PlanId] : null;
+  const plan = sub?.plan_id ? ALL_PLANS[sub.plan_id as AllPlanId] : null;
+  const isTeamPlan = (sub?.max_seats ?? 1) > 1;
+
+  // For team plans: fetch member list and seat usage
+  type TeamMemberBillingRow = {
+    id: string;
+    profile_id: string;
+    role: string;
+    profiles: { full_name: string | null; email: string } | null;
+  };
+  let teamMembers: TeamMemberBillingRow[] = [];
+  if (isTeamPlan && sub) {
+    const { data: members } = await supabase
+      .from("team_members")
+      .select("id, profile_id, role, profiles(full_name, email)")
+      .eq("subscription_id", sub.id)
+      .eq("invite_accepted", true)
+      .order("accepted_at", { ascending: true });
+
+    teamMembers = ((members ?? []) as unknown[]).map((m) => {
+      const row = m as {
+        id: string;
+        profile_id: string;
+        role: string;
+        profiles: { full_name: string | null; email: string } | Array<{ full_name: string | null; email: string }> | null;
+      };
+      return {
+        id:         row.id,
+        profile_id: row.profile_id,
+        role:       row.role,
+        profiles: Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles,
+      };
+    });
+  }
 
   return (
     <div className="mx-auto max-w-2xl space-y-12 px-4 py-12">
@@ -113,6 +146,86 @@ export default async function BillingPage() {
         </div>
       </section>
 
+      {/* Team plan — seat usage + member list */}
+      {isTeamPlan && sub && (
+        <section>
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Team members
+          </h2>
+          <div className="rounded-2xl border border-border p-6">
+            {/* Seat usage bar */}
+            <div className="mb-5">
+              <div className="mb-2 flex items-center justify-between text-sm">
+                <span className="font-medium text-foreground">
+                  {teamMembers.length} / {sub.max_seats} seats used
+                </span>
+                <a
+                  href="/dashboard/team"
+                  className="text-xs text-terracotta-600 underline underline-offset-2 hover:text-terracotta-700"
+                >
+                  Manage team →
+                </a>
+              </div>
+              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-brand-green-600 transition-all"
+                  style={{
+                    width: `${Math.min(100, (teamMembers.length / sub.max_seats) * 100)}%`,
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Member list */}
+            {teamMembers.length > 0 ? (
+              <div className="divide-y divide-border">
+                {teamMembers.map((m) => {
+                  const name = m.profiles?.full_name ?? m.profiles?.email ?? "Unknown";
+                  const memberEmail = m.profiles?.email ?? "";
+                  const isOwner = m.role === "owner" || m.profile_id === auth.user.id;
+                  return (
+                    <div key={m.id} className="flex items-center justify-between py-3">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{name}</p>
+                        <p className="text-xs text-muted-foreground">{memberEmail}</p>
+                      </div>
+                      {isOwner ? (
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                          Owner
+                        </span>
+                      ) : (
+                        <a
+                          href="/dashboard/team"
+                          className="text-xs text-muted-foreground underline underline-offset-2 hover:text-destructive"
+                        >
+                          Remove
+                        </a>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No members yet.{" "}
+                <a href="/dashboard/team" className="text-terracotta-600 underline underline-offset-2">
+                  Invite teammates →
+                </a>
+              </p>
+            )}
+
+            {/* Upgrade CTA */}
+            <p className="mt-5 rounded-xl border border-border bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
+              Need more than 5 seats?{" "}
+              <a href="mailto:hello@joincreatly.com" className="text-terracotta-600 underline underline-offset-2">
+                Contact us
+              </a>{" "}
+              to discuss larger team plans.
+            </p>
+          </div>
+        </section>
+      )}
+
       {/* Payment history */}
       {payments && payments.length > 0 && (
         <section>
@@ -121,7 +234,7 @@ export default async function BillingPage() {
           </h2>
           <div className="divide-y divide-border rounded-2xl border border-border">
             {payments.map((p) => {
-              const planLabel = p.plan_id ? (PLANS[p.plan_id as PlanId]?.label ?? p.plan_id) : "—";
+              const planLabel = p.plan_id ? (ALL_PLANS[p.plan_id as AllPlanId]?.label ?? p.plan_id) : "—";
               return (
                 <div key={p.reference} className="flex items-center justify-between px-5 py-4">
                   <div>

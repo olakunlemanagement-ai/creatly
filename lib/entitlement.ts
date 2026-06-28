@@ -33,8 +33,20 @@ export async function getUserEntitlement(userId: string): Promise<EntitlementRes
     .maybeSingle();
 
   if (teamMember?.subscriptions) {
-    // subscriptions is the joined row, not an array, due to !inner on a FK join
     const sub = teamMember.subscriptions as unknown as Subscription;
+
+    // Seat enforcement: verify the team has not exceeded its seat limit.
+    // Defence-in-depth — the invite endpoint already enforces this at join time.
+    const { count: seatCount } = await supabase
+      .from("team_members")
+      .select("*", { count: "exact", head: true })
+      .eq("subscription_id", teamMember.subscription_id)
+      .eq("invite_accepted", true);
+
+    if ((seatCount ?? 0) > sub.max_seats) {
+      return { entitled: false, subscription: null, reason: "no_subscription" };
+    }
+
     return { entitled: true, subscription: sub };
   }
 
