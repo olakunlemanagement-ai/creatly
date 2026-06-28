@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { APP_NAME, SUPPORT_EMAIL, APP_DOMAIN } from "@/lib/config";
 import { Logo } from "@/components/brand/Logo";
+import { NewsletterForm } from "./NewsletterForm";
 
 const LINKS = [
   {
@@ -41,12 +42,27 @@ export function SiteFooter() {
     <footer className="border-t border-border bg-brand-green-900">
       <div className="mx-auto max-w-7xl px-5 sm:px-6">
 
-        {/* Large wordmark */}
+        {/* Large wordmark + newsletter */}
         <div className="border-b border-white/10 py-14 sm:py-16">
-          <Logo variant="full" tone="cream" size={40} />
-          <p className="mt-4 max-w-[360px] text-sm leading-relaxed text-cream-300/70">
-            Creative resources for African creatives. One subscription, unlimited downloads.
-          </p>
+          <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
+            <div className="max-w-[360px]">
+              <Logo variant="full" tone="cream" size={40} />
+              <p className="mt-4 text-sm leading-relaxed text-cream-300/70">
+                Creative resources for African creatives. One subscription, unlimited downloads.
+              </p>
+            </div>
+
+            {/* Newsletter sign-up */}
+            <div className="max-w-sm lg:min-w-[320px]">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-cream-300/50">
+                Stay in the loop
+              </p>
+              <p className="mt-2 text-sm text-cream-300/70">
+                New asset drops, creator stories, and platform updates — in your inbox.
+              </p>
+              <NewsletterForm source="footer" />
+            </div>
+          </div>
         </div>
 
         {/* Link columns */}

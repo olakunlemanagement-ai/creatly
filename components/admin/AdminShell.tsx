@@ -16,6 +16,7 @@ import {
   X,
   ShieldCheck,
   UserCog,
+  Mail,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { LogoutButton } from "@/components/shared/LogoutButton";
@@ -30,13 +31,14 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/backstage-cl-hq-manage-9x3kp2/overview", label: "Overview", icon: LayoutDashboard },
-  { href: "/backstage-cl-hq-manage-9x3kp2/users", label: "Consumers", icon: Users },
+  { href: "/backstage-cl-hq-manage-9x3kp2/users", label: "Users", icon: Users },
   { href: "/backstage-cl-hq-manage-9x3kp2/creators", label: "Creators", icon: UserCheck },
   { href: "/backstage-cl-hq-manage-9x3kp2/categories", label: "Categories", icon: Tag },
   { href: "/backstage-cl-hq-manage-9x3kp2/resources", label: "Resources", icon: FileBox },
   { href: "/backstage-cl-hq-manage-9x3kp2/review", label: "Review Queue", icon: ClipboardList },
   { href: "/backstage-cl-hq-manage-9x3kp2/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/backstage-cl-hq-manage-9x3kp2/earnings", label: "Earnings", icon: Wallet },
+  { href: "/backstage-cl-hq-manage-9x3kp2/newsletter", label: "Newsletter", icon: Mail },
 ];
 
 // Dark forest brand colour for the admin sidebar
