@@ -25,6 +25,7 @@ const labelClass = "font-mono text-[10px] uppercase tracking-widest text-muted-f
 
 type LoginError =
   | { type: "unverified"; email: string }
+  | { type: "wrong_portal" }
   | { type: "generic"; message: string }
   | null;
 
@@ -48,6 +49,18 @@ export function CreatorLoginForm() {
     });
 
     if (!error && data.user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", data.user.id)
+        .single();
+
+      if (profile?.role === "user") {
+        await supabase.auth.signOut();
+        setLoginError({ type: "wrong_portal" });
+        return;
+      }
+
       router.push("/creator/home");
       router.refresh();
       return;
@@ -132,6 +145,22 @@ export function CreatorLoginForm() {
               </FormItem>
             )}
           />
+
+          {/* Wrong portal error */}
+          {loginError?.type === "wrong_portal" && (
+            <div className="rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+              <p className="font-medium">Please use the main login page.</p>
+              <p className="mt-1">
+                This portal is for creators only.{" "}
+                <Link
+                  href="/login"
+                  className="font-medium underline underline-offset-4 hover:opacity-80"
+                >
+                  Sign in here →
+                </Link>
+              </p>
+            </div>
+          )}
 
           {/* Unverified email error */}
           {loginError?.type === "unverified" && (

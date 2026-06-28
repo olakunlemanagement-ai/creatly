@@ -17,7 +17,7 @@ const INTENTS = [
     cta: "Start as a subscriber",
   },
   {
-    href: "/signup?next=/creators/apply",
+    href: "/creator/signup",
     icon: Palette,
     title: "I want to sell my work",
     description: "Upload your creative work and earn from every subscriber download.",

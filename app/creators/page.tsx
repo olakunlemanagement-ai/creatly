@@ -71,7 +71,7 @@ export default function CreatorsLandingPage() {
             </p>
             <div className="mt-10 flex flex-wrap gap-4">
               <Link
-                href="/creators/apply"
+                href="/creator/signup"
                 className="rounded-xl bg-terracotta-500 px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600"
               >
                 Become a creator →
@@ -149,7 +149,7 @@ export default function CreatorsLandingPage() {
             Join {APP_NAME} and reach creative professionals across Africa.
           </p>
           <Link
-            href="/creators/apply"
+            href="/creator/signup"
             className="mt-8 inline-block rounded-xl bg-white px-8 py-3 text-sm font-semibold text-terracotta-600 transition-colors hover:bg-cream-50"
           >
             Create your profile →
