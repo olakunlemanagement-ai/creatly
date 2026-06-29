@@ -206,16 +206,6 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
 
   return (
     <>
-      <div className="mx-auto max-w-7xl px-4 pt-2 pb-0 sm:px-6">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ChevronLeft className="size-3.5" />
-          Home
-        </Link>
-      </div>
-
       <Suspense>
         <BrowseHero
           navCategories={navCategories}

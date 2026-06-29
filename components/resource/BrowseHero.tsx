@@ -2,6 +2,8 @@
 
 import { useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import type { NavCategory } from "@/components/nav/SiteHeader";
 
 interface BrowseHeroProps {
@@ -39,12 +41,21 @@ export function BrowseHero({ navCategories, activeCategory }: BrowseHeroProps) {
 
   return (
     <section
-      className="px-4 pt-4 pb-12 sm:px-6 sm:pt-6 sm:pb-16"
+      className="px-4 pt-3 pb-12 sm:px-6 sm:pt-4 sm:pb-16"
       style={{
         background:
           "radial-gradient(ellipse at 65% 0%, oklch(0.33 0.10 148), oklch(0.20 0.07 148))",
       }}
     >
+      <div className="mx-auto max-w-7xl mb-3 sm:mb-4">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 text-sm text-cream-200/70 transition-colors hover:text-cream-100"
+        >
+          <ChevronLeft className="size-3.5" />
+          Home
+        </Link>
+      </div>
       <div className="mx-auto max-w-3xl text-center">
         <h1
           className="hero-animate font-heading text-3xl leading-tight text-cream-100 sm:text-5xl"
