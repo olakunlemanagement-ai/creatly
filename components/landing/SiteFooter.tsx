@@ -23,7 +23,6 @@ const LINKS = [
     heading: "For Creators",
     items: [
       { label: "Become a creator", href: "/creators" },
-      { label: "Creator portal", href: "/creators" },
     ],
   },
   {
