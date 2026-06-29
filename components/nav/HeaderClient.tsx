@@ -10,6 +10,7 @@ import { UserDropdown } from "@/components/nav/UserDropdown";
 import { MobileOverlay } from "@/components/nav/MobileOverlay";
 import { CONTACT_EMAIL } from "@/lib/config";
 import { UpgradeNudge } from "@/components/shared/UpgradeNudge";
+import { SearchSuggestions } from "@/components/search/SearchSuggestions";
 import type { AuthenticatedUser } from "@/lib/auth";
 import type { NavCategory } from "@/components/nav/SiteHeader";
 
@@ -28,13 +29,17 @@ function SearchForm({ navCategories }: { navCategories: NavCategory[] }) {
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const [category, setCategory] = useState(searchParams.get("category") ?? "");
 
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
+  function navigate() {
     const params = new URLSearchParams();
     if (query.trim()) params.set("q", query.trim());
     if (category) params.set("category", category);
     const qs = params.toString();
     router.push(qs ? `/browse?${qs}` : "/browse");
+  }
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    navigate();
   }
 
   return (
@@ -44,45 +49,47 @@ function SearchForm({ navCategories }: { navCategories: NavCategory[] }) {
       aria-label="Search resources"
       className="mx-auto hidden w-full max-w-lg lg:flex"
     >
-      <div className="flex w-full items-center rounded-full border border-stone-200 bg-white shadow-sm transition-shadow focus-within:border-stone-300 focus-within:shadow-md">
-        {/* Category select — shows main categories only */}
-        <div className="relative flex shrink-0 items-center">
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            aria-label="Filter by category"
-            className="h-10 appearance-none rounded-l-full bg-transparent py-0 pl-4 pr-6 text-sm font-medium text-stone-700 outline-none"
-          >
-            <option value="">All items</option>
-            {navCategories.map((cat) => (
-              <option key={cat.id} value={cat.slug}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            className="pointer-events-none absolute right-1 h-3.5 w-3.5 text-stone-400"
-            aria-hidden
+      {/* relative wrapper so the suggestions dropdown can position against it */}
+      <div className="relative w-full">
+        <div className="flex w-full items-center rounded-full border border-stone-200 bg-white shadow-sm transition-shadow focus-within:border-stone-300 focus-within:shadow-md">
+          {/* Category select — shows main categories only */}
+          <div className="relative flex shrink-0 items-center">
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              aria-label="Filter by category"
+              className="h-10 appearance-none rounded-l-full bg-transparent py-0 pl-4 pr-6 text-sm font-medium text-stone-700 outline-none"
+            >
+              <option value="">All items</option>
+              {navCategories.map((cat) => (
+                <option key={cat.id} value={cat.slug}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              className="pointer-events-none absolute right-1 h-3.5 w-3.5 text-stone-400"
+              aria-hidden
+            />
+          </div>
+
+          <div className="h-5 w-px shrink-0 bg-stone-200" aria-hidden />
+
+          <SearchSuggestions
+            query={query}
+            onQueryChange={setQuery}
+            onSubmit={navigate}
+            inputClassName="h-10 min-w-0 flex-1 bg-transparent px-4 text-sm text-stone-800 placeholder:text-stone-400 outline-none"
           />
+
+          <button
+            type="submit"
+            aria-label="Search"
+            className="mr-1.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#14342B] text-white transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#14342B]"
+          >
+            <Search className="h-3.5 w-3.5" />
+          </button>
         </div>
-
-        <div className="h-5 w-px shrink-0 bg-stone-200" aria-hidden />
-
-        <input
-          type="search"
-          placeholder="Search templates, fonts, mockups…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="h-10 min-w-0 flex-1 bg-transparent px-4 text-sm text-stone-800 placeholder:text-stone-400 outline-none"
-        />
-
-        <button
-          type="submit"
-          aria-label="Search"
-          className="mr-1.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#14342B] text-white transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#14342B]"
-        >
-          <Search className="h-3.5 w-3.5" />
-        </button>
       </div>
     </form>
   );

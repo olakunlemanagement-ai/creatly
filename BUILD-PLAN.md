@@ -263,7 +263,7 @@ BLOCKERS: (list any)
 
 ---
 
-### CP3.1 — Search suggestions (as-you-type dropdown) ⬜
+### CP3.1 — Search suggestions (as-you-type dropdown) ✅
 
 **Scope:**
 When a user types in the search bar (both navbar search and browse hero search), show a live dropdown of matching suggestions before they hit enter.
