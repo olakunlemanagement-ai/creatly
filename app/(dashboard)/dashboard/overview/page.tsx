@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Download, Heart, ArrowRight, Upload, CreditCard, BookOpen } from "lucide-react";
+import { Download, Heart, ArrowRight, Upload, CreditCard, BookOpen, History } from "lucide-react";
 import { APP_NAME } from "@/lib/config";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -38,6 +38,7 @@ export default async function DashboardOverviewPage() {
     { data: sub },
     { data: recentDownloadRows },
     { data: recentFavouriteRows },
+    { data: recentViewRows },
   ] = await Promise.all([
     supabase
       .from("subscriptions")
@@ -59,12 +60,19 @@ export default async function DashboardOverviewPage() {
       .eq("user_id", auth.user.id)
       .order("created_at", { ascending: false })
       .limit(4),
+    supabase
+      .from("recently_viewed")
+      .select("resource_id")
+      .eq("user_id", auth.user.id)
+      .order("viewed_at", { ascending: false })
+      .limit(4),
   ]);
 
-  // Fetch resource details for recent downloads
+  // Fetch resource details for recent downloads, favourites, and recently viewed
   const downloadResourceIds = (recentDownloadRows ?? []).map((d) => d.resource_id);
   const favouriteResourceIds = (recentFavouriteRows ?? []).map((f) => f.resource_id);
-  const allResourceIds = [...new Set([...downloadResourceIds, ...favouriteResourceIds])];
+  const viewedResourceIds = (recentViewRows ?? []).map((v) => v.resource_id);
+  const allResourceIds = [...new Set([...downloadResourceIds, ...favouriteResourceIds, ...viewedResourceIds])];
 
   let resourceMap = new Map<string, ResourceCardData>();
   if (allResourceIds.length > 0) {
@@ -81,6 +89,10 @@ export default async function DashboardOverviewPage() {
     .filter((r): r is ResourceCardData => r !== undefined);
 
   const favouriteResources = favouriteResourceIds
+    .map((id) => resourceMap.get(id))
+    .filter((r): r is ResourceCardData => r !== undefined);
+
+  const viewedResources = viewedResourceIds
     .map((id) => resourceMap.get(id))
     .filter((r): r is ResourceCardData => r !== undefined);
 
@@ -234,6 +246,36 @@ export default async function DashboardOverviewPage() {
           </div>
         )}
       </section>
+
+      {/* Recently viewed — hidden when empty */}
+      {viewedResources.length > 0 && (
+        <section className="mt-8">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <History className="h-4 w-4 text-muted-foreground" />
+              <h2 className="font-heading text-base font-semibold text-foreground">
+                Recently viewed
+              </h2>
+            </div>
+            <Link
+              href="/dashboard/recently-viewed"
+              className="text-sm text-brand-green-700 hover:text-brand-green-800"
+            >
+              View all →
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {viewedResources.map((resource) => (
+              <ResourceCard
+                key={resource.id}
+                resource={resource}
+                isFavourited={favouritedSet.has(resource.id)}
+                userId={auth.user.id}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Saved favourites */}
       <section className="mt-8">

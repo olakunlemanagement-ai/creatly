@@ -12,6 +12,7 @@ import type { EntitlementState } from "@/components/resource/DownloadButton";
 import { FavouriteButton } from "@/components/resource/FavouriteButton";
 import { ResourceCard, type ResourceCardData } from "@/components/resource/ResourceCard";
 import { ResourceGrid } from "@/components/resource/ResourceGrid";
+import { recordRecentlyViewed } from "@/lib/actions/recently-viewed";
 import type { Resource, Creator, Category } from "@/types/database";
 
 // ─── Joined resource type for this page ───────────────────────────────────────
@@ -71,6 +72,11 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
 
   const typedResource = resource as ResourceDetail;
   const userId = auth?.user.id ?? null;
+
+  // Fire-and-forget: track view for logged-in users without blocking render
+  if (userId) {
+    void recordRecentlyViewed(userId, typedResource.id);
+  }
 
   // Fetch the parent category for breadcrumb (one extra query, cheap)
   let parentCategory: Pick<Category, "name" | "slug"> | null = null;

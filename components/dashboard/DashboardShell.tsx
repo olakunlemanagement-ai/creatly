@@ -16,6 +16,7 @@ import {
   X,
   Crown,
   CreditCard,
+  History,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { LogoutButton } from "@/components/shared/LogoutButton";
@@ -31,6 +32,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/overview", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/downloads", label: "Downloads", icon: Download },
+  { href: "/dashboard/recently-viewed", label: "Recently Viewed", icon: History },
   { href: "/dashboard/favourites", label: "Starred Items", icon: Star },
   { href: "/dashboard/profile", label: "Profile", icon: User },
   { href: "/dashboard/account", label: "Account", icon: Settings },
