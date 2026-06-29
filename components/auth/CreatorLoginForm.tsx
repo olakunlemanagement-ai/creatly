@@ -10,6 +10,7 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { GoogleOAuthButton } from "@/components/auth/GoogleOAuthButton";
 
 import {
   Form,
@@ -211,6 +212,9 @@ export function CreatorLoginForm() {
           </Button>
         </form>
       </Form>
+
+      {/* Google OAuth */}
+      <GoogleOAuthButton next="/creator/home" />
 
       {/* Footer links */}
       <div className="space-y-2 text-center text-sm text-muted-foreground">

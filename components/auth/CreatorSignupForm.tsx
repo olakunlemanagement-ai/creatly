@@ -10,6 +10,7 @@ import { creatorSignupSchema, type CreatorSignupInput } from "@/lib/validations/
 import { creatorSignup } from "@/lib/actions/creator-signup";
 import { APP_NAME } from "@/lib/config";
 import { Button } from "@/components/ui/button";
+import { GoogleOAuthButton } from "@/components/auth/GoogleOAuthButton";
 
 import {
   Form,
@@ -221,6 +222,12 @@ export function CreatorSignupForm() {
           </Button>
         </form>
       </Form>
+
+      {/* Google OAuth — uses creator-confirm callback to promote role */}
+      <GoogleOAuthButton
+        next="/creators/apply"
+        confirmPath="/auth/creator-confirm"
+      />
 
       {/* Footer links */}
       <div className="space-y-2 text-center text-sm text-muted-foreground">

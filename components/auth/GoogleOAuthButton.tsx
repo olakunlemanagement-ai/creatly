@@ -6,9 +6,10 @@ import { APP_URL } from "@/lib/config";
 
 interface Props {
   next?: string;
+  confirmPath?: string;
 }
 
-export function GoogleOAuthButton({ next }: Props) {
+export function GoogleOAuthButton({ next, confirmPath = "/auth/confirm" }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,7 +18,7 @@ export function GoogleOAuthButton({ next }: Props) {
     setLoading(true);
     const supabase = createClient();
 
-    const redirectTo = `${APP_URL}/auth/confirm${next ? `?next=${encodeURIComponent(next)}` : ""}`;
+    const redirectTo = `${APP_URL}${confirmPath}${next ? `?next=${encodeURIComponent(next)}` : ""}`;
 
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
