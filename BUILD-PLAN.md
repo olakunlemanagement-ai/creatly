@@ -252,3 +252,213 @@ CP2.2  Envato category structure + visual redesign        ✅/❌
 CP2.3  Teams plan + pricing tab + seat enforcement        ✅/❌
 
 BLOCKERS: (list any)
+
+## CORRECTION PASS 3 — User Experience Features ⬜
+
+> ## ⚙️ AUTONOMOUS RUN MODE
+>
+> Execute every item in order. Build + self-review + one commit per item + `/clear` between items. Log blockers to `BLOCKERS.md`. STOP at end of this pass. Output completion checklist at the end.
+>
+> **Critical:** Do NOT break existing functionality. Every item is additive — no rewrites of existing search, browse, download, or auth logic. If a step would require changing core Phase 1-5 logic, find the additive path instead and note it.
+
+---
+
+### CP3.1 — Search suggestions (as-you-type dropdown) ⬜
+
+**Scope:**
+When a user types in the search bar (both navbar search and browse hero search), show a live dropdown of matching suggestions before they hit enter.
+
+1. **New API route** `app/api/search/suggestions/route.ts` — GET:
+   - Accepts `?q=` (min 2 chars, max 50, Zod-validated)
+   - Returns up to 8 suggestions combining:
+     - **Resource matches**: top 4 published resources matching title (ilike `%q%`), return `{ type: 'resource', title, slug, category }`
+     - **Category matches**: top 2 categories (level 1) matching name, return `{ type: 'category', name, slug }`
+     - **Tag matches**: top 2 resources where tags array contains a matching tag, return `{ type: 'tag', tag, count }`
+   - Server-side only; RLS applies (only published resources)
+   - Response: `{ suggestions: Suggestion[] }`
+
+2. **`SearchSuggestions` client component** (`components/search/SearchSuggestions.tsx`):
+   - Wraps the existing search input
+   - Debounce: 200ms (faster than the browse filter debounce — this is just UI)
+   - Shows dropdown below the input: resource results (with tiny thumbnail), category chips, tag pills
+   - Keyboard navigation: arrow keys move through results, Enter selects, Escape closes
+   - Clicking a resource → `/resources/[slug]`; clicking a category → `/browse?category=[slug]`; clicking a tag → `/browse?q=[tag]`
+   - Close on click outside; close on route change
+   - Loading state: subtle shimmer in the dropdown while fetching
+   - Empty state: "No results for '[query]'" after 300ms with no results
+   - Does NOT replace or alter the existing search/filter logic on `/browse` — suggestions are a UX layer only
+
+3. **Wire into navbar search** (`HeaderClient.tsx` search input) and the browse hero search input.
+
+4. **No new DB indexes needed** — the existing FTS index (`idx_resources_fts`) covers this. Use `ilike` for the suggestion query (fast enough for 8 results).
+
+**Acceptance criteria:**
+1. Typing 2+ chars in navbar or browse search shows a dropdown within ~300ms.
+2. Dropdown shows resource, category, and tag suggestions correctly.
+3. Keyboard navigation works (arrows + Enter + Escape).
+4. Clicking a suggestion navigates correctly.
+5. Existing browse search/filter behaviour completely unchanged.
+6. Mobile: dropdown fits within viewport width, touch-friendly tap targets.
+7. `pnpm typecheck` + `pnpm lint` pass.
+8. Commit: `feat(search): as-you-type search suggestions dropdown`
+
+**Watch for:** don't fire on every keystroke — debounce 200ms; don't break the existing browse URL-driven search; keep the dropdown z-index above the category bar.
+
+---
+
+### CP3.2 — Recently viewed ⬜
+
+**Scope:**
+Track the last 10 resources a logged-in user viewed and show them on the dashboard overview and a dedicated section.
+
+1. **Migration** — new table:
+```sql
+create table public.recently_viewed (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references auth.users on delete cascade,
+  resource_id uuid not null references public.resources on delete cascade,
+  viewed_at   timestamptz not null default now(),
+  unique (user_id, resource_id)  -- one entry per resource; update viewed_at on re-view
+);
+-- Keep only last 10 per user (enforced via trigger or application logic)
+alter table public.recently_viewed enable row level security;
+create policy "owner" on public.recently_viewed
+  for all using (auth.uid() = user_id);
+```
+
+2. **Track views** — in the resource detail page server component (`app/(app)/resources/[slug]/page.tsx`), after fetching the resource, fire a server action to record the view:
+   - Only for logged-in users (skip guests)
+   - Upsert: if the resource is already in recently_viewed, update `viewed_at = now()`
+   - After upsert, delete any rows beyond the 10 most recent for this user
+   - Use the admin client (server action, identity already verified) — fire-and-forget (don't block page render)
+
+3. **Dashboard overview** — add a "Recently viewed" row below "Recent downloads" on `/dashboard/overview`:
+   - Fetch last 4 recently viewed resources
+   - Render as small `ResourceCard`s
+   - "View all" → `/dashboard/recently-viewed`
+   - Empty state: "No recently viewed resources yet — start browsing"
+   - Hide the section entirely if no viewed resources
+
+4. **`/dashboard/recently-viewed` page** — full list:
+   - All recently viewed resources (up to 10), newest first
+   - Same grid as downloads page
+   - "Clear history" button → deletes all recently_viewed rows for the user (with confirmation)
+   - Add "Recently Viewed" link to dashboard sidebar (icon: lucide History)
+
+**Acceptance criteria:**
+1. Visiting a resource detail page records the view (logged-in users only).
+2. Dashboard overview shows last 4 recently viewed; section hidden if none.
+3. `/dashboard/recently-viewed` shows full list with clear history.
+4. Re-visiting a resource moves it to the top (updates viewed_at).
+5. Maximum 10 entries per user enforced.
+6. No impact on page render performance (fire-and-forget tracking).
+7. Commit: `feat(dashboard): recently viewed resources tracking and display`
+
+---
+
+### CP3.3 — Free trial (7-day) ⬜
+
+**Scope:**
+Allow new users to start a 7-day free trial before subscribing. This is a major conversion driver — users experience the product before committing money.
+
+**Trial rules (locked):**
+- One trial per user, ever (enforced server-side)
+- Trial gives full entitlement (same as active subscription)
+- Trial expires after 7 days — no payment taken automatically
+- After expiry, user must subscribe to continue downloading
+- Trial available to new users only (no existing subscription or prior trial)
+
+1. **Migration**:
+```sql
+alter table public.subscriptions
+  add column if not exists is_trial boolean not null default false,
+  add column if not exists trial_used boolean not null default false;
+-- trial_used on profiles to prevent multiple trials
+alter table public.profiles
+  add column if not exists trial_used boolean not null default false;
+```
+
+2. **`app/api/trial/start/route.ts`** — POST, auth-gated:
+   - Check `profiles.trial_used = false` — if already used → 409 `{ error: 'trial_already_used' }`
+   - Check no active subscription exists → if yes → 409 `{ error: 'already_subscribed' }`
+   - Insert `subscriptions` row: `{ status: 'active', is_trial: true, current_period_start: now(), current_period_end: now() + 7 days, plan_id: 'monthly' }`
+   - Update `profiles.trial_used = true`
+   - Use admin client (server-side, identity verified)
+   - Return `{ ok: true, expires_at }`
+
+3. **Trial CTA placement:**
+   - On `/pricing` page: above the plan cards, a prominent banner: "New to Creatly? Start your 7-day free trial — no credit card required." with a "Start free trial →" button
+   - On resource detail page (for logged-in free users): below the subscribe prompt, a smaller "Or try free for 7 days →" link
+   - On `/dashboard/overview` subscription card (free users): "Start your free trial" CTA
+   - Hide the trial CTA if `profiles.trial_used = true`
+
+4. **Trial expiry banner** — when `is_trial = true` and `current_period_end < now() + 2 days`:
+   - Show a banner on all pages (reuse `ExpiredBanner` pattern from Phase 2): "Your free trial expires in X days. Subscribe to keep downloading."
+   - After expiry: existing `ExpiredBanner` already handles `status = inactive`
+
+5. **Entitlement** — `getUserEntitlement()` from Phase 1.8 already reads `subscriptions.status = 'active'` — trial rows with `status = 'active'` automatically grant entitlement. No change needed to the download mechanic.
+
+**Acceptance criteria:**
+1. New user can start a 7-day trial from `/pricing`, resource detail, or dashboard — no payment required.
+2. Trial grants full download entitlement immediately.
+3. Second trial attempt returns 409 (server-enforced, not just UI).
+4. Trial CTA hidden after trial used.
+5. Expiry banner shows when trial ending soon.
+6. After expiry, download blocked (existing entitlement check handles this).
+7. `profiles.trial_used` prevents re-trialing even after account changes.
+8. Commit: `feat(trial): 7-day free trial with server-side enforcement`
+
+**Watch for:** trial rows must go through the server action — never trust the client to create subscription rows (existing webhook-only rule has an exception here since this is a free trial with no payment); use admin client after identity verification; document this exception with a comment.
+
+---
+
+### CP3.4 — Social sharing ⬜ (design-led)
+
+**Scope:**
+Let users share resource pages on social media. Each resource detail page gets share buttons. Sharing drives organic discovery — a creator shares their own work, a user shares something they found useful.
+
+1. **Share buttons on resource detail page** (`app/(app)/resources/[slug]/page.tsx`):
+   - A "Share" button (lucide Share2 icon) in the resource detail sidebar, near the download CTA
+   - Clicking opens a small share panel (popover, not a modal) with:
+     - **Copy link** — copies `https://joincreatly.com/resources/[slug]` to clipboard, shows "Copied!" feedback
+     - **WhatsApp** — `https://wa.me/?text=Check out [title] on Creatly: [url]` (most relevant for African audience)
+     - **X (Twitter)** — `https://twitter.com/intent/tweet?text=...&url=...`
+     - **LinkedIn** — `https://www.linkedin.com/sharing/share-offsite/?url=...`
+     - **Facebook** — `https://www.facebook.com/sharer/sharer.php?u=...`
+
+2. **OG meta tags** — each resource detail page must have proper Open Graph tags for rich previews when shared:
+   - Already handled by `generateMetadata` in the resource detail page — verify/enhance:
+     - `og:title`: resource title
+     - `og:description`: resource description (truncated to 160 chars)
+     - `og:image`: the resource's primary preview image URL
+     - `og:url`: canonical URL
+     - `twitter:card`: `summary_large_image`
+
+3. **Share count** (optional, lightweight):
+   - Add a `share_count integer default 0` column to resources (migration)
+   - Increment via a server action when the copy-link button is clicked (best-effort, fire-and-forget)
+   - Show share count on the resource detail page alongside download count: "142 downloads · 23 shares"
+
+4. **Share on creator storefront** — add the same share panel to `/creators/[handle]` so creators can share their own storefront page.
+
+**Acceptance criteria:**
+1. Share button on resource detail page opens a popover with 5 share options.
+2. Copy link copies the correct URL and shows feedback.
+3. WhatsApp, X, LinkedIn, Facebook links open correctly with pre-filled text.
+4. OG meta tags are correct — test by pasting a resource URL into https://opengraph.xyz.
+5. Share panel on creator storefront works.
+6. Mobile-first: share panel is touch-friendly, full-width on mobile.
+7. Commit: `feat(sharing): social share buttons on resource detail + creator storefront`
+
+---
+
+### CP3 Completion checklist (Claude outputs this at the end):
+
+```
+CP3.1  Search suggestions dropdown              ✅/❌
+CP3.2  Recently viewed tracking + dashboard     ✅/❌
+CP3.3  Free trial (7-day, server-enforced)      ✅/❌
+CP3.4  Social sharing + OG meta tags            ✅/❌
+
+BLOCKERS: (list any)
+```
