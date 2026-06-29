@@ -1,11 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import { APP_NAME } from "@/lib/config";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getPreviewImageUrl } from "@/lib/storage";
-import type { ResourceCardData } from "@/components/resource/ResourceCard";
 
 export const metadata: Metadata = { title: `Home — ${APP_NAME}` };
 
@@ -74,16 +71,6 @@ export default async function CreatorHomePage() {
     recentUploads = recentRes.data ?? [];
   }
 
-  const { data: featuredRaw } = await supabase
-    .from("resources")
-    .select("*, creators(name), categories(name, slug)")
-    .eq("status", "published")
-    .eq("is_featured", true)
-    .order("created_at", { ascending: false })
-    .limit(4);
-
-  const featured = (featuredRaw as ResourceCardData[] | null) ?? [];
-
   const STATS = [
     { label: "Total uploads", value: totalUploads, href: "/creator/assets" },
     { label: "Total downloads", value: totalDownloads, href: "/creator" },
@@ -148,63 +135,6 @@ export default async function CreatorHomePage() {
             </Link>
           ))}
         </div>
-      </section>
-
-      {/* Browse the marketplace */}
-      <section>
-        <div className="mb-4 flex items-center justify-between">
-          <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            Browse the marketplace
-          </p>
-          <Link
-            href="/browse"
-            className="text-xs font-medium text-terracotta-500 hover:text-terracotta-600"
-          >
-            Browse all →
-          </Link>
-        </div>
-
-        {featured.length > 0 ? (
-          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {featured.map((r) => {
-              const previewUrl = getPreviewImageUrl(r.preview_image_path);
-              return (
-                <li key={r.id}>
-                  <Link
-                    href={`/resources/${r.slug}`}
-                    className="group block overflow-hidden rounded-xl border border-border bg-card transition-shadow hover:shadow-md"
-                  >
-                    <div className="relative aspect-[4/3] bg-muted">
-                      {previewUrl ? (
-                        <Image
-                          src={previewUrl}
-                          alt={r.title}
-                          fill
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          sizes="(max-width: 640px) 50vw, 25vw"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                          No preview
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-3">
-                      <p className="truncate text-sm font-medium text-foreground">{r.title}</p>
-                      {r.creators?.name && (
-                        <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
-                          {r.creators.name}
-                        </p>
-                      )}
-                    </div>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p className="text-sm text-muted-foreground">No featured resources yet.</p>
-        )}
       </section>
 
       {/* Recent activity */}
