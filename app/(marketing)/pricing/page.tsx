@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { PricingGrid } from "@/components/pricing/PricingGrid";
 import { PricingFAQ } from "@/components/pricing/PricingFAQ";
+import { TrialStartButton } from "@/components/shared/TrialStartButton";
 import { APP_NAME } from "@/lib/config";
 import { Check, ShieldCheck, BadgeCheck, CalendarX } from "lucide-react";
 
@@ -29,6 +30,7 @@ export default async function PricingPage() {
   const auth = await getAuthenticatedUser();
 
   let currentPlanId: string | null = null;
+  let trialUsed = true; // default to true so CTA is hidden for guests
   if (auth) {
     const supabase = await createClient();
     const { data: sub } = await supabase
@@ -38,7 +40,12 @@ export default async function PricingPage() {
       .eq("status", "active")
       .maybeSingle();
     currentPlanId = sub?.plan_id ?? null;
+    // trial_used added by migration 20260629000001; cast until types are regenerated
+    trialUsed = !!(auth.profile as unknown as { trial_used?: boolean }).trial_used;
   }
+
+  // Show trial banner to: logged-in users with no active subscription who haven't used their trial
+  const showTrialBanner = !!auth && !currentPlanId && !trialUsed;
 
   return (
     <div className="min-h-screen bg-background">
@@ -77,6 +84,21 @@ export default async function PricingPage() {
       {/* ── Plan cards ───────────────────────────────────────────────────── */}
       <section className="px-5 py-16 sm:px-6">
         <div className="mx-auto max-w-6xl">
+          {/* Free trial banner — shown to eligible logged-in free users */}
+          {showTrialBanner && (
+            <div className="mb-10 flex flex-col items-center gap-3 rounded-2xl border border-terracotta-200 bg-terracotta-50 px-6 py-6 text-center sm:flex-row sm:text-left">
+              <div className="flex-1">
+                <p className="font-heading text-base font-semibold text-terracotta-800">
+                  New to {APP_NAME}? Start your 7-day free trial — no credit card required.
+                </p>
+                <p className="mt-1 text-sm text-terracotta-700">
+                  Full access to every asset. Cancel or subscribe anytime.
+                </p>
+              </div>
+              <TrialStartButton />
+            </div>
+          )}
+
           <PricingGrid currentPlanId={currentPlanId} authenticated={!!auth} />
 
           {/* Trust signals */}

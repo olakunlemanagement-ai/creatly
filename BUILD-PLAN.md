@@ -306,7 +306,7 @@ When a user types in the search bar (both navbar search and browse hero search),
 
 ---
 
-### CP3.2 — Recently viewed ⬜
+### CP3.2 — Recently viewed ✅
 
 **Scope:**
 Track the last 10 resources a logged-in user viewed and show them on the dashboard overview and a dedicated section.
@@ -356,7 +356,7 @@ create policy "owner" on public.recently_viewed
 
 ---
 
-### CP3.3 — Free trial (7-day) ⬜
+### CP3.3 — Free trial (7-day) ✅
 
 **Scope:**
 Allow new users to start a 7-day free trial before subscribing. This is a major conversion driver — users experience the product before committing money.

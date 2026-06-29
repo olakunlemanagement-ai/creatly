@@ -3,7 +3,7 @@
 // This key must NEVER be used to read or write data tables in a user-reachable route
 // (subscriptions, downloads, profiles, etc.) — that would defeat RLS.
 //
-// Legitimate callers (exactly four):
+// Legitimate callers (exactly five):
 //   1. app/api/webhooks/paystack/route.ts — webhook handler that mutates subscription state.
 //   2. lib/download.ts createSignedUrl() — generates a short-lived signed URL for the private
 //      resource-files bucket. Storage signed URLs require service-role because authenticated
@@ -16,6 +16,10 @@
 //      the creator through the consumer flow, even before email verification.
 //   4. app/auth/creator-confirm/route.ts — OAuth callback for creator Google sign-up;
 //      promotes role='creator' after code exchange so the user lands in the creator flow.
+//   5. app/api/trial/start/route.ts — free trial activation (no Paystack involvement).
+//      Exception to the "webhook-only subscription writes" rule: this is a zero-payment
+//      trial that cannot go through Paystack. Identity is verified via getAuthenticatedUser()
+//      before the admin client writes the subscription row.
 // ============================================================
 import { createClient } from "@supabase/supabase-js";
 import { env } from "@/lib/env";

@@ -9,6 +9,7 @@ export type SubscriptionState = {
   isActive: boolean;
   isCancelled: boolean;
   isPastDue: boolean;
+  isTrial: boolean;
   status: string | null;
   planId: string | null;
   planLabel: string | null;
@@ -23,6 +24,7 @@ const INITIAL: SubscriptionState = {
   isActive: false,
   isCancelled: false,
   isPastDue: false,
+  isTrial: false,
   status: null,
   planId: null,
   planLabel: null,
@@ -49,7 +51,7 @@ export function useSubscription(userId: string | null | undefined): Subscription
     async function fetch() {
       const { data } = await supabase
         .from("subscriptions")
-        .select("status, plan_id, current_period_end, cancel_at, max_seats")
+        .select("status, plan_id, current_period_end, cancel_at, max_seats, is_trial")
         .eq("owner_id", userId)
         .in("status", ["active", "past_due", "cancelled"])
         .order("created_at", { ascending: false })
@@ -65,11 +67,13 @@ export function useSubscription(userId: string | null | undefined): Subscription
         ? ((await import("@/lib/pricing")).PLANS[data.plan_id as keyof typeof PLANS]?.label ?? null)
         : null;
 
+      const isTrial = !!(data as unknown as { is_trial?: boolean }).is_trial;
       setState({
         loading:     false,
         isActive:    data.status === "active",
         isCancelled: data.status === "cancelled",
         isPastDue:   data.status === "past_due",
+        isTrial,
         status:      data.status,
         planId:      data.plan_id,
         planLabel,

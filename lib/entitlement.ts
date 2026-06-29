@@ -20,7 +20,16 @@ export async function getUserEntitlement(userId: string): Promise<EntitlementRes
     .limit(1)
     .maybeSingle();
 
-  if (owned) return { entitled: true, subscription: owned };
+  if (owned) {
+    // Free trials expire by time (no Paystack webhook fires on expiry).
+    // Treat an active-but-past-period trial as not entitled.
+    const isTrial = (owned as unknown as { is_trial?: boolean }).is_trial;
+    const periodEnd = owned.current_period_end;
+    if (isTrial && periodEnd && new Date(periodEnd) < new Date()) {
+      return { entitled: false, subscription: null, reason: "inactive" };
+    }
+    return { entitled: true, subscription: owned };
+  }
 
   // Check 2: user is an accepted member of a team subscription
   const { data: teamMember } = await supabase

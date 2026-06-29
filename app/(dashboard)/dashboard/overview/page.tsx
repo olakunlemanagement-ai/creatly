@@ -6,6 +6,7 @@ import { APP_NAME } from "@/lib/config";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ResourceCard, type ResourceCardData } from "@/components/resource/ResourceCard";
+import { TrialStartButton } from "@/components/shared/TrialStartButton";
 import { PLANS } from "@/lib/pricing";
 
 export const metadata: Metadata = {
@@ -100,6 +101,7 @@ export default async function DashboardOverviewPage() {
 
   const greeting = timeGreeting();
   const displayName = auth.profile.full_name ?? auth.user.email;
+  const trialUsed = !!(auth.profile as unknown as { trial_used?: boolean }).trial_used;
 
   const planLabel =
     sub?.plan_type && sub.plan_type in PLANS
@@ -164,12 +166,18 @@ export default async function DashboardOverviewPage() {
               <p className="mt-1 text-sm text-muted-foreground">
                 Subscribe to download unlimited resources.
               </p>
-              <Link
-                href="/pricing"
-                className="mt-4 flex items-center gap-1.5 text-sm font-medium text-terracotta-500 hover:text-terracotta-600"
-              >
-                Upgrade <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
+              {!trialUsed ? (
+                <div className="mt-4">
+                  <TrialStartButton className="inline-flex items-center gap-1.5 text-sm font-semibold text-terracotta-500 hover:text-terracotta-600" />
+                </div>
+              ) : (
+                <Link
+                  href="/pricing"
+                  className="mt-4 flex items-center gap-1.5 text-sm font-medium text-terracotta-500 hover:text-terracotta-600"
+                >
+                  Upgrade <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              )}
             </>
           )}
         </div>

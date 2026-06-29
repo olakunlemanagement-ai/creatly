@@ -13,6 +13,7 @@ import { FavouriteButton } from "@/components/resource/FavouriteButton";
 import { ResourceCard, type ResourceCardData } from "@/components/resource/ResourceCard";
 import { ResourceGrid } from "@/components/resource/ResourceGrid";
 import { recordRecentlyViewed } from "@/lib/actions/recently-viewed";
+import { TrialStartButton } from "@/components/shared/TrialStartButton";
 import type { Resource, Creator, Category } from "@/types/database";
 
 // ─── Joined resource type for this page ───────────────────────────────────────
@@ -121,6 +122,10 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
     : entitlementResult.entitled
       ? "subscriber"
       : "free";
+
+  // Show trial CTA to logged-in free users who haven't used their trial
+  const trialUsed = !!(auth?.profile as unknown as { trial_used?: boolean })?.trial_used;
+  const showTrialCta = entitlement === "free" && !trialUsed;
 
   const favouriteIds = new Set(
     (favouriteRows ?? []).map((f: { resource_id: string }) => f.resource_id),
@@ -280,6 +285,12 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
               resourceId={typedResource.id}
               resourceSlug={slug}
             />
+            {showTrialCta && (
+              <div className="mt-3 flex flex-col gap-1">
+                <p className="text-xs text-muted-foreground">Or try free for 7 days — no credit card needed.</p>
+                <TrialStartButton className="inline-flex items-center gap-1.5 text-sm font-semibold text-terracotta-600 underline underline-offset-2 hover:text-terracotta-700" />
+              </div>
+            )}
           </div>
 
           {/* Favourite */}
