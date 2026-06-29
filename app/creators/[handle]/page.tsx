@@ -3,10 +3,11 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { APP_NAME } from "@/lib/config";
+import { APP_NAME, APP_URL } from "@/lib/config";
 import { getCreatorAssetUrl } from "@/lib/storage";
 import { ResourceCard, type ResourceCardData } from "@/components/resource/ResourceCard";
 import { ResourceGrid } from "@/components/resource/ResourceGrid";
+import { SharePanel } from "@/components/shared/SharePanel";
 import { SiteHeader } from "@/components/nav/SiteHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import type { Json } from "@/types/database";
@@ -163,22 +164,24 @@ export default async function CreatorStorefrontPage({
               )}
             </div>
 
-            {/* Social links */}
-            {socialLinks.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {socialLinks.map((s) => (
-                  <a
-                    key={s.key}
-                    href={s.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
-                  >
-                    {s.label}
-                  </a>
-                ))}
-              </div>
-            )}
+            {/* Social links + share */}
+            <div className="flex flex-wrap items-center gap-2">
+              {socialLinks.map((s) => (
+                <a
+                  key={s.key}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+                >
+                  {s.label}
+                </a>
+              ))}
+              <SharePanel
+                url={`${APP_URL}/creators/${handle}`}
+                title={`${profile.display_name} on ${APP_NAME}`}
+              />
+            </div>
           </div>
 
           {/* Divider */}

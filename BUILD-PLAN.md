@@ -412,7 +412,7 @@ alter table public.profiles
 
 ---
 
-### CP3.4 — Social sharing ⬜ (design-led)
+### CP3.4 — Social sharing ✅ (design-led)
 
 **Scope:**
 Let users share resource pages on social media. Each resource detail page gets share buttons. Sharing drives organic discovery — a creator shares their own work, a user shares something they found useful.

@@ -14,6 +14,9 @@ import { ResourceCard, type ResourceCardData } from "@/components/resource/Resou
 import { ResourceGrid } from "@/components/resource/ResourceGrid";
 import { recordRecentlyViewed } from "@/lib/actions/recently-viewed";
 import { TrialStartButton } from "@/components/shared/TrialStartButton";
+import { SharePanel } from "@/components/shared/SharePanel";
+import { APP_URL } from "@/lib/config";
+import { getPreviewImageUrl } from "@/lib/storage";
 import type { Resource, Creator, Category } from "@/types/database";
 
 // ─── Joined resource type for this page ───────────────────────────────────────
@@ -38,13 +41,38 @@ export async function generateMetadata({
   const supabase = await createClient();
   const { data: resource } = await supabase
     .from("resources")
-    .select("title")
+    .select("title, description, preview_image_path")
     .eq("slug", slug)
     .eq("status", "published")
     .single();
 
   if (!resource) return { title: APP_NAME };
-  return { title: `${resource.title} — ${APP_NAME}` };
+
+  const canonicalUrl = `${APP_URL}/resources/${slug}`;
+  const ogImage = resource.preview_image_path
+    ? getPreviewImageUrl(resource.preview_image_path)
+    : null;
+  const description = resource.description
+    ? resource.description.slice(0, 160)
+    : `Download ${resource.title} — premium creative resource on ${APP_NAME}.`;
+
+  return {
+    title: `${resource.title} — ${APP_NAME}`,
+    description,
+    openGraph: {
+      title: resource.title,
+      description,
+      url: canonicalUrl,
+      type: "website",
+      ...(ogImage ? { images: [{ url: ogImage }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: resource.title,
+      description,
+      ...(ogImage ? { images: [ogImage] } : {}),
+    },
+  };
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -62,7 +90,7 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
   const [{ data: resource, error }, auth] = await Promise.all([
     supabase
       .from("resources")
-      .select("*, creators(name, slug, avatar_path, is_public), categories(name, slug, parent_id)")
+      .select("*, creators(name, slug, avatar_path, is_public), categories(name, slug, parent_id), share_count")
       .eq("slug", slug)
       .eq("status", "published")
       .single(),
@@ -236,6 +264,11 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
               </dt>
               <dd className="mt-0.5 font-medium text-foreground">
                 {typedResource.download_count.toLocaleString()}
+                {((typedResource as unknown as { share_count?: number }).share_count ?? 0) > 0 && (
+                  <span className="ml-2 text-muted-foreground">
+                    · {(typedResource as unknown as { share_count: number }).share_count.toLocaleString()} shares
+                  </span>
+                )}
               </dd>
             </div>
           </dl>
@@ -293,14 +326,21 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
             )}
           </div>
 
-          {/* Favourite */}
-          <FavouriteButton
-            resourceId={typedResource.id}
-            resourceSlug={typedResource.slug}
-            isFavourited={isFavourited}
-            userId={userId}
-            variant="sidebar"
-          />
+          {/* Share + Favourite row */}
+          <div className="flex items-center gap-2">
+            <SharePanel
+              url={`${APP_URL}/resources/${slug}`}
+              title={typedResource.title}
+              resourceId={typedResource.id}
+            />
+            <FavouriteButton
+              resourceId={typedResource.id}
+              resourceSlug={typedResource.slug}
+              isFavourited={isFavourited}
+              userId={userId}
+              variant="sidebar"
+            />
+          </div>
         </aside>
       </div>
 
