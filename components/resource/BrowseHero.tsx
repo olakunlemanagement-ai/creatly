@@ -39,7 +39,7 @@ export function BrowseHero({ navCategories, activeCategory }: BrowseHeroProps) {
 
   return (
     <section
-      className="px-4 py-12 sm:px-6 sm:py-16"
+      className="px-4 pt-4 pb-12 sm:px-6 sm:pt-6 sm:pb-16"
       style={{
         background:
           "radial-gradient(ellipse at 65% 0%, oklch(0.33 0.10 148), oklch(0.20 0.07 148))",
