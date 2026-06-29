@@ -207,7 +207,7 @@ function CategoryStrip({ navCategories }: { navCategories: NavCategory[] }) {
           </button>
 
           {moreOpen && (
-            <div className="absolute left-0 top-full z-50 mt-1 w-80 rounded-lg border border-white/10 bg-brand-green-900 p-4 shadow-xl">
+            <div className="absolute right-0 top-full z-50 mt-1 min-w-48 w-80 rounded-lg border border-white/10 bg-brand-green-900 p-4 shadow-xl">
               <p className="mb-3 font-mono text-[10px] uppercase tracking-widest text-white/40">
                 More categories
               </p>

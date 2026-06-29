@@ -22,7 +22,7 @@ export default async function AppLayout({
       <SiteHeader />
       {/* Subscription-expired banner — client component, hides when status becomes active via Realtime */}
       <ExpiredBanner userId={auth?.user.id} />
-      <main id="main-content" className="flex-1 pt-16 lg:pt-[6.5rem]">
+      <main id="main-content" className="flex-1">
         {children}
       </main>
       <SiteFooter />
