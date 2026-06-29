@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Twitter, Instagram, Linkedin } from "lucide-react";
+import { X, Instagram, Linkedin } from "lucide-react";
 import { APP_NAME, CONTACT_EMAIL } from "@/lib/config";
 
 const studioLinks = [
@@ -101,7 +101,7 @@ export function CreatorFooter() {
               onMouseEnter={(e) => (e.currentTarget.style.color = "#FAF4E9")}
               onMouseLeave={(e) => (e.currentTarget.style.color = "#8fad9d")}
             >
-              <Twitter size={16} />
+              <X size={16} />
             </a>
             <a
               href="https://instagram.com/joincreatly"
