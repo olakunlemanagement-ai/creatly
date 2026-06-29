@@ -126,7 +126,7 @@ function CategoryStrip({ navCategories }: { navCategories: NavCategory[] }) {
   }
 
   return (
-    <div className="flex flex-1 items-center gap-1 overflow-hidden">
+    <div className="flex flex-1 items-center gap-1 overflow-x-clip">
       {visibleCats.map((cat) => {
         const hasChildren = cat.children.length > 0;
         const isActive = activeSlug === cat.slug || cat.children.some((c) => c.slug === activeSlug);

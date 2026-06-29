@@ -62,15 +62,8 @@ export function CreatorHeaderClient({ auth }: CreatorHeaderClientProps) {
           {/* Center: spacer */}
           <div />
 
-          {/* Right: marketplace link + auth */}
+          {/* Right: auth */}
           <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="hidden text-sm font-medium text-stone-600 transition-colors hover:text-stone-900 lg:block"
-            >
-              Go to Marketplace
-            </Link>
-
             {auth ? (
               <DropdownMenu>
                 <DropdownMenuTrigger
