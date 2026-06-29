@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { X, Instagram, Linkedin } from "lucide-react";
+
 import { APP_NAME, CONTACT_EMAIL } from "@/lib/config";
 
 const studioLinks = [
@@ -92,39 +92,24 @@ export function CreatorFooter() {
             © {new Date().getFullYear()} {APP_NAME} — Creator Studio
           </p>
           <div className="flex items-center gap-4">
-            <a
-              href="https://twitter.com/joincreatly"
-              aria-label="Twitter/X"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: "#8fad9d" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#FAF4E9")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#8fad9d")}
-            >
-              <X size={16} />
-            </a>
-            <a
-              href="https://instagram.com/joincreatly"
-              aria-label="Instagram"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: "#8fad9d" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#FAF4E9")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#8fad9d")}
-            >
-              <Instagram size={16} />
-            </a>
-            <a
-              href="https://linkedin.com/company/joincreatly"
-              aria-label="LinkedIn"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: "#8fad9d" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#FAF4E9")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#8fad9d")}
-            >
-              <Linkedin size={16} />
-            </a>
+            {[
+              { label: "X (Twitter)", href: "https://twitter.com/joincreatly" },
+              { label: "Instagram", href: "https://instagram.com/joincreatly" },
+              { label: "LinkedIn", href: "https://linkedin.com/company/joincreatly" },
+            ].map(({ label, href }) => (
+              <a
+                key={href}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs transition-colors"
+                style={{ color: "#8fad9d" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#FAF4E9")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#8fad9d")}
+              >
+                {label}
+              </a>
+            ))}
           </div>
         </div>
       </div>
