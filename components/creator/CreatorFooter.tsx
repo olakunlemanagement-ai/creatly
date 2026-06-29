@@ -13,7 +13,6 @@ const studioLinks = [
 ];
 
 const platformLinks = [
-  { label: "Browse Marketplace", href: "/browse" },
   { label: "Help & Support", href: "/dashboard/help" },
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Contact Us", href: `mailto:${CONTACT_EMAIL}` },

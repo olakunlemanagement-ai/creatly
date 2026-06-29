@@ -56,8 +56,9 @@ function isUserOnlyRoute(p: string): boolean {
 }
 
 // /creator/* — creator-role only, but carve out auth pages (they're public).
+// NOTE: must NOT match /creators/* (the public landing page) — hence the exact-prefix check.
 function isCreatorOnlyRoute(p: string): boolean {
-  return p.startsWith("/creator") && !isCreatorAuthPage(p);
+  return (p === "/creator" || p.startsWith("/creator/")) && !isCreatorAuthPage(p);
 }
 
 // /backstage-cl-hq-manage-9x3kp2/* — admin/super_admin only.
